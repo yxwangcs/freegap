@@ -1,6 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import coloredlogs
 from refinedp.refinelaplace import refinelaplace
+from refinedp.algorithms import adaptive_sparse_vector, sparse_vector
+from refinedp.preprocess import process_frequent_itemsets
+import matplotlib
+from matplotlib import rc
+rc('text', usetex=True)
+
+#matplotlib.rcParams['text.latex.preamble'] = '\\usepackage[bold]{libertine},\\usepackage[libertine]{newtxmath},\\usepackage{sfmath},\\usepackage[T1]{fontenc}'
+
+coloredlogs.install(level='INFO', fmt='%(levelname)s - %(name)s %(message)s')
 
 
 def test_refine_laplace():
