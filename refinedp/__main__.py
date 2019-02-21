@@ -27,6 +27,22 @@ def test_refine_laplace():
     plt.savefig('refinelap.svg')
 
 
+def compare_SVTs():
+    q = np.asarray([1 for _ in range(2000)] + [10000 for _ in range(18000)])
+    np.random.shuffle(q)
+    threshold = 10
+    r1 = np.asarray(adaptive_sparse_vector(q, threshold, 40, 0.7), dtype=np.bool)
+    r2 = np.asarray(sparse_vector(q, threshold, 40, 0.7), dtype=np.bool)
+    print('Total queries: {}'.format(len(q)))
+    truth = q > 1.5
+    print('Adaptive sparse vector: {}, trues: {}, false\'s:{}, accuray: {}'
+          .format(len(r1), np.count_nonzero(r1), np.size(r1) - np.count_nonzero(r1),
+                  np.count_nonzero(r1 == truth[:len(r1)]) / len(r1)))
+    print('Vanilla sparse vector: {}, trues: {}, false\'s:{}, accuray: {}'
+          .format(len(r2), np.count_nonzero(r2), np.size(r2) - np.count_nonzero(r2),
+                  np.count_nonzero(r2 == truth[:len(r2)]) / len(r2)))
+
+
 
 
 def main():
