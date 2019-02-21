@@ -48,26 +48,3 @@ def refinelaplace(y, mu, epsprime, eps, prng=numpy.random):
     else:
         X = lapprod(mu, y, epsprime, eps, prng)
     return X
-
-
-def lapprod_density(x, a, b, epsa, epsb):
-    A = (epsa ** 2 - epsb ** 2) / 2.0
-    B = (epsa * exp(-epsb * abs(b - a)) - epsb * exp(-epsa * abs(b - a)))
-    C = exp(-epsa * abs(x - a) - epsb * abs(x - b))
-    return A * (C / float(B))
-
-
-def lapprod_cdf(x, a, b, epsa, epsb):
-    assert a >= b
-    A = (epsa ** 2 - epsb ** 2) / 2.0
-    B = (epsa * exp(-epsb * abs(b - a)) - epsb * exp(-epsa * abs(b - a)))
-    res = 0.0
-    first = 1.0 / (epsa + epsb) * exp(epsa * (b - a))
-    second = 1.0 / (epsa - epsb) * (exp(epsb * (b - a)) - exp(epsa * (b - a)))
-    if (x <= b):
-        res = 1.0 / (epsa + epsb) * exp(epsa * (x - a) + epsb * (x - b))
-    elif (x <= a):
-        res = first + 1.0 / (epsa - epsb) * (exp(epsa * (x - a) + epsb * (b - x)) - exp(epsa * (b - a)))
-    else:
-        res = first + second + 1.0 / (epsa + epsb) * (exp(epsb * (b - a)) - exp(epsa * (a - x) + epsb * (b - x)))
-    return res / float(B) * A
