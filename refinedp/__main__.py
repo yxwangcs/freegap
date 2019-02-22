@@ -8,7 +8,7 @@ import matplotlib
 from matplotlib import rc
 rc('text', usetex=True)
 
-#matplotlib.rcParams['text.latex.preamble'] = '\\usepackage[bold]{libertine},\\usepackage[libertine]{newtxmath},\\usepackage{sfmath},\\usepackage[T1]{fontenc}'
+matplotlib.rcParams['text.latex.preamble'] = '\\usepackage[bold]{libertine},\\usepackage[libertine]{newtxmath},\\usepackage{sfmath},\\usepackage[T1]{fontenc}'
 
 coloredlogs.install(level='INFO', fmt='%(levelname)s - %(name)s %(message)s')
 
