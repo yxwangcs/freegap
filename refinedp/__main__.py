@@ -24,7 +24,7 @@ def test_refine_laplace():
     axes = plt.gca()
     axes.set_ylim([0., 1.])
     plt.legend()
-    plt.savefig('lap.svg')
+    plt.savefig('lap.pdf')
     plt.clf()
 
     # plot refined laplace
@@ -34,7 +34,7 @@ def test_refine_laplace():
     plt.plot(x, refined_pdf, label='Laplace($\\mu$=0, scale=2)')
     plt.title('$\mathtt{RefineLap}$(X, 2, 1)')
     plt.legend()
-    plt.savefig('refinelap.svg')
+    plt.savefig('refinelap.pdf')
 
 
 def compare_SVTs():
