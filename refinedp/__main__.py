@@ -37,22 +37,34 @@ def test_refine_laplace():
     plt.savefig('refinelap.pdf')
 
 
-def compare_SVTs():
-    q = np.asarray([1 for _ in range(2000)] + [10000 for _ in range(18000)])
-    np.random.shuffle(q)
-    threshold = 10
-    r1 = np.asarray(adaptive_sparse_vector(q, threshold, 40, 0.7), dtype=np.bool)
-    r2 = np.asarray(sparse_vector(q, threshold, 40, 0.7), dtype=np.bool)
-    print('Total queries: {}'.format(len(q)))
-    truth = q > 1.5
-    print('Adaptive sparse vector: {}, trues: {}, false\'s:{}, accuray: {}'
-          .format(len(r1), np.count_nonzero(r1), np.size(r1) - np.count_nonzero(r1),
-                  np.count_nonzero(r1 == truth[:len(r1)]) / len(r1)))
-    print('Vanilla sparse vector: {}, trues: {}, false\'s:{}, accuray: {}'
-          .format(len(r2), np.count_nonzero(r2), np.size(r2) - np.count_nonzero(r2),
-                  np.count_nonzero(r2 == truth[:len(r2)]) / len(r2)))
+def plot_dataset(data):
+    plt.hist(data[1], 30, density=True, histtype='bar', ec='black', range=(0, 30))
+
+    plt.show()
 
 
+def compare_SVTs(data, c, epsilon):
+    sorted_data = np.sort(data)[::-1]
+    threshold = (sorted_data[c] + sorted_data[c + 1]) / 2.0
+    print('Threshold: {}'.format(threshold))
+
+    r1, refine_vector = np.asarray(adaptive_sparse_vector(data, threshold, c, epsilon), dtype=np.bool)
+    r2 = np.asarray(sparse_vector(data, threshold, c, epsilon), dtype=np.bool)
+    print('Total queries: {}'.format(len(data)))
+    truth = data > threshold
+    print(r1[:len(r2)])
+    print(refine_vector[:len(r2)])
+    print(r2)
+
+    false_positive_rate_1 = np.count_nonzero(r1 == (truth[:len(r1)] == False)) / float(np.count_nonzero(truth[:len(r1)] == False))
+    print('Adaptive sparse vector: {}, trues: {}, false\'s:{}, false positive rate: {}'
+          .format(len(r1), np.count_nonzero(r1), np.size(r1) - np.count_nonzero(r1), false_positive_rate_1))
+
+    false_positive_rate_2 = np.count_nonzero(r1 == (truth[:len(r2)] == False)) / float(np.count_nonzero(truth[:len(r2)] == False))
+    print('Vanilla sparse vector: {}, trues: {}, false\'s:{}, false positive rate: {}'
+          .format(len(r2), np.count_nonzero(r2), np.size(r2) - np.count_nonzero(r2), false_positive_rate_2))
+
+    return c, (false_positive_rate_1, ), (false_positive_rate_2, ), threshold, epsilon
 
 
 def main():
