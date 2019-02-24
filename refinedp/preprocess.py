@@ -1,15 +1,23 @@
 import numpy as np
 
 
-def process_frequent_itemsets(in_file, out_file):
+def _process(in_file, delimiter=' '):
     itemsets = []
     with open(in_file, 'r') as in_f:
         for line in in_f.readlines():
-            for ch in line.split(','):
+            for ch in line.split(delimiter):
                 if ch == '\n':
                     continue
                 else:
                     itemsets.append(ch)
-    items = np.asarray(itemsets, dtype=np.int)
-    itemsets = np.unique(np.asarray(items), return_counts=True)[1]
-    return items, itemsets
+    itemsets = np.unique(np.asarray(np.asarray(itemsets, dtype=np.int)), return_counts=True)
+    return itemsets
+
+
+# helper functions
+def process_bms_pos(in_file):
+    return _process(in_file, ',')
+
+
+def process_kosarak(in_file):
+    return _process(in_file)
