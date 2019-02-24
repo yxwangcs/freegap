@@ -48,7 +48,7 @@ def adaptive_sparse_vector(q, threshold, c, epsilon):
             else:
                 out.append(False)
         i += 1
-    logger.debug('total refined: {}'.format(refine_count))
+    logger.info('Total refined: {}'.format(refine_count))
 
     return out
 
