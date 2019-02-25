@@ -1,90 +1,42 @@
-import numpy as np
-import matplotlib.pyplot as plt
+import argparse
+import sys
 import coloredlogs
-from refinedp.refinelaplace import refinelaplace
-from refinedp.algorithms import adaptive_sparse_vector, sparse_vector
-from refinedp.preprocess import *
+import logging
 import matplotlib
-from matplotlib import rc
-rc('text', usetex=True)
+from refinedp.adaptivesvt import evaluate_adaptive_sparse_vector
+from refinedp.refinelaplace import evaluate_refine_laplace
 
+# change the matplotlib settings
+matplotlib.rcParams['text.usetex'] = True
 matplotlib.rcParams['text.latex.preamble'] = '\\usepackage{libertine},\\usepackage[libertine]{newtxmath},\\usepackage{sfmath},\\usepackage[T1]{fontenc}'
 
-coloredlogs.install(level='INFO', fmt='%(levelname)s - %(name)s %(message)s')
+coloredlogs.install(level='INFO', fmt='%(asctime)s %(levelname)s - %(name)s %(message)s')
+
+logger = logging.getLogger(__name__)
 
 
-def plot_dataset(data):
-    plt.hist(data[1], 30, density=True, histtype='bar', ec='black', range=(0, 30))
-    plt.show()
+def main(argv=sys.argv[1:]):
+    arg_parser = argparse.ArgumentParser(description=__doc__)
+    arg_parser.add_argument('algorithm', help='The algorithm to evaluate, namely '
+                                              '`adaptive sparse vector`, `gap sparse vector`, `gap noisy max`, '
+                                              '`refine laplace`')
+    arg_parser.add_argument('--dataset', help='The dataset folder', required=False)
+    arg_parser.add_argument('--output', help='The output folder', required=False)
+    results = arg_parser.parse_args(argv)
 
+    kwargs = {'dataset_folder': results.dataset, 'output_folder': results.output}
+    # remove None values
+    kwargs = {k: v for k, v in kwargs.items() if v is not None}
 
-def calc_metrics(data, answer, truth):
-    # answer_rate, false_negative_rate
-    return float(len(answer)) / len(data),\
-           float(np.count_nonzero(answer == (truth[:len(answer)] == False))) / np.count_nonzero(truth[:len(answer)] == False)
-
-
-def compare_SVTs(data, c, epsilon):
-    sorted_data = np.sort(data)[::-1]
-    threshold = (sorted_data[c] + sorted_data[c + 1]) / 2.0
-
-    r1 = np.asarray(adaptive_sparse_vector(data, threshold, c, epsilon), dtype=np.bool)
-    r2 = np.asarray(sparse_vector(data, threshold, c, epsilon), dtype=np.bool)
-
-    truth = data > threshold
-
-    return c, calc_metrics(data, r1, truth), calc_metrics(data, r2, truth), threshold, epsilon
-
-
-def plot_metrics(results):
-    METRICS = ['Answer Rate', 'False Negative Rate']
-    # [ [[adaptive_metric_1], [adaptive_metric_1_err], [vanilla_metric_1, vanilla_metric_1_err]],
-    #   [metric_2 ...],
-    #   [metric_3 ...],
-    #   ...
-    # ]
-    for name, data in results.items():
-        plot_data = [[[], [], [], []] for _ in range(len(METRICS))]
-        c_array = list(data.keys())
-        for c, stats in data.items():
-            for i in range(len(METRICS)):
-                # adaptive sparse vector
-                metric_data = np.fromiter((x[1][i] for x in stats), dtype=np.float)
-                plot_data[i][0].append(metric_data.mean())
-                plot_data[i][1].append([metric_data.mean() - metric_data.min(), metric_data.max() - metric_data.mean()])
-
-                # vanilla sparse vector
-                metric_data = np.fromiter((x[2][i] for x in stats), dtype=np.float)
-                plot_data[i][2].append(metric_data.mean())
-                plot_data[i][3].append([metric_data.mean() - metric_data.min(), metric_data.max() - metric_data.mean()])
-
-        for index, metric in enumerate(METRICS):
-            plt.errorbar(c_array, plot_data[index][0], yerr=np.transpose(plot_data[index][1]), label='\\huge Adaptive Sparse Vector', fmt='-o', markersize=8)
-            plt.errorbar(c_array, plot_data[index][2], yerr=np.transpose(plot_data[index][3]), label='\\huge Sparse Vector', fmt='-s', markersize=8)
-            plt.xticks(fontsize=18)
-            plt.yticks(fontsize=18)
-            plt.legend()
-            plt.title('{} - {}'.format(name, metric), fontsize=24)
-            plt.savefig('{}_{}.pdf'.format(name, metric).replace(' ', '_'))
-            plt.clf()
-
-
-def main():
-    test_refine_laplace()
-    datasets = {
-    }
-
-    results = {}
-    for name, data in datasets.items():
-        print('Evaluating on {}...'.format(name))
-        plot_dataset(data)
-        results[name] = {}
-        for c in range(25, 325, 25):
-            results[name][c] = []
-            for _ in range(5):
-                stats = compare_SVTs(data[1], c, 0.3)
-                results[name][c].append(stats)
-    plot_metrics(results)
+    if 'adaptive' in results.algorithm:
+        logger.info('Evaluating Adaptive Sparse Vector')
+        evaluate_adaptive_sparse_vector(**kwargs)
+    elif 'refine' in results.algorithm:
+        logger.info('Evaluating refine laplace')
+        evaluate_refine_laplace(**kwargs)
+    else:
+        print('Invalid algorithm to evaluate.')
+        exit(1)
 
 
 if __name__ == '__main__':
