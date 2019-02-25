@@ -93,7 +93,7 @@ def plot_metrics(results):
             plt.yticks(fontsize=18)
             plt.legend()
             plt.title('{} - {}'.format(name, metric), fontsize=24)
-            plt.savefig('{}_{}.pdf'.format(name, metric))
+            plt.savefig('{}_{}.pdf'.format(name, metric).replace(' ', '_'))
             plt.clf()
 
 
