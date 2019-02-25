@@ -56,11 +56,6 @@ def evaluate_adaptive_sparse_vector(dataset_folder='datasets', output_folder='./
     c_array = list(range(25, 325, 25))
 
     METRICS = ['Above-Threshold Answers', 'False Negative Rate']
-    # metric_data[x][y] - the x-th metrics on varying c values for y-th algorithm, where y in (0, 1),
-    # 0 is adaptive svt and 1 is vanilla svt
-    # similar for err_data
-    metric_data = [[[], []] for _ in range(len(METRICS))]
-    err_data = [[[], []] for _ in range(len(METRICS))]
 
     def calc_metrics(data, answer, truth):
         # Above-Threshold Answers, false_negative_rate
@@ -70,6 +65,13 @@ def evaluate_adaptive_sparse_vector(dataset_folder='datasets', output_folder='./
 
     for name, data in datasets.items():
         logger.info('Evaluating on {}'.format(name))
+
+        # metric_data[x][y] - the x-th metrics on varying c values for y-th algorithm, where y in (0, 1),
+        # 0 is adaptive svt and 1 is vanilla svt
+        # similar for err_data
+        metric_data = [[[], []] for _ in range(len(METRICS))]
+        err_data = [[[], []] for _ in range(len(METRICS))]
+
         # plot the histogram of the data
         plt.plot(np.asarray(list(range(len(data)))), data)
         plt.title(name)
