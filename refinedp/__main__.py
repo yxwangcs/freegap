@@ -23,6 +23,8 @@ def test_refine_laplace():
     plt.title('\\huge X: Laplace')
     axes = plt.gca()
     axes.set_ylim([0., 1.])
+    plt.xticks(fontsize=18)
+    plt.yticks(fontsize=18)
     plt.legend()
     plt.savefig('lap.pdf')
     plt.clf()
@@ -33,42 +35,84 @@ def test_refine_laplace():
     refined_pdf = np.exp(-abs(x - loc) / refined_scale) / (2. * refined_scale)
     plt.plot(x, refined_pdf, label='\\huge Laplace($\\mu$=0, scale={})'.format(refined_scale), linewidth=3)
     plt.title('\\huge RefineLap (X, 1, 2)', fontsize=30)
+    plt.xticks(fontsize=18)
+    plt.yticks(fontsize=18)
     plt.legend()
     plt.savefig('refinelap.pdf')
 
 
 def plot_dataset(data):
     plt.hist(data[1], 30, density=True, histtype='bar', ec='black', range=(0, 30))
-
     plt.show()
+
+
+def calc_metrics(data, answer, truth):
+    # answer_rate, false_negative_rate
+    return float(len(answer)) / len(data),\
+           float(np.count_nonzero(answer == (truth[:len(answer)] == False))) / np.count_nonzero(truth[:len(answer)] == False)
 
 
 def compare_SVTs(data, c, epsilon):
     sorted_data = np.sort(data)[::-1]
     threshold = (sorted_data[c] + sorted_data[c + 1]) / 2.0
-    print('Threshold: {}'.format(threshold))
 
-    r1, refine_vector = np.asarray(adaptive_sparse_vector(data, threshold, c, epsilon), dtype=np.bool)
+    r1 = np.asarray(adaptive_sparse_vector(data, threshold, c, epsilon), dtype=np.bool)
     r2 = np.asarray(sparse_vector(data, threshold, c, epsilon), dtype=np.bool)
-    print('Total queries: {}'.format(len(data)))
+
     truth = data > threshold
-    print(r1[:len(r2)])
-    print(refine_vector[:len(r2)])
-    print(r2)
 
-    false_positive_rate_1 = np.count_nonzero(r1 == (truth[:len(r1)] == False)) / float(np.count_nonzero(truth[:len(r1)] == False))
-    print('Adaptive sparse vector: {}, trues: {}, false\'s:{}, false positive rate: {}'
-          .format(len(r1), np.count_nonzero(r1), np.size(r1) - np.count_nonzero(r1), false_positive_rate_1))
+    return c, calc_metrics(data, r1, truth), calc_metrics(data, r2, truth), threshold, epsilon
 
-    false_positive_rate_2 = np.count_nonzero(r1 == (truth[:len(r2)] == False)) / float(np.count_nonzero(truth[:len(r2)] == False))
-    print('Vanilla sparse vector: {}, trues: {}, false\'s:{}, false positive rate: {}'
-          .format(len(r2), np.count_nonzero(r2), np.size(r2) - np.count_nonzero(r2), false_positive_rate_2))
 
-    return c, (false_positive_rate_1, ), (false_positive_rate_2, ), threshold, epsilon
+def plot_metrics(results):
+    METRICS = ['Answer Rate', 'False Negative Rate']
+    # [ [[adaptive_metric_1], [adaptive_metric_1_err], [vanilla_metric_1, vanilla_metric_1_err]],
+    #   [metric_2 ...],
+    #   [metric_3 ...],
+    #   ...
+    # ]
+    plot_data = [[[], [], [], []] for _ in range(len(METRICS))]
+    for name, data in results.items():
+        c_array = list(data.keys())
+        for c, stats in data.items():
+            for i in range(len(METRICS)):
+                # adaptive sparse vector
+                metric_data = np.fromiter((x[1][i] for x in stats), dtype=np.float)
+                plot_data[i][0].append(metric_data.mean())
+                plot_data[i][1].append([metric_data.mean() - metric_data.min(), metric_data.max() - metric_data.mean()])
+
+                # vanilla sparse vector
+                metric_data = np.fromiter((x[2][i] for x in stats), dtype=np.float)
+                plot_data[i][2].append(metric_data.mean())
+                plot_data[i][3].append([metric_data.mean() - metric_data.min(), metric_data.max() - metric_data.mean()])
+
+        for index, metric in enumerate(METRICS):
+            plt.errorbar(c_array, plot_data[index][0], yerr=np.transpose(plot_data[index][1]), label='\\huge Adaptive Sparse Vector', fmt='-o', markersize=8)
+            plt.errorbar(c_array, plot_data[index][2], yerr=np.transpose(plot_data[index][3]), label='\\huge Sparse Vector', fmt='-s', markersize=8)
+            plt.xticks(fontsize=18)
+            plt.yticks(fontsize=18)
+            plt.legend()
+            plt.title('{} - {}'.format(name, metric), fontsize=24)
+            plt.savefig('{}_{}.pdf'.format(name, metric))
+            plt.clf()
 
 
 def main():
     test_refine_laplace()
+    datasets = {
+    }
+
+    results = {}
+    for name, data in datasets.items():
+        print('Evaluating on {}...'.format(name))
+        plot_dataset(data)
+        results[name] = {}
+        for c in range(25, 325, 25):
+            results[name][c] = []
+            for _ in range(5):
+                stats = compare_SVTs(data[1], c, 0.3)
+                results[name][c].append(stats)
+    plot_metrics(results)
 
 
 if __name__ == '__main__':
