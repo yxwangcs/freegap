@@ -91,7 +91,6 @@ def evaluate_adaptive_sparse_vector(dataset_folder='datasets', output_folder='./
                 results_2.append(calc_metrics(data, r2, truth_values))
             results_1 = np.transpose(results_1)
             results_2 = np.transpose(results_2)
-            #print(results_1)
             for i in range(len(METRICS)):
                 metric_data[i][0].append(results_1[i].mean())
                 err_data[i][0].append(
@@ -99,8 +98,6 @@ def evaluate_adaptive_sparse_vector(dataset_folder='datasets', output_folder='./
                 metric_data[i][1].append(results_2[i].mean())
                 err_data[i][1].append(
                     [results_2[i].mean() - results_2[i].min(), results_2[i].max() - results_2[i].mean()])
-
-            print(metric_data, err_data)
 
         # plot and save
         for index, metric in enumerate(METRICS):
