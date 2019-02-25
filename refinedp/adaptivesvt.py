@@ -96,7 +96,7 @@ def evaluate_adaptive_sparse_vector(dataset_folder='datasets', output_folder='./
                 metric_data[i][0].append(results_1[i].mean())
                 err_data[i][0].append(
                     [results_1[i].mean() - results_1[i].min(), results_1[i].max() - results_1[i].mean()])
-                metric_data[i][1].append(results_2.mean())
+                metric_data[i][1].append(results_2[i].mean())
                 err_data[i][1].append(
                     [results_2[i].mean() - results_2[i].min(), results_2[i].max() - results_2[i].mean()])
 
