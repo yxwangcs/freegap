@@ -34,7 +34,6 @@ def adaptive_sparse_vector(q, threshold, c, epsilon):
     while i < len(q) and count < 2 * c - 1:
         eta_i = np.random.laplace(scale=8.0 * c / epsilon)
         noisy_q_i = q[i] + eta_i
-        #print(noisy_q_i, noisy_threshold + 8.0 * np.sqrt(2) * c / epsilon)
         if noisy_q_i >= noisy_threshold + 24.0 * np.sqrt(2) * c / epsilon:
             out.append(True)
             count += 1
@@ -84,3 +83,13 @@ def gap_noisy_max(q, epsilon):
             if noisy_q_i > max - gap:
                 gap = max - noisy_q_i
     return imax, gap
+
+
+def gap_k_noisy_max(q, k, epsilon):
+    assert k <= len(q), 'k must be less or equal than the length of q'
+    noisy_q = np.asarray(q, dtype=np.float) + np.random.laplace(2.0 / epsilon, size=len(q))
+    indices = np.argpartition(noisy_q, -k)[-k:]
+    indices = indices[np.argsort(-noisy_q[indices])]
+    gaps = np.fromiter((noisy_q[first] - noisy_q[second] for first, second in zip(indices[:-1], indices[1:])),
+                       dtype=np.float)
+    return indices, gaps
