@@ -72,7 +72,7 @@ def evaluate_refine_laplace(output_folder='./figures/refinelap'):
     plt.clf()
 
     # plot refined laplace
-    s = np.fromiter((refinelaplace(elem, 0, 2, 1) for elem in s), dtype=np.float)
+    s = np.fromiter((refinelaplace(elem, 2, 1) for elem in s), dtype=np.float)
     _ = plt.hist(s, 150, density=True, range=(-4., 4))
     refined_pdf = np.exp(-abs(x - loc) / refined_scale) / (2. * refined_scale)
     plt.plot(x, refined_pdf, label='\\huge Laplace($\\mu$=0, scale={})'.format(refined_scale), linewidth=3)
