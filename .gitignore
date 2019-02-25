@@ -44,3 +44,9 @@ result_*.json
 
 # pytest cache
 .pytest_cache
+
+# datasets for evaluation
+datasets/
+
+# folder for figues
+figures/
