@@ -29,10 +29,8 @@ def main(argv=sys.argv[1:]):
     kwargs = {k: v for k, v in kwargs.items() if v is not None}
 
     if 'adaptive' in results.algorithm:
-        logger.info('Evaluating Adaptive Sparse Vector')
         evaluate_adaptive_sparse_vector(**kwargs)
     elif 'refine' in results.algorithm:
-        logger.info('Evaluating refine laplace')
         evaluate_refine_laplace(**kwargs)
     else:
         print('Invalid algorithm to evaluate.')

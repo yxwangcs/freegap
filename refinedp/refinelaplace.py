@@ -1,6 +1,10 @@
 import os
+import logging
 import numpy as np
 import matplotlib.pyplot as plt
+
+
+logger = logging.getLogger(__name__)
 
 
 def _lapprod(a, b, epsa, epsb, prng=np.random):
@@ -49,6 +53,7 @@ def refinelaplace(y, epsprime, eps, mu=0, prng=np.random):
 
 
 def evaluate_refine_laplace(output_folder='./figures/refinelap'):
+    logger.info('Evaluating Refine Laplace')
     # create the output folder if not exists
     try:
         os.makedirs(output_folder)

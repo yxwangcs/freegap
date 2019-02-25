@@ -39,6 +39,7 @@ def adaptive_sparse_vector(q, threshold, c, epsilon):
 
 
 def evaluate_adaptive_sparse_vector(dataset_folder='datasets', output_folder='./figures/adaptive-sparse-vector'):
+    logger.info('Evaluating Adaptive Sparse Vector')
     # create the output folder if not exists
     try:
         os.makedirs(output_folder)
