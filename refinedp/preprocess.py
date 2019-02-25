@@ -11,7 +11,7 @@ def _process(in_file, delimiter=' '):
                 else:
                     itemsets.append(ch)
     itemsets = np.unique(np.asarray(np.asarray(itemsets, dtype=np.int)), return_counts=True)
-    return itemsets
+    return itemsets[1]
 
 
 # helper functions
