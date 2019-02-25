@@ -1,10 +1,7 @@
 import numpy as np
-import logging
-
-logger = logging.getLogger(__name__)
 
 
-def sparse_vector(q, threshold, c, epsilon):
+def gap_sparse_vector(q, threshold, c, epsilon):
     out = []
     count = 0
     i = 0
@@ -14,7 +11,7 @@ def sparse_vector(q, threshold, c, epsilon):
         eta_i = np.random.laplace(scale=4.0 * c / epsilon)
         noisy_q_i = q[i] + eta_i
         if noisy_q_i >= noisy_threshold:
-            out.append(True)
+            out.append(noisy_q_i - noisy_threshold)
             count += 1
         else:
             out.append(False)
