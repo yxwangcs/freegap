@@ -71,8 +71,8 @@ def plot_metrics(results):
     #   [metric_3 ...],
     #   ...
     # ]
-    plot_data = [[[], [], [], []] for _ in range(len(METRICS))]
     for name, data in results.items():
+        plot_data = [[[], [], [], []] for _ in range(len(METRICS))]
         c_array = list(data.keys())
         for c, stats in data.items():
             for i in range(len(METRICS)):
