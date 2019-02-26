@@ -66,6 +66,7 @@ def evaluate_adaptive_sparse_vector(dataset_folder='datasets', output_folder='./
 
     for name, data in datasets.items():
         logger.info('Evaluating on {}'.format(name))
+        sorted_data = np.sort(data)[::-1]
 
         # metric_data[x][y] - the x-th metrics on varying c values for y-th algorithm, where y in (0, 1),
         # 0 is adaptive svt and 1 is vanilla svt
@@ -82,10 +83,8 @@ def evaluate_adaptive_sparse_vector(dataset_folder='datasets', output_folder='./
         # run and gather data
         epsilon = 0.3
         for c in c_array:
-            sorted_data = np.sort(data)[::-1]
             threshold = (sorted_data[2 * c] + sorted_data[2 * c + 1]) / 2.0
             truth_values = data > threshold
-
             results_1, results_2 = [], []
             for _ in range(10):
                 r1 = np.asarray(adaptive_sparse_vector(data, threshold, c, epsilon), dtype=np.bool)
