@@ -20,7 +20,7 @@ def adaptive_sparse_vector(q, threshold, c, epsilon):
     while i < len(q) and count < 2 * c - 1:
         eta_i = np.random.laplace(scale=8.0 * c / epsilon)
         noisy_q_i = q[i] + eta_i
-        if noisy_q_i >= noisy_threshold + 24.0 * np.sqrt(2) * c / epsilon:
+        if noisy_q_i >= noisy_threshold + 16.0 * np.sqrt(2) * c / epsilon:
             out.append(True)
             count += 1
         else:
