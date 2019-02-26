@@ -88,7 +88,7 @@ def evaluate_gap_sparse_vector(dataset_folder='datasets', output_folder='./figur
     for name, data in datasets.items():
         logger.info('Evaluating on {}'.format(name))
         sorted_data = np.sort(data)[::-1]
-        metric_data, err_data = [[], [], []], [[], [], []]
+        metric_data, err_data = [[], []], [[], []]
         for c in c_array:
             threshold = (sorted_data[c] + sorted_data[c + 1]) / 2.0
 
@@ -96,7 +96,7 @@ def evaluate_gap_sparse_vector(dataset_folder='datasets', output_folder='./figur
             for _ in range(10):
                 i1, r1 = refined_estimate_sparse_vector(data, threshold, c, epsilon)
                 i2, r2 = naive_estimate_sparse_vector(data, threshold, c, epsilon)
-                i3, r3 = numerical_estimate_sparse_vector(data, threshold, c, epsilon)
+                #i3, r3 = numerical_estimate_sparse_vector(data, threshold, c, epsilon)
                 data = np.asarray(data)
                 gap_err = np.sqrt(np.sum(np.square(data[i1] - r1)) / float(len(r1)))
                 lap_err = np.sqrt(np.sum(np.square(data[i2] - r2)) / float(len(r2)))
@@ -106,10 +106,10 @@ def evaluate_gap_sparse_vector(dataset_folder='datasets', output_folder='./figur
                     show = False
                 results_1.append(gap_err)
                 results_2.append(lap_err)
-                results_3.append(num_err)
+                #results_3.append(num_err)
             results_1 = np.transpose(results_1)
             results_2 = np.transpose(results_2)
-            results_3 = np.transpose(results_3)
+            #results_3 = np.transpose(results_3)
 
             metric_data[0].append(results_1.mean())
             err_data[0].append(
@@ -117,9 +117,9 @@ def evaluate_gap_sparse_vector(dataset_folder='datasets', output_folder='./figur
             metric_data[1].append(results_2.mean())
             err_data[1].append(
                 [results_2.mean() - results_2.min(), results_2.max() - results_2.mean()])
-            metric_data[2].append(results_3.mean())
-            err_data[2].append(
-                [results_3.mean() - results_3.min(), results_3.max() - results_3.mean()])
+            #metric_data[2].append(results_3.mean())
+            #err_data[2].append(
+                #[results_3.mean() - results_3.min(), results_3.max() - results_3.mean()])
 
         # plot and save
         plt.errorbar(c_array, metric_data[0], yerr=np.transpose(err_data[0]),
