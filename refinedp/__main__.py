@@ -8,6 +8,7 @@ import numpy as np
 from refinedp.adaptivesvt import evaluate_adaptive_sparse_vector
 from refinedp.refinelaplace import evaluate_refine_laplace
 from refinedp.gapsvt import evaluate_gap_sparse_vector
+from refinedp.gapnoisymax import evaluate_gap_k_noisy_max
 
 # change the matplotlib settings
 matplotlib.rcParams['text.usetex'] = True
@@ -44,12 +45,14 @@ def main(argv=sys.argv[1:]):
         evaluate_adaptive_sparse_vector(**kwargs)
         evaluate_refine_laplace(**kwargs)
         evaluate_gap_sparse_vector(**kwargs)
-    elif winning_option == 'Adaptive Sparse Vector':
+    elif winning_option == 'AdaptiveSparseVector':
         evaluate_adaptive_sparse_vector(**kwargs)
-    elif winning_option == 'Refine Laplace':
+    elif winning_option == 'RefineLaplace':
         evaluate_refine_laplace(**kwargs)
-    elif winning_option == 'Gap Sparse Vector':
+    elif winning_option == 'GapSparseVector':
         evaluate_gap_sparse_vector(**kwargs)
+    elif winning_option == 'GapNoisyMax':
+        evaluate_gap_k_noisy_max()
 
 
 if __name__ == '__main__':
