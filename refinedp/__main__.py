@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 def main(argv=sys.argv[1:]):
-    options = ('All', 'Adaptive Sparse Vector', 'Refine Laplace', 'Gap Sparse Vector', 'Gap Noisy Max')
+    options = ('All', 'AdaptiveSparseVector', 'RefineLaplace', 'GapSparseVector', 'GapNoisyMax')
 
     arg_parser = argparse.ArgumentParser(description=__doc__)
     arg_parser.add_argument('algorithm', help='The algorithm to evaluate, options are `{}`.'.format(', '.join(options)))
