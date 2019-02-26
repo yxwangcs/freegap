@@ -28,17 +28,17 @@ def num_sparse_vector(q, threshold, c, epsilon):
     return out
 
 
-def gap_sparse_vector(q, threshold, c, epsilon):
-    #epsilon_1, epsilon_2 = epsilon / 2.0, epsilon / 2.0
-    ratio = np.power(2 * c, 2.0 / 3)
-    epsilon_1, epsilon_2 = (1.0 / (1 + ratio)) * epsilon, (ratio / (1 + ratio)) * epsilon
+def gap_sparse_vector(q, threshold, c, epsilon, allocation=(0.5, 0.5)):
+    x, y = allocation
+    assert abs(x + y - 1.0) < 1e-05
+    epsilon_1, epsilon_2 = x * epsilon, y * epsilon
     out = []
     count = 0
     i = 0
     eta = np.random.laplace(scale=1.0 / epsilon_1)
     noisy_threshold = threshold + eta
     while i < len(q) and count < c:
-        eta_i = np.random.laplace(scale=2.0 * c/ epsilon_2)
+        eta_i = np.random.laplace(scale=2.0 * c / epsilon_2)
         noisy_q_i = q[i] + eta_i
         if noisy_q_i >= noisy_threshold:
             out.append(noisy_q_i - noisy_threshold)
@@ -49,17 +49,31 @@ def gap_sparse_vector(q, threshold, c, epsilon):
     return out
 
 
-def refined_estimate_sparse_vector(q, threshold, c, epsilon):
-    answers = np.asarray(gap_sparse_vector(q, threshold, c, epsilon / 2.0))
+def refined_estimate_sparse_vector(q, threshold, c, epsilon, allocation=(0.5, 0.5)):
+    # budget allocation for gap svt
+    x, y = 1, np.power(2 * c, 2.0 / 3.0)
+    gap_x, gap_y = x / (x + y), y / (x + y)
+
+    # budget allocation between gap / laplace
+    #x, y = np.power((2.0 / (gap_x * gap_x) + 8.0 * c * c / (gap_y * gap_y)), 1.0 / 3), np.power(2 * c * c, 1.0 / 3)
+    gap_budget, lap_budget = y / (x + y), x / (x + y)
+
+    variance_gap = 2 * (1.0 / ((epsilon * gap_budget * gap_x) * (epsilon * gap_budget * gap_x))) + \
+                   8.0 * c * c / ((epsilon * gap_budget * gap_y) * (epsilon * gap_budget * gap_y))
+    answers = np.asarray(gap_sparse_vector(q, threshold, c, gap_budget * epsilon, allocation=(gap_x, gap_y)))
     indices = np.nonzero(answers)
     initial_estimates = answers[indices] + threshold
-    direct_estimates = laplace_mechanism(q, answers, epsilon / 2.0)
-    return indices, (8 * c * c * initial_estimates + (32 + 128 * c * c) * direct_estimates) / (8 * c * c + 32 + 128 * c * c)
+    direct_estimates = laplace_mechanism(q, np.nonzero(answers), lap_budget * epsilon)
+    variance_lap = 2.0 * c * c / ((epsilon * lap_budget) * (epsilon * lap_budget))
+    print(variance_gap, variance_lap)
+
+    # do weighted average
+    return indices, (initial_estimates / variance_gap + direct_estimates / variance_lap) / (1.0 / variance_gap + 1.0 / variance_lap)
 
 
 def naive_estimate_sparse_vector(q, threshold, c, epsilon):
     answers = sparse_vector(q, threshold, c, epsilon / 2.0)
-    return np.nonzero(answers), np.asarray(laplace_mechanism(q, answers, epsilon / 2.0))
+    return np.nonzero(answers), np.asarray(laplace_mechanism(q, np.nonzero(answers), epsilon / 2.0))
 
 
 def numerical_estimate_sparse_vector(q, threshold, c, epsilon):
