@@ -56,17 +56,25 @@ def evaluate_adaptive_sparse_vector(dataset_folder='datasets', output_folder='./
 
     c_array = list(range(25, 325, 25))
 
-    METRICS = ['Above-Threshold Answers', 'False Negative Rate']
+    METRICS = ['Above-Threshold Answers', 'Accuracy', 'Normalized Cumulative Rank']
 
-    def calc_metrics(data, answer, truth):
-        # Above-Threshold Answers, false_negative_rate
+    def calc_metrics(data, sorted_indices, c_p, answer, truth):
+        scores = {}
+        for order_index, data_index in enumerate(sorted_indices[:2 * c_p]):
+            scores[data_index] = (2 * c_p - order_index)
+
+        total_score = 0
+        for data_index in scores.keys():
+            if data_index < len(answer) and answer[data_index]:
+                total_score += scores[data_index]
+
         return np.count_nonzero(answer), \
-               float(np.count_nonzero(answer == (truth[:len(answer)] == False))) / np.count_nonzero(
-                   truth[:len(answer)] == False)
+               np.count_nonzero(answer == truth[:len(answer)]) / float(len(answer)), \
+               float(total_score) / (c * (2 * c + 1))
 
     for name, data in datasets.items():
         logger.info('Evaluating on {}'.format(name))
-        sorted_data = np.sort(data)[::-1]
+        sorted_indices = np.argsort(data)[::-1]
 
         # metric_data[x][y] - the x-th metrics on varying c values for y-th algorithm, where y in (0, 1),
         # 0 is adaptive svt and 1 is vanilla svt
@@ -82,15 +90,17 @@ def evaluate_adaptive_sparse_vector(dataset_folder='datasets', output_folder='./
 
         # run and gather data
         epsilon = 0.3
+
         for c in c_array:
-            threshold = (sorted_data[2 * c] + sorted_data[2 * c + 1]) / 2.0
-            truth_values = data > threshold
+            threshold = (data[sorted_indices[2 * c]] + data[sorted_indices[2 * c + 1]]) / 2.0
+
+            truth_values = data >= threshold
             results_1, results_2 = [], []
             for _ in range(10):
                 r1 = np.asarray(adaptive_sparse_vector(data, threshold, c, epsilon), dtype=np.bool)
                 r2 = np.asarray(sparse_vector(data, threshold, c, epsilon), dtype=np.bool)
-                results_1.append(calc_metrics(data, r1, truth_values))
-                results_2.append(calc_metrics(data, r2, truth_values))
+                results_1.append(calc_metrics(data, sorted_indices, c, r1, truth_values))
+                results_2.append(calc_metrics(data, sorted_indices, c, r2, truth_values))
             results_1 = np.transpose(results_1)
             results_2 = np.transpose(results_2)
             for i in range(len(METRICS)):
