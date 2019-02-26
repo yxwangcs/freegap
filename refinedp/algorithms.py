@@ -22,6 +22,6 @@ def sparse_vector(q, threshold, c, epsilon):
     return out
 
 
-def laplace_mechanism(q, answer, epsilon):
-    request_q = q[np.nonzero(answer)]
+def laplace_mechanism(q, indices, epsilon):
+    request_q = q[indices]
     return request_q + np.random.laplace(scale=float(len(request_q)) / epsilon)
