@@ -104,13 +104,16 @@ def evaluate_adaptive_sparse_vector(dataset_folder='datasets', output_folder='./
         # plot and save
         for index, metric in enumerate(METRICS):
             plt.errorbar(c_array, metric_data[index][0], yerr=np.transpose(err_data[index][0]),
-                         label='\\huge Adaptive Sparse Vector', fmt='-o', markersize=8)
+                         label='\\huge Adaptive Sparse Vector', fmt='-o', markersize=12)
             plt.errorbar(c_array, metric_data[index][1], yerr=np.transpose(err_data[index][1]),
-                         label='\\huge Sparse Vector', fmt='-s', markersize=8)
-            plt.xticks(fontsize=18)
-            plt.yticks(fontsize=18)
+                         label='\\huge Sparse Vector', fmt='-s', markersize=12)
+            plt.xticks(fontsize=24)
+            plt.yticks(fontsize=24)
+            if index != 0:
+                plt.ylim(0.0, 1.0)
             plt.legend()
-            plt.ylabel('{}'.format(metric), fontsize=18)
+            plt.ylabel('{}'.format(metric), fontsize=24)
+            plt.tight_layout()
             plt.savefig('{}/{}_{}.pdf'.format(path_prefix, name, metric).replace(' ', '_'))
             plt.clf()
 
