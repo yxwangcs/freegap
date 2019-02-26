@@ -3,6 +3,8 @@ import sys
 import coloredlogs
 import logging
 import matplotlib
+import difflib
+import numpy as np
 from refinedp.adaptivesvt import evaluate_adaptive_sparse_vector
 from refinedp.refinelaplace import evaluate_refine_laplace
 from refinedp.gapsvt import evaluate_gap_sparse_vector
@@ -20,10 +22,10 @@ logger = logging.getLogger(__name__)
 
 
 def main(argv=sys.argv[1:]):
+    options = ('All', 'Adaptive Sparse Vector', 'Refine Laplace', 'Gap Sparse Vector', 'Gap Noisy Max')
+
     arg_parser = argparse.ArgumentParser(description=__doc__)
-    arg_parser.add_argument('algorithm', help='The algorithm to evaluate, namely '
-                                              '`adaptive sparse vector`, `gap sparse vector`, `gap noisy max`, '
-                                              '`refine laplace`, or use `all` to evaluate all algorithms.')
+    arg_parser.add_argument('algorithm', help='The algorithm to evaluate, options are `{}`.'.format(', '.join(options)))
     arg_parser.add_argument('--dataset', help='The dataset folder', required=False)
     arg_parser.add_argument('--output', help='The output folder', required=False)
     results = arg_parser.parse_args(argv)
@@ -32,18 +34,22 @@ def main(argv=sys.argv[1:]):
     # remove None values
     kwargs = {k: v for k, v in kwargs.items() if v is not None}
 
-    if 'all' in results.algorithm:
+    winning_option = options[
+        np.fromiter(
+            (difflib.SequenceMatcher(None, results.algorithm, option).ratio() for option in options), dtype=np.float)
+            .argmax()
+    ]
+
+    if winning_option == 'All':
         evaluate_adaptive_sparse_vector(**kwargs)
         evaluate_refine_laplace(**kwargs)
-    elif 'adaptive' in results.algorithm:
-        evaluate_adaptive_sparse_vector(**kwargs)
-    elif 'refine' in results.algorithm:
-        evaluate_refine_laplace(**kwargs)
-    elif 'gap' in results.algorithm and 'sparse' in results.algorithm:
         evaluate_gap_sparse_vector(**kwargs)
-    else:
-        print('Invalid algorithm to evaluate.')
-        exit(1)
+    elif winning_option == 'Adaptive Sparse Vector':
+        evaluate_adaptive_sparse_vector(**kwargs)
+    elif winning_option == 'Refine Laplace':
+        evaluate_refine_laplace(**kwargs)
+    elif winning_option == 'Gap Sparse Vector':
+        evaluate_gap_sparse_vector(**kwargs)
 
 
 if __name__ == '__main__':
