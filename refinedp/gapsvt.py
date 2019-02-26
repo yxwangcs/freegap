@@ -28,7 +28,7 @@ def gap_sparse_vector(q, threshold, c, epsilon):
 
 
 def refined_estimate_sparse_vector(q, threshold, c, epsilon):
-    answers = np.asarray(sparse_vector(q, threshold, c, epsilon / 2.0))
+    answers = np.asarray(gap_sparse_vector(q, threshold, c, epsilon / 2.0))
     indices = np.nonzero(answers)
     initial_estimates = answers[indices] + threshold
     direct_estimates = laplace_mechanism(q, answers, epsilon / 2.0)
