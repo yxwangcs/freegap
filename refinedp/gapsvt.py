@@ -115,8 +115,8 @@ def evaluate_gap_sparse_vector(dataset_folder='datasets', output_folder='./figur
                 i2, r2 = naive_estimate_sparse_vector(data, threshold, c, epsilon)
                 #i3, r3 = numerical_estimate_sparse_vector(data, threshold, c, epsilon)
                 data = np.asarray(data)
-                gap_err = np.sqrt(np.sum(np.square(data[i1] - r1)) / float(len(r1)))
-                lap_err = np.sqrt(np.sum(np.square(data[i2] - r2)) / float(len(r2)))
+                gap_err = np.sum(np.square(data[i1] - r1)) / float(len(r1))
+                lap_err = np.sum(np.square(data[i2] - r2)) / float(len(r2))
                 #num_err = np.sqrt(np.sum(np.square(data[i3] - r3)) / float(len(r3)))
                 if show:
                     print(data[i1], r1)
