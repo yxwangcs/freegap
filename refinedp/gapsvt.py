@@ -129,8 +129,8 @@ def evaluate_gap_sparse_vector(dataset_folder='datasets', output_folder='./figur
                      label='\\huge Gap Sparse Vector', fmt='-o', markersize=12)
         plt.errorbar(c_array, metric_data[1], yerr=np.transpose(err_data[1]),
                      label='\\huge Naive Sparse Vector', fmt='-s', markersize=12)
-        plt.errorbar(c_array, metric_data[2], yerr=np.transpose(err_data[2]),
-                     label='\\huge Num Sparse Vector', fmt='-s', markersize=12)
+        #plt.errorbar(c_array, metric_data[2], yerr=np.transpose(err_data[2]),
+                     #label='\\huge Num Sparse Vector', fmt='-s', markersize=12)
         plt.xticks(fontsize=24)
         plt.yticks(fontsize=24)
         #plt.ylim(0.0, 1.0)
