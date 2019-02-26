@@ -5,6 +5,7 @@ import logging
 import matplotlib
 from refinedp.adaptivesvt import evaluate_adaptive_sparse_vector
 from refinedp.refinelaplace import evaluate_refine_laplace
+from refinedp.gapsvt import evaluate_gap_sparse_vector
 
 # change the matplotlib settings
 matplotlib.rcParams['text.usetex'] = True
@@ -35,6 +36,8 @@ def main(argv=sys.argv[1:]):
         evaluate_adaptive_sparse_vector(**kwargs)
     elif 'refine' in results.algorithm:
         evaluate_refine_laplace(**kwargs)
+    elif 'gap' in results.algorithm and 'sparse' in results.algorithm:
+        evaluate_gap_sparse_vector(**kwargs)
     else:
         print('Invalid algorithm to evaluate.')
         exit(1)
