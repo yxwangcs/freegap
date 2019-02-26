@@ -48,7 +48,7 @@ def evaluate_gap_sparse_vector(dataset_folder='datasets', output_folder='./figur
     except FileExistsError:
         pass
     path_prefix = os.path.abspath(output_folder)
-    epsilon = 1.5
+    epsilon = 0.3
 
     logger.info('Loading datasets')
     dataset_folder = os.path.abspath(dataset_folder)
