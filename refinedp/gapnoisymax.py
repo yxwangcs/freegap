@@ -1,5 +1,9 @@
 import numpy as np
+import logging
 from refinedp.algorithms import laplace_mechanism
+
+
+logger = logging.getLogger(__name__)
 
 
 def gap_noisy_max(q, epsilon):
@@ -29,6 +33,7 @@ def gap_k_noisy_max(q, k, epsilon):
 
 def evaluate_gap_k_noisy_max():
     k = 5
+    logger.info('Evaluating Gap K Noisy Max')
     epsilon = 0.7
     input_data = np.array([2.46548342e+01, -3.28520123e+01, 5.59559541e+01, -1.32241160e+02,
                            8.79922887e+00, -5.75511548e-02, -2.93453806e+01, -4.95746889e+01,
