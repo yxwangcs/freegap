@@ -1,5 +1,8 @@
 import numpy as np
 import logging
+import os
+import matplotlib.pyplot as plt
+from refinedp.preprocess import process_bms_pos
 from refinedp.algorithms import laplace_mechanism
 
 
@@ -31,48 +34,75 @@ def gap_k_noisy_max(q, k, epsilon):
     return indices, gaps
 
 
-def evaluate_gap_k_noisy_max():
-    k = 5
+def naive_estimate(q, k, epsilon):
+    # independently rerun naive approach
+    indices, _ = gap_k_noisy_max(q, k, 0.5 * epsilon)
+    estimates = laplace_mechanism(q, indices, 0.5 * epsilon)
+    return indices, estimates
+
+
+def refined_estimate(q, k, epsilon):
+    indices, gaps = gap_k_noisy_max(q, k, 0.5 * epsilon)
+    estimates = laplace_mechanism(q, indices, 0.5 * epsilon)
+    coefficient = np.eye(k, k) * 3 + np.eye(k, k, 1) * -1 + np.eye(k, k, -1) * -1
+    coefficient[0][0] = 2
+    coefficient[k - 1][k - 1] = 2
+    b = np.append(gaps, 0)
+    b = b - np.roll(b, 1) + estimates
+    final_estimates = np.linalg.solve(coefficient, b)
+    return indices, final_estimates
+
+
+def evaluate_gap_k_noisy_max(dataset_folder='datasets', output_folder='./figures/gap-noisymax'):
     logger.info('Evaluating Gap K Noisy Max')
-    epsilon = 0.7
-    input_data = np.array([2.46548342e+01, -3.28520123e+01, 5.59559541e+01, -1.32241160e+02,
-                           8.79922887e+00, -5.75511548e-02, -2.93453806e+01, -4.95746889e+01,
-                           -7.19644328e+01, 1.46665215e+01])
+    # create the output folder if not exists
+    try:
+        os.makedirs(output_folder)
+    except FileExistsError:
+        pass
+    path_prefix = os.path.abspath(output_folder)
 
-    result_1, result_2 = [], []
-    for _ in range(100):
-        indices, gaps = gap_k_noisy_max(input_data, k, 0.5 * epsilon)
-        estimates = laplace_mechanism(input_data, indices, 0.5 * epsilon)
-        truth = input_data[indices]
+    epsilon = 0.3
+    datasets = {
+        'BMS-POS': process_bms_pos('{}/BMS-POS.dat'.format(dataset_folder))
+    }
 
-        coefficient = np.eye(k, k) * 3 + np.eye(k, k, 1) * -1 + np.eye(k, k, -1) * -1
-        coefficient[0][0] = 2
-        coefficient[k - 1][k - 1] = 2
-        print(coefficient)
-        b = np.append(gaps, 0)
-        b = b - np.roll(b, 1) + estimates
-        final_estimates = np.linalg.solve(coefficient, b)
-        final_estimates = 0.25 * final_estimates + 0.75 * estimates
-        result_1.append(np.sum(np.square((final_estimates - truth))) / k)
+    k_array = range(25, 325, 25)
 
-        # independently rerun naive approach
-        indices, _ = gap_k_noisy_max(input_data, k, 0.5 * epsilon)
-        estimates = laplace_mechanism(input_data, indices, 0.5 * epsilon)
-        result_2.append(np.sum(np.square(estimates - truth)) / k)
+    for name, data in datasets.items():
+        logger.info('Evaluating on {}'.format(name))
+        metric_data, err_data = [[], []], [[], []]
+        for k in k_array:
+            results_1, results_2, results_3 = [], [], []
+            for _ in range(10):
+                i1, r1 = refined_estimate(data, k, epsilon)
+                i2, r2 = naive_estimate(data, k, epsilon)
+                data = np.asarray(data)
+                gap_err = np.sum(np.square(data[i1] - r1)) / float(len(r1))
+                lap_err = np.sum(np.square(data[i2] - r2)) / float(len(r2))
+                results_1.append(gap_err)
+                results_2.append(lap_err)
+            results_1 = np.transpose(results_1)
+            results_2 = np.transpose(results_2)
 
-    result_1 = np.asarray(result_1)
-    result_2 = np.asarray(result_2)
-    print('Refine estimate error: {} with error: {} and {}'.format(result_1.mean(), result_1.max() - result_1.mean(), result_1.mean() - result_1.min()))
-    print('Naive estimate error: {} with error: {} and {}'.format(result_2.mean(), result_2.max() - result_2.mean(),
-                                                                   result_2.mean() - result_2.min()))
+            metric_data[0].append(results_1.mean())
+            err_data[0].append(
+                [results_1.mean() - results_1.min(), results_1.max() - results_1.mean()])
+            metric_data[1].append(results_2.mean())
+            err_data[1].append(
+                [results_2.mean() - results_2.min(), results_2.max() - results_2.mean()])
 
-    """
-    print('gaps {}'.format(gaps))
-    print('truth: {}'.format(truth))
-    print('Laplace estimates: {}'.format(estimates))
-    print('Our estimates: {}'.format(final_estimates))
-    print('our error: {}'.format(np.sum((final_estimates - truth) * (final_estimates - truth)) / k))
-    print('Direct estimate error: {}'.format(np.sum((estimates - truth) * (estimates - truth)) / k))
-    """
+        # plot and save
+        plt.errorbar(k_array, metric_data[0], yerr=np.transpose(err_data[0]),
+                     label='\\huge Gap K Noisy Max', fmt='-o', markersize=12)
+        plt.errorbar(k_array, metric_data[1], yerr=np.transpose(err_data[1]),
+                     label='\\huge Naive Approach', fmt='-s', markersize=12)
+        plt.xticks(fontsize=24)
+        plt.yticks(fontsize=24)
+        plt.legend()
+        plt.ylabel('{}'.format('Mean Square Error'), fontsize=24)
+        plt.tight_layout()
+        plt.savefig('{}/{}.pdf'.format(path_prefix, name).replace(' ', '_'))
+        plt.clf()
 
-
+        logger.info('Figures saved to {}'.format(output_folder))
