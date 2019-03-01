@@ -8,8 +8,18 @@ from refinedp.preprocess import process_bms_pos, process_kosarak
 logger = logging.getLogger(__name__)
 
 
-def evaluate(test_algorithm, reference_algorithms, epsilon,
-             kwargs=None, c_array=np.array(range(25, 325, 25)), dataset_folder='datasets/', output_folder='./figures/'):
+def evaluate(test_algorithm, reference_algorithms, epsilon, kwargs=None,
+             # parameters for test
+             c_array=np.array(range(25, 325, 25)), dataset_folder='datasets/', output_folder='./figures/',
+             # parameters for plotting
+             algorithm_names=None):
+
+    if algorithm_names is not None:
+        assert len(algorithm_names) == 1 + len(reference_algorithms), \
+            'algorithm_names must contain names for all algorithms'
+    else:
+        algorithm_names = [test_algorithm.__name__] + [algorithm.__name__ for algorithm in reference_algorithms]
+
     logger.info('Evaluating {}'.format(test_algorithm.__name__))
 
     # create the output folder if not exists
@@ -18,7 +28,6 @@ def evaluate(test_algorithm, reference_algorithms, epsilon,
     except FileExistsError:
         pass
     path_prefix = os.path.abspath(output_folder)
-    epsilon = 0.3
 
     logger.info('Loading datasets')
     dataset_folder = os.path.abspath(dataset_folder)
