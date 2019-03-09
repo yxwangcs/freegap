@@ -48,8 +48,6 @@ def evaluate(algorithms, epsilon, kwargs=None,
 
     c_array = list(range(25, 325, 25))
 
-    show = True
-
     for name, data in datasets.items():
         logger.info('Evaluating on {}'.format(name))
         sorted_data = np.sort(data)[::-1]
@@ -59,16 +57,12 @@ def evaluate(algorithms, epsilon, kwargs=None,
 
             results_1, results_2, results_3 = [], [], []
             for _ in range(10):
-                i1, r1 = refined_estimate_sparse_vector(data, threshold, c, epsilon)
+                i1, r1 = test_algorithm(data, threshold, c, epsilon)
                 i2, r2 = naive_estimate_sparse_vector(data, threshold, c, epsilon)
                 # i3, r3 = numerical_estimate_sparse_vector(data, threshold, c, epsilon)
                 data = np.asarray(data)
                 gap_err = np.sum(np.square(data[i1] - r1)) / float(len(r1))
                 lap_err = np.sum(np.square(data[i2] - r2)) / float(len(r2))
-                # num_err = np.sqrt(np.sum(np.square(data[i3] - r3)) / float(len(r3)))
-                if show:
-                    print(data[i1], r1)
-                    show = False
                 results_1.append(gap_err)
                 results_2.append(lap_err)
                 # results_3.append(num_err)
