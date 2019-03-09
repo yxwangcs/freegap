@@ -8,19 +8,29 @@ from refinedp.preprocess import process_bms_pos, process_kosarak
 logger = logging.getLogger(__name__)
 
 
-def evaluate(test_algorithm, reference_algorithms, epsilon, kwargs=None,
+def evaluate(algorithms, epsilon, kwargs=None,
              # parameters for test
              c_array=np.array(range(25, 325, 25)), dataset_folder='datasets/', output_folder='./figures/',
              # parameters for plotting
              algorithm_names=None):
+    """ Evaluation framework to evaluate the algorithms which returns estimates of top K queries
+    :param algorithms:
+    :param epsilon:
+    :param kwargs:
+    :param c_array:
+    :param dataset_folder:
+    :param output_folder:
+    :param algorithm_names:
+    :return:
+    """
 
     if algorithm_names is not None:
-        assert len(algorithm_names) == 1 + len(reference_algorithms), \
+        assert len(algorithm_names) == len(algorithms), \
             'algorithm_names must contain names for all algorithms'
     else:
-        algorithm_names = [test_algorithm.__name__] + [algorithm.__name__ for algorithm in reference_algorithms]
+        algorithm_names = [algorithm.__name__ for algorithm in algorithms]
 
-    logger.info('Evaluating {}'.format(test_algorithm.__name__))
+    logger.info('Evaluating {}'.format(algorithms[0].__name__))
 
     # create the output folder if not exists
     try:
