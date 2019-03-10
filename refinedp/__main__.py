@@ -5,10 +5,8 @@ import logging
 import matplotlib
 import difflib
 import numpy as np
-from refinedp.adaptivesvt import evaluate_adaptive_sparse_vector
-from refinedp.refinelaplace import evaluate_refine_laplace
-from refinedp.gapsvt import evaluate_gap_sparse_vector
-from refinedp.gapnoisymax import evaluate_gap_k_noisy_max
+from refinedp import evaluate, process_datasets
+
 
 # change the matplotlib settings
 matplotlib.rcParams['text.usetex'] = True
@@ -31,7 +29,7 @@ def main(argv=sys.argv[1:]):
     arg_parser.add_argument('--output', help='The output folder', required=False)
     results = arg_parser.parse_args(argv)
 
-    kwargs = {'dataset_folder': results.dataset, 'output_folder': results.output}
+    kwargs = {'output_folder': results.output}
     # remove None values
     kwargs = {k: v for k, v in kwargs.items() if v is not None}
 
@@ -41,18 +39,19 @@ def main(argv=sys.argv[1:]):
             .argmax()
     ]
 
-    if winning_option == 'All':
-        evaluate_adaptive_sparse_vector(**kwargs)
-        evaluate_refine_laplace(**kwargs)
-        evaluate_gap_sparse_vector(**kwargs)
-    elif winning_option == 'AdaptiveSparseVector':
-        evaluate_adaptive_sparse_vector(**kwargs)
-    elif winning_option == 'RefineLaplace':
-        evaluate_refine_laplace(**kwargs)
-    elif winning_option == 'GapSparseVector':
-        evaluate_gap_sparse_vector(**kwargs)
-    elif winning_option == 'GapNoisyMax':
-        evaluate_gap_k_noisy_max()
+    for dataset in process_datasets(results.dataset):
+        if winning_option == 'All':
+            evaluate_adaptive_sparse_vector(**kwargs)
+            evaluate_refine_laplace(**kwargs)
+            evaluate_gap_sparse_vector(**kwargs)
+        elif winning_option == 'AdaptiveSparseVector':
+            evaluate_adaptive_sparse_vector(**kwargs)
+        elif winning_option == 'RefineLaplace':
+            evaluate_refine_laplace(**kwargs)
+        elif winning_option == 'GapSparseVector':
+            evaluate_gap_sparse_vector(**kwargs)
+        elif winning_option == 'GapNoisyMax':
+            evaluate_gap_k_noisy_max()
 
 
 if __name__ == '__main__':
