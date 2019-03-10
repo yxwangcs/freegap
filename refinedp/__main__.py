@@ -34,9 +34,8 @@ def main(argv=sys.argv[1:]):
     kwargs = {k: v for k, v in kwargs.items() if v is not None}
 
     winning_option = options[
-        np.fromiter(
-            (difflib.SequenceMatcher(None, results.algorithm, option).ratio() for option in options), dtype=np.float)
-            .argmax()
+        np.fromiter((difflib.SequenceMatcher(None, results.algorithm, option).ratio() for option in options),
+                    dtype=np.float).argmax()
     ]
 
     for dataset in process_datasets(results.dataset):
