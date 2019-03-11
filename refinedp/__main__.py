@@ -5,7 +5,8 @@ import logging
 import matplotlib
 import difflib
 import numpy as np
-from refinedp import evaluate, process_datasets
+from refinedp import *
+from refinedp.refinelaplace import evaluate_refine_laplace
 
 
 # change the matplotlib settings
@@ -40,19 +41,20 @@ def main(argv=sys.argv[1:]):
                     dtype=np.float).argmax()
     ]
 
-    for dataset in process_datasets(results.dataset):
+    for dataset in process_datasets(results.datasets):
         if winning_option == 'All':
-            evaluate_adaptive_sparse_vector(**kwargs)
+            evaluate((gap_svt_estimates, svt_baseline_estimates), 0.3, dataset)
+            evaluate((gap_max_estimates, max_baseline_estimates), 0.3, dataset)
+            evaluate((adaptive_sparse_vector, sparse_vector), 0.3, dataset)
             evaluate_refine_laplace(**kwargs)
-            evaluate_gap_sparse_vector(**kwargs)
         elif winning_option == 'AdaptiveSparseVector':
-            evaluate_adaptive_sparse_vector(**kwargs)
+            evaluate((adaptive_sparse_vector, sparse_vector), 0.3, dataset)
+        elif winning_option == 'GapSparseVector':
+            evaluate((gap_svt_estimates, svt_baseline_estimates), 0.3, dataset)
+        elif winning_option == 'GapNoisyMax':
+            evaluate((gap_max_estimates, max_baseline_estimates), 0.3, dataset)
         elif winning_option == 'RefineLaplace':
             evaluate_refine_laplace(**kwargs)
-        elif winning_option == 'GapSparseVector':
-            evaluate_gap_sparse_vector(**kwargs)
-        elif winning_option == 'GapNoisyMax':
-            evaluate_gap_k_noisy_max()
 
 
 if __name__ == '__main__':
