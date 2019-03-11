@@ -41,10 +41,10 @@ def max_baseline_estimates(q, epsilon, k):
 def gap_max_estimates(q, epsilon, k):
     indices, gaps = gap_k_noisy_max(q, 0.5 * epsilon, k)
     estimates = laplace_mechanism(q, 0.5 * epsilon, indices)
-    coefficient = np.eye(k, k) * 3 + np.eye(k, k, 1) * -1 + np.eye(k, k, -1) * -1
-    coefficient[0][0] = 2
-    coefficient[k - 1][k - 1] = 2
+    coefficient = np.eye(k, k) * 4 + np.eye(k, k, 1) * -1 + np.eye(k, k, -1) * -1
+    coefficient[0][0] = 3
+    coefficient[k - 1][k - 1] = 3
     b = np.append(gaps, 0)
-    b = b - np.roll(b, 1) + estimates
+    b = b - np.roll(b, 1) + 2 * estimates
     final_estimates = np.linalg.solve(coefficient, b)
     return indices, final_estimates
