@@ -29,7 +29,7 @@ def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', c_arra
         algorithm_names = [algorithm.__name__.replace('_', ' ').title() for algorithm in algorithms]
 
     # create the output folder if not exists
-    output_folder = '{}/{}'.format(os.path.abspath(output_folder), algorithm_names[0])
+    output_folder = '{}/{}'.format(os.path.abspath(output_folder), algorithms[0].__name__)
     os.makedirs(output_folder, exist_ok=True)
     output_prefix = os.path.abspath(output_folder)
 
