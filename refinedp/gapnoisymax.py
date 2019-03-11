@@ -1,9 +1,6 @@
 import numpy as np
 import logging
-import os
-import matplotlib.pyplot as plt
-from refinedp.preprocess import process_bms_pos
-from refinedp.algorithms import laplace_mechanism
+from refinedp.algorithms import laplace_mechanism, noisy_k_max
 
 
 logger = logging.getLogger(__name__)
@@ -24,9 +21,9 @@ def gap_noisy_max(q, epsilon):
     return imax, gap
 
 
-def gap_k_noisy_max(q, k, epsilon):
+def gap_k_noisy_max(q, epsilon, k):
     assert k <= len(q), 'k must be less or equal than the length of q'
-    noisy_q = np.asarray(q, dtype=np.float) + np.random.laplace(2.0 * k / epsilon, size=len(q))
+    noisy_q = np.asarray(q, dtype=np.float) + np.random.laplace(scale=2.0 * k / epsilon, size=len(q))
     indices = np.argpartition(noisy_q, -k)[-k:]
     indices = indices[np.argsort(-noisy_q[indices])]
     gaps = np.fromiter((noisy_q[first] - noisy_q[second] for first, second in zip(indices[:-1], indices[1:])),
@@ -35,15 +32,15 @@ def gap_k_noisy_max(q, k, epsilon):
 
 
 def naive_estimate(q, k, epsilon):
-    # independently rerun naive approach
-    indices, _ = gap_k_noisy_max(q, k, 0.5 * epsilon)
-    estimates = laplace_mechanism(q, indices, 0.5 * epsilon)
+    # allocate the privacy budget 1:1 to noisy k max and laplace mechanism
+    indices = noisy_k_max(q, 0.5 * epsilon, k)
+    estimates = laplace_mechanism(q, 0.5 * epsilon, indices)
     return indices, estimates
 
 
 def refined_estimate(q, k, epsilon):
-    indices, gaps = gap_k_noisy_max(q, k, 0.5 * epsilon)
-    estimates = laplace_mechanism(q, indices, 0.5 * epsilon)
+    indices, gaps = gap_k_noisy_max(q, 0.5 * epsilon, k)
+    estimates = laplace_mechanism(q, 0.5 * epsilon, indices)
     coefficient = np.eye(k, k) * 3 + np.eye(k, k, 1) * -1 + np.eye(k, k, -1) * -1
     coefficient[0][0] = 2
     coefficient[k - 1][k - 1] = 2

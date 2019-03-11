@@ -1,15 +1,12 @@
 import logging
-import os
 import numpy as np
-import matplotlib.pyplot as plt
 from refinedp.algorithms import sparse_vector, laplace_mechanism
-from refinedp.preprocess import process_bms_pos, process_kosarak
 
 
 logger = logging.getLogger(__name__)
 
 
-def gap_sparse_vector(q, threshold, c, epsilon, allocation=(0.5, 0.5)):
+def gap_sparse_vector(q, epsilon, c, threshold, allocation=(0.5, 0.5)):
     x, y = allocation
     assert abs(x + y - 1.0) < 1e-05
     epsilon_1, epsilon_2 = x * epsilon, y * epsilon
@@ -43,10 +40,10 @@ def refined_estimate_sparse_vector(q, threshold, c, epsilon, allocation=(0.5, 0.
 
     #variance_gap = 2 * (1.0 / ((epsilon * gap_budget * gap_x) * (epsilon * gap_budget * gap_x))) + \
                    #8.0 * c * c / ((epsilon * gap_budget * gap_y) * (epsilon * gap_budget * gap_y))
-    answers = np.asarray(gap_sparse_vector(q, threshold, c, gap_budget * epsilon, allocation=(gap_x, gap_y)))
+    answers = np.asarray(gap_sparse_vector(q, gap_budget * epsilon, c, threshold, allocation=(gap_x, gap_y)))
     indices = np.nonzero(answers)
     initial_estimates = answers[indices] + threshold
-    direct_estimates = laplace_mechanism(q, indices, lap_budget * epsilon)
+    direct_estimates = laplace_mechanism(q, lap_budget * epsilon, indices)
     #variance_lap = 2.0 * c * c / ((epsilon * lap_budget) * (epsilon * lap_budget))
     #print(variance_gap, variance_lap)
     variance_gap = (32 + 128 * np.square(c)) / np.square(epsilon)

@@ -6,7 +6,7 @@ from refinedp.refinelaplace import refinelaplace
 logger = logging.getLogger(__name__)
 
 
-def adaptive_sparse_vector(q, threshold, c, epsilon):
+def adaptive_sparse_vector(q, epsilon, c, threshold):
     out = []
     count = 1
     refine_count = 0

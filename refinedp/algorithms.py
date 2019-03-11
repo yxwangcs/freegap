@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def sparse_vector(q, threshold, c, epsilon):
+def sparse_vector(q, epsilon, c, threshold):
     out = []
     count = 0
     i = 0
@@ -22,6 +22,6 @@ def sparse_vector(q, threshold, c, epsilon):
     return out
 
 
-def laplace_mechanism(q, indices, epsilon):
+def laplace_mechanism(q, epsilon, indices):
     request_q = q[indices]
     return request_q + np.random.laplace(scale=float(len(request_q)) / epsilon, size=len(request_q))
