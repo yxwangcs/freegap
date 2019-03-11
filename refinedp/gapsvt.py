@@ -27,7 +27,7 @@ def gap_sparse_vector(q, epsilon, c, threshold, allocation=(0.5, 0.5)):
     return out
 
 
-def refined_estimate_sparse_vector(q, threshold, c, epsilon, allocation=(0.5, 0.5)):
+def gap_svt_estimates(q, epsilon, c, threshold, allocation=(0.5, 0.5)):
     # budget allocation for gap svt
     x, y = 1, np.power(2 * c, 2.0 / 3.0)
     #x, y = 1, 1
@@ -53,3 +53,6 @@ def refined_estimate_sparse_vector(q, threshold, c, epsilon, allocation=(0.5, 0.
     return indices, (initial_estimates / variance_gap + direct_estimates / variance_lap) / (1.0 / variance_gap + 1.0 / variance_lap)
 
 
+def svt_baseline_estimates(q, epsilon, c, threshold):
+    answers = sparse_vector(q, epsilon / 2.0, c, threshold)
+    return np.nonzero(answers), np.asarray(laplace_mechanism(q, epsilon / 2.0, np.nonzero(answers)))

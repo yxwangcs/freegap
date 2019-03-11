@@ -31,14 +31,14 @@ def gap_k_noisy_max(q, epsilon, k):
     return indices, gaps
 
 
-def naive_estimate(q, k, epsilon):
+def max_baseline_estimates(q, epsilon, k):
     # allocate the privacy budget 1:1 to noisy k max and laplace mechanism
     indices = noisy_k_max(q, 0.5 * epsilon, k)
     estimates = laplace_mechanism(q, 0.5 * epsilon, indices)
     return indices, estimates
 
 
-def refined_estimate(q, k, epsilon):
+def gap_max_estimates(q, epsilon, k):
     indices, gaps = gap_k_noisy_max(q, 0.5 * epsilon, k)
     estimates = laplace_mechanism(q, 0.5 * epsilon, indices)
     coefficient = np.eye(k, k) * 3 + np.eye(k, k, 1) * -1 + np.eye(k, k, -1) * -1
