@@ -7,17 +7,17 @@ logger = logging.getLogger(__name__)
 
 
 def gap_noisy_max(q, epsilon):
-    i, imax, max, gap = 0, 1, 0, 0
+    i, imax, max_val, gap = 0, 1, 0, 0
     while i < len(q):
         eta_i = np.random.laplace(scale=2.0 / epsilon)
         noisy_q_i = q[i] + eta_i
-        if noisy_q_i > max or i == 1:
+        if noisy_q_i > max_val or i == 1:
             imax = i
-            gap = noisy_q_i - max
-            max = noisy_q_i
+            gap = noisy_q_i - max_val
+            max_val = noisy_q_i
         else:
-            if noisy_q_i > max - gap:
-                gap = max - noisy_q_i
+            if noisy_q_i > max_val - gap:
+                gap = max_val - noisy_q_i
     return imax, gap
 
 
