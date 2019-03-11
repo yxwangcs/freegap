@@ -25,11 +25,13 @@ def main(argv=sys.argv[1:]):
 
     arg_parser = argparse.ArgumentParser(description=__doc__)
     arg_parser.add_argument('algorithm', help='The algorithm to evaluate, options are `{}`.'.format(', '.join(options)))
-    arg_parser.add_argument('--dataset', help='The dataset folder', required=False)
+    arg_parser.add_argument('--datasets', help='The datasets folder', required=False)
     arg_parser.add_argument('--output', help='The output folder', required=False)
     results = arg_parser.parse_args(argv)
 
     kwargs = {'output_folder': results.output}
+    # default value for datasets path
+    results.datasets = './datasets' if results.datasets is None else results.datasets
     # remove None values
     kwargs = {k: v for k, v in kwargs.items() if v is not None}
 
