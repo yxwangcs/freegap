@@ -18,7 +18,7 @@ def process_datasets(folder):
 
 
 def mean_square_error(truth, estimates):
-    return np.sum(np.square(truth - estimates)) / float(len(estimates))
+    return 0.0 if estimates is None else np.sum(np.square(truth - estimates)) / float(len(estimates))
 
 
 def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', c_array=np.array(range(25, 325, 25)),
