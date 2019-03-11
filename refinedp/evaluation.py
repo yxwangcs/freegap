@@ -33,12 +33,10 @@ def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', c_arra
     os.makedirs(output_folder, exist_ok=True)
     output_prefix = os.path.abspath(output_folder)
 
-    logger.info('Evaluating {}'.format(algorithms[0].__name__))
-
     # unpack the input data
     dataset_name, dataset = input_data
-    logger.info('Evaluating on {}'.format(dataset_name))
     dataset = np.asarray(dataset)
+    logger.info('Evaluating {} on {}'.format(algorithms[0].__name__.replace('_', ' ').title(), dataset_name))
 
     for metric_func in metrics:
         metric_name = metric_func.__name__.replace('_', ' ').title()
