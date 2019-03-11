@@ -16,9 +16,6 @@ def process_datasets(folder):
     yield 'BMS-POS', process_bms_pos('{}/BMS-POS.dat'.format(dataset_folder))
     yield 'kosarak', process_kosarak('{}/kosarak.dat'.format(dataset_folder))
 
-# sorted_data = np.sort(data)[::-1]
-# threshold = (sorted_data[c] + sorted_data[c + 1]) / 2.0
-
 
 def mean_square_error(truth, estimates):
     return np.sum(np.square(truth - estimates)) / float(len(estimates))
@@ -49,6 +46,13 @@ def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', kwargs
         err_data = [[] for _ in range(len(algorithms))]
         for algorithm_index, algorithm in enumerate(algorithms):
             for c in c_array:
+                # for svts
+                kwargs = {}
+                if 'threshold' in algorithm.__code__.co_varnames:
+                    sorted_data = np.sort(dataset)[::-1]
+                    threshold = (sorted_data[c] + sorted_data[c + 1]) / 2.0
+                    kwargs['threshold'] = threshold
+
                 results = []
                 # run several times and record average and error
                 for _ in range(10):
