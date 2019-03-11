@@ -60,36 +60,45 @@ def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', c_arra
     # unpack the input data
     dataset_name, dataset = input_data
     dataset = np.asarray(dataset)
+    sorted_indices = np.argsort(dataset)[::-1]
     logger.info('Evaluating {} on {}'.format(algorithms[0].__name__.replace('_', ' ').title(), dataset_name))
 
-    for metric_func in metrics:
+    metric_data = [[[] for _ in range(len(algorithms))] for _ in range(len(metrics))]
+    err_data = [[[] for _ in range(len(algorithms))] for _ in range(len(metrics))]
+    for algorithm_index, algorithm in enumerate(algorithms):
+        for c in c_array:
+            # for svts
+            kwargs = {}
+            threshold_index = 2 * c if 'adaptive' in algorithm.__name__ else c
+            if 'threshold' in algorithm.__code__.co_varnames:
+                threshold = (dataset[sorted_indices[threshold_index]] + dataset[sorted_indices[threshold_index + 1]]) / 2.0
+                kwargs['threshold'] = threshold
+
+            truth_indices = sorted_indices[:threshold_index]
+
+            # run several times and record average and error
+            results = [[] for _ in range(len(metrics))]
+            for _ in range(10):
+                indices, estimates = algorithm(dataset, epsilon, c, **kwargs)
+                for metric_index, metric_func in enumerate(metrics):
+                    results[metric_index].append(
+                        metric_func(sorted_indices, c, indices, truth_indices, dataset[indices], estimates))
+
+            results = np.asarray(results)
+
+            for metric_index in range(len(metrics)):
+                metric_data[metric_index][algorithm_index].append(results[metric_index].mean())
+                err_data[metric_index][algorithm_index].append(
+                    (results[metric_index].mean() - results[metric_index].min(),
+                     results[metric_index].max() - results[metric_index].mean()))
+
+    # plot and save
+    formats = ['-o', '-s']
+    for metric_index, metric_func in enumerate(metrics):
         metric_name = metric_func.__name__.replace('_', ' ').title()
-
-        metric_data = [[] for _ in range(len(algorithms))]
-        err_data = [[] for _ in range(len(algorithms))]
-        for algorithm_index, algorithm in enumerate(algorithms):
-            for c in c_array:
-                # for svts
-                kwargs = {}
-                if 'threshold' in algorithm.__code__.co_varnames:
-                    sorted_data = np.sort(dataset)[::-1]
-                    threshold = (sorted_data[c] + sorted_data[c + 1]) / 2.0
-                    kwargs['threshold'] = threshold
-
-                results = []
-                # run several times and record average and error
-                for _ in range(10):
-                    indices, estimates = algorithm(dataset, epsilon, c, **kwargs)
-                    results.append(metric_func(indices, dataset[indices], estimates))
-                results = np.asarray(results)
-
-                metric_data[algorithm_index].append(results.mean())
-                err_data[algorithm_index].append([results.mean() - results.min(), results.max() - results.mean()])
-
-        # plot and save
-        formats = ['-o', '-s']
         for algorithm_index in range(len(algorithms)):
-            plt.errorbar(c_array, metric_data[algorithm_index], yerr=np.transpose(err_data[algorithm_index]),
+            plt.errorbar(c_array, metric_data[metric_index][algorithm_index],
+                         yerr=np.transpose(err_data[metric_index][algorithm_index]),
                          label='\\huge {}'.format(algorithm_names[algorithm_index]),
                          fmt=formats[algorithm_index % len(formats)], markersize=12)
         plt.xticks(fontsize=24)
