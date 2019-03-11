@@ -17,12 +17,16 @@ def process_datasets(folder):
     yield 'kosarak', process_kosarak('{}/kosarak.dat'.format(dataset_folder))
 
 
-def mean_square_error(truth, estimates):
+def mean_square_error(indices, truth, estimates):
     return 0.0 if estimates is None else np.sum(np.square(truth - estimates)) / float(len(estimates))
 
 
+def above_threshold_answers(indices, truth, estimates):
+    return len(indices)
+
+
 def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', c_array=np.array(range(25, 325, 25)),
-             metrics=(mean_square_error, ), algorithm_names=None):
+             metrics=(mean_square_error, above_threshold_answers), algorithm_names=None):
     if algorithm_names is not None:
         assert len(algorithm_names) == len(algorithms), 'algorithm_names must contain names for all algorithms'
     else:
@@ -56,7 +60,7 @@ def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', c_arra
                 # run several times and record average and error
                 for _ in range(10):
                     indices, estimates = algorithm(dataset, epsilon, c, **kwargs)
-                    results.append(metric_func(dataset[indices], estimates))
+                    results.append(metric_func(indices, dataset[indices], estimates))
                 results = np.asarray(results)
 
                 metric_data[algorithm_index].append(results.mean())
