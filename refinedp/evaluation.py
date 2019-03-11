@@ -17,16 +17,36 @@ def process_datasets(folder):
     yield 'kosarak', process_kosarak('{}/kosarak.dat'.format(dataset_folder))
 
 
-def mean_square_error(indices, truth, estimates):
-    return 0.0 if estimates is None else np.sum(np.square(truth - estimates)) / float(len(estimates))
+def mean_square_error(sorted_indices, c_val, indices, truth_indices, truth_estimates, estimates):
+    return 0.0 if estimates is None else np.sum(np.square(truth_estimates - estimates)) / float(len(estimates))
 
 
-def above_threshold_answers(indices, truth, estimates):
+def above_threshold_answers(sorted_indices, c_val, indices, truth_indices, truth_estimates, estimates):
     return len(indices)
 
 
+def accuracy(sorted_indices, c_val, indices, truth_indices, truth_estimates, estimates):
+    total = 0
+    for index in indices:
+        total += 1 if index in truth_indices else 0
+    return float(total) / len(indices)
+
+
+def normalized_cumulative_rank(sorted_indices, c_val, indices, truth_indices, truth_estimates, estimates):
+    scores = {}
+    for order_index, data_index in enumerate(sorted_indices[:2 * c_val]):
+        scores[data_index] = (2 * c_val - order_index)
+
+    total_score = 0
+    for index in indices:
+        total_score += 0 if index not in scores else scores[index]
+
+    return float(total_score) / (c_val * (2 * c_val + 1))
+
+
 def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', c_array=np.array(range(25, 325, 25)),
-             metrics=(mean_square_error, above_threshold_answers), algorithm_names=None):
+             metrics=(mean_square_error, above_threshold_answers, accuracy, normalized_cumulative_rank),
+             algorithm_names=None):
     if algorithm_names is not None:
         assert len(algorithm_names) == len(algorithms), 'algorithm_names must contain names for all algorithms'
     else:
