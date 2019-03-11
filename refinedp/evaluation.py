@@ -65,9 +65,11 @@ def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', kwargs
                 err_data[algorithm_index].append([results.mean() - results.min(), results.max() - results.mean()])
 
         # plot and save
+        formats = ['-o', '-s']
         for algorithm_index in range(len(algorithms)):
             plt.errorbar(c_array, metric_data[algorithm_index], yerr=np.transpose(err_data[algorithm_index]),
-                         label='\\huge {}'.format(algorithm_names[algorithm_index]), markersize=12)
+                         label='\\huge {}'.format(algorithm_names[algorithm_index]),
+                         fmt=formats[algorithm_index % len(formats)], markersize=12)
         plt.xticks(fontsize=24)
         plt.yticks(fontsize=24)
         plt.legend()
