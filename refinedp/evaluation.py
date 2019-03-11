@@ -38,6 +38,7 @@ def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', kwargs
     # unpack the input data
     dataset_name, dataset = input_data
     logger.info('Evaluating on {}'.format(dataset_name))
+    dataset = np.asarray(dataset)
 
     for metric_func in metrics:
         metric_name = metric_func.__name__.replace('_', ' ').title()
@@ -57,7 +58,6 @@ def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', kwargs
                 # run several times and record average and error
                 for _ in range(10):
                     indices, estimates = algorithm(dataset, epsilon, c, **kwargs)
-                    dataset = np.asarray(dataset)
                     results.append(metric_func(dataset[indices], estimates))
                 results = np.asarray(results)
 
