@@ -41,7 +41,7 @@ def gap_svt_estimates(q, epsilon, c, threshold, allocation=(0.5, 0.5)):
     #variance_gap = 2 * (1.0 / ((epsilon * gap_budget * gap_x) * (epsilon * gap_budget * gap_x))) + \
                    #8.0 * c * c / ((epsilon * gap_budget * gap_y) * (epsilon * gap_budget * gap_y))
     answers = np.asarray(gap_sparse_vector(q, gap_budget * epsilon, c, threshold, allocation=(gap_x, gap_y)))
-    indices = np.nonzero(answers)
+    indices = np.nonzero(answers)[0]
     initial_estimates = answers[indices] + threshold
     direct_estimates = laplace_mechanism(q, lap_budget * epsilon, indices)
     #variance_lap = 2.0 * c * c / ((epsilon * lap_budget) * (epsilon * lap_budget))
@@ -55,4 +55,4 @@ def gap_svt_estimates(q, epsilon, c, threshold, allocation=(0.5, 0.5)):
 
 def svt_baseline_estimates(q, epsilon, c, threshold):
     answers = sparse_vector(q, epsilon / 2.0, c, threshold)
-    return np.nonzero(answers), np.asarray(laplace_mechanism(q, epsilon / 2.0, np.nonzero(answers)))
+    return np.nonzero(answers)[0], np.asarray(laplace_mechanism(q, epsilon / 2.0, np.nonzero(answers)))

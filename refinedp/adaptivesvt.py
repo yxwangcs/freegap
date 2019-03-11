@@ -28,7 +28,7 @@ def adaptive_sparse_vector(q, epsilon, c, threshold):
         i += 1
     logger.debug('Total refined: {}'.format(refine_count))
 
-    return np.nonzero(out), None
+    return np.nonzero(out)[0], None
 
 
 def sparse_vector(q, epsilon, c, threshold):
@@ -46,4 +46,4 @@ def sparse_vector(q, epsilon, c, threshold):
         else:
             out.append(False)
         i += 1
-    return np.nonzero(out), None
+    return np.nonzero(out)[0], None
