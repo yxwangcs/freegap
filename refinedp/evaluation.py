@@ -21,7 +21,7 @@ def mean_square_error(truth, estimates):
     return np.sum(np.square(truth - estimates)) / float(len(estimates))
 
 
-def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', kwargs=None, c_array=np.array(range(25, 325, 25)),
+def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', c_array=np.array(range(25, 325, 25)),
              metrics=(mean_square_error, ), algorithm_names=None):
     if algorithm_names is not None:
         assert len(algorithm_names) == len(algorithms), 'algorithm_names must contain names for all algorithms'
