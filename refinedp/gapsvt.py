@@ -29,8 +29,8 @@ def gap_sparse_vector(q, epsilon, c, threshold, allocation=(0.5, 0.5)):
 
 def gap_svt_estimates(q, epsilon, c, threshold, allocation=(0.5, 0.5)):
     # budget allocation for gap svt
-    #x, y = 1, np.power(2 * c, 2.0 / 3.0)
-    x, y = 1, 1
+    x, y = 1, np.power(2 * c, 2.0 / 3.0)
+    #x, y = 1, 1
     gap_x, gap_y = x / (x + y), y / (x + y)
 
     # budget allocation between gap / laplace
@@ -46,7 +46,8 @@ def gap_svt_estimates(q, epsilon, c, threshold, allocation=(0.5, 0.5)):
     direct_estimates = laplace_mechanism(q, lap_budget * epsilon, indices)
     #variance_lap = 2.0 * c * c / ((epsilon * lap_budget) * (epsilon * lap_budget))
     #print(variance_gap, variance_lap)
-    variance_gap = (32 + 128 * np.square(c)) / np.square(epsilon)
+    #variance_gap = (32 + 128 * np.square(c)) / np.square(epsilon)
+    variance_gap = 8 * np.power((1 + np.power(2 * c, 2.0 / 3)), 3)
     variance_lap = 8 * np.square(c) / np.square(epsilon)
 
     # do weighted average
@@ -54,5 +55,7 @@ def gap_svt_estimates(q, epsilon, c, threshold, allocation=(0.5, 0.5)):
 
 
 def svt_baseline_estimates(q, epsilon, c, threshold):
-    answers = sparse_vector(q, epsilon / 2.0, c, threshold)
+    x, y = 1, np.power(2 * c, 2.0 / 3.0)
+    gap_x, gap_y = x / (x + y), y / (x + y)
+    answers = sparse_vector(q, epsilon / 2.0, c, threshold, allocation=(gap_x, gap_y))
     return np.nonzero(answers)[0], np.asarray(laplace_mechanism(q, epsilon / 2.0, np.nonzero(answers)))
