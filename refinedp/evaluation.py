@@ -95,19 +95,31 @@ def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', c_arra
     # plot and save
     formats = ['-o', '-s']
     for metric_index, metric_func in enumerate(metrics):
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111)
+        ax2 = ax1.twinx()
         metric_name = metric_func.__name__.replace('_', ' ').title()
         for algorithm_index in range(len(algorithms)):
-            plt.errorbar(c_array, metric_data[metric_index][algorithm_index],
+            ax1.errorbar(c_array, metric_data[metric_index][algorithm_index],
                          #yerr=np.transpose(err_data[metric_index][algorithm_index]),
                          label='\\huge {}'.format(algorithm_names[algorithm_index]),
                          fmt=formats[algorithm_index % len(formats)], markersize=12)
-        plt.xticks(fontsize=24)
+            if algorithm_index != 0 and metric_index == 0:
+                ax2.plot(c_array,
+                         100 * (np.asarray(metric_data[0][0] - np.asarray(metric_data[0][algorithm_index]))) / np.asarray(metric_data[0][0]),
+                         'go--', label='\\huge Improvement')
+                ax2.set_ylim(0, 100)
+                ax2.set_ylabel('\\huge Improvement Percentage %')
+        ax1.tick_params(axis='both', which='major', labelsize=18)
         plt.yticks(fontsize=24)
-        legend = plt.legend()
+        plt.xlim(c_array.min(), c_array.max())
+        lines, labels = ax1.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        legend = ax1.legend(lines + lines2, labels + labels2)
         legend.get_frame().set_linewidth(0.0)
-        plt.ylabel('{}'.format(metric_name), fontsize=24)
+        ax1.set_ylabel('{}'.format(metric_name), fontsize=24)
         plt.tight_layout()
-        plt.savefig('{}/{}-{}.pdf'.format(output_prefix, dataset_name, metric_name))
+        fig.savefig('{}/{}-{}.pdf'.format(output_prefix, dataset_name, metric_name.replace(' ', '_')))
         plt.clf()
 
     logger.info('Figures saved to {}'.format(output_prefix))
