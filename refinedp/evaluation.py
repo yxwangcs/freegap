@@ -44,7 +44,7 @@ def normalized_cumulative_rank(sorted_indices, c_val, indices, truth_indices, tr
     return float(total_score) / (c_val * (2 * c_val + 1))
 
 
-def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', c_array=np.array(range(25, 325, 25)),
+def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', c_array=np.array(range(10, 100, 5)),
              metrics=(mean_square_error, above_threshold_answers, accuracy, normalized_cumulative_rank),
              algorithm_names=None):
     if algorithm_names is not None:
@@ -67,6 +67,7 @@ def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', c_arra
     err_data = [[[] for _ in range(len(algorithms))] for _ in range(len(metrics))]
     for algorithm_index, algorithm in enumerate(algorithms):
         for c in c_array:
+            #epsilon = 0.5 * c
             # for svts
             kwargs = {}
             threshold_index = 2 * c if 'adaptive' in algorithm.__name__ else c
@@ -78,7 +79,7 @@ def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', c_arra
 
             # run several times and record average and error
             results = [[] for _ in range(len(metrics))]
-            for _ in range(10):
+            for _ in range(100):
                 indices, estimates = algorithm(dataset, epsilon, c, **kwargs)
                 for metric_index, metric_func in enumerate(metrics):
                     results[metric_index].append(
@@ -98,7 +99,7 @@ def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', c_arra
         metric_name = metric_func.__name__.replace('_', ' ').title()
         for algorithm_index in range(len(algorithms)):
             plt.errorbar(c_array, metric_data[metric_index][algorithm_index],
-                         yerr=np.transpose(err_data[metric_index][algorithm_index]),
+                         #yerr=np.transpose(err_data[metric_index][algorithm_index]),
                          label='\\huge {}'.format(algorithm_names[algorithm_index]),
                          fmt=formats[algorithm_index % len(formats)], markersize=12)
         plt.xticks(fontsize=24)
