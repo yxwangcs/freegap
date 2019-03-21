@@ -47,7 +47,7 @@ def gap_svt_estimates(q, epsilon, c, threshold, allocation=(0.5, 0.5)):
     #variance_lap = 2.0 * c * c / ((epsilon * lap_budget) * (epsilon * lap_budget))
     #print(variance_gap, variance_lap)
     #variance_gap = (32 + 128 * np.square(c)) / np.square(epsilon)
-    variance_gap = 8 * np.power((1 + np.power(2 * c, 2.0 / 3)), 3)
+    variance_gap = 8 * np.power((1 + np.power(2 * c, 2.0 / 3)), 3) / np.square(epsilon)
     variance_lap = 8 * np.square(c) / np.square(epsilon)
 
     # do weighted average
