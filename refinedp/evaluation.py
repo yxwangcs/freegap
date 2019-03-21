@@ -78,7 +78,7 @@ def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', c_arra
 
             # run several times and record average and error
             results = [[] for _ in range(len(metrics))]
-            for _ in range(100):
+            for _ in range(200):
                 indices, estimates = algorithm(dataset, epsilon, c, **kwargs)
                 for metric_index, metric_func in enumerate(metrics):
                     results[metric_index].append(
