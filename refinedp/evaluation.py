@@ -44,7 +44,7 @@ def normalized_cumulative_rank(sorted_indices, c_val, indices, truth_indices, tr
     return float(total_score) / (c_val * (2 * c_val + 1))
 
 
-def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', c_array=np.array(range(10, 100, 5)),
+def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', c_array=np.array(range(5, 100, 5)),
              metrics=(mean_square_error, above_threshold_answers, accuracy, normalized_cumulative_rank),
              algorithm_names=None):
     if algorithm_names is not None:
