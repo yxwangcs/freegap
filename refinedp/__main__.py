@@ -45,16 +45,16 @@ def main(argv=sys.argv[1:]):
 
     for dataset in process_datasets(results.datasets):
         if winning_option == 'All':
-            evaluate((gap_svt_estimates, svt_baseline_estimates), epsilon, dataset)
-            evaluate((gap_max_estimates, max_baseline_estimates), epsilon, dataset)
-            evaluate((adaptive_sparse_vector, sparse_vector), epsilon, dataset)
+            evaluate((svt_baseline_estimates, gap_svt_estimates), epsilon, dataset)
+            evaluate((max_baseline_estimates, gap_max_estimates), epsilon, dataset)
+            evaluate((sparse_vector, adaptive_sparse_vector), epsilon, dataset)
             evaluate_refine_laplace(**kwargs)
         elif winning_option == 'AdaptiveSparseVector':
-            evaluate((adaptive_sparse_vector, sparse_vector), epsilon, dataset)
+            evaluate((sparse_vector, adaptive_sparse_vector), epsilon, dataset)
         elif winning_option == 'GapSparseVector':
-            evaluate((gap_svt_estimates, svt_baseline_estimates), epsilon, dataset)
+            evaluate((svt_baseline_estimates, gap_svt_estimates), epsilon, dataset)
         elif winning_option == 'GapNoisyMax':
-            evaluate((gap_max_estimates, max_baseline_estimates), epsilon, dataset)
+            evaluate((max_baseline_estimates, gap_max_estimates), epsilon, dataset)
         elif winning_option == 'RefineLaplace':
             evaluate_refine_laplace(**kwargs)
 
