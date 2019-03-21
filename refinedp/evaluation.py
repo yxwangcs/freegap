@@ -67,7 +67,6 @@ def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', c_arra
     err_data = [[[] for _ in range(len(algorithms))] for _ in range(len(metrics))]
     for algorithm_index, algorithm in enumerate(algorithms):
         for c in c_array:
-            #epsilon = 0.5 * c
             # for svts
             kwargs = {}
             threshold_index = 2 * c if 'adaptive' in algorithm.__name__ else c
