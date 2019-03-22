@@ -44,7 +44,7 @@ def normalized_cumulative_rank(sorted_indices, c_val, indices, truth_indices, tr
     return float(total_score) / (c_val * (2 * c_val + 1))
 
 
-def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', c_array=np.array(range(5, 100, 5)),
+def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', c_array=np.array(range(2, 25)),
              metrics=(mean_square_error, above_threshold_answers, accuracy, normalized_cumulative_rank),
              algorithm_names=None):
     if algorithm_names is not None:
@@ -110,6 +110,7 @@ def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', c_arra
                          'go--', label='\\huge Improvement')
                 ax2.set_ylim(0, 100)
                 ax2.set_ylabel('\\huge Improvement Percentage %')
+
         ax1.tick_params(axis='both', which='major', labelsize=18)
         plt.yticks(fontsize=24)
         plt.xlim(c_array.min(), c_array.max())
