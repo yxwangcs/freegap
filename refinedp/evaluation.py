@@ -44,7 +44,21 @@ def normalized_cumulative_rank(sorted_indices, c_val, indices, truth_indices, tr
     return float(total_score) / (c_val * (2 * c_val + 1))
 
 
-def evaluate(algorithms, epsilon, input_data, output_folder='./figures/', c_array=np.array(range(2, 25)),
+def precision(sorted_indices, c_val, indices, truth_indices, truth_estimates, estimates):
+    return len(np.intersect1d(indices, truth_indices)) / float(len(indices))
+
+
+def recall(sorted_indices, c_val, indices, truth_indices, truth_estimates, estimates):
+    return len(np.intersect1d(indices, truth_indices)) / float(2 * c_val)
+
+
+def f_measure(sorted_indices, c_val, indices, truth_indices, truth_estimates, estimates):
+    precision = len(np.intersect1d(indices, truth_indices)) / float(len(indices))
+    recall = len(np.intersect1d(indices, truth_indices)) / float(2 * c_val)
+    return 2 * precision * recall / (precision + recall)
+
+
+def evaluate_c(c, algorithm, epsilon, metrics, dataset, sorted_indices):
              metrics=(mean_square_error, above_threshold_answers, accuracy, normalized_cumulative_rank),
              algorithm_names=None):
     if algorithm_names is not None:
