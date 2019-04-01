@@ -28,3 +28,7 @@ def process_bms_pos(in_file):
 
 def process_kosarak(in_file):
     return _process(in_file)
+
+
+def process_t40100k(in_file):
+    return _process(in_file)
