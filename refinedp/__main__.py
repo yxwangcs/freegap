@@ -1,13 +1,11 @@
 import argparse
 import sys
 import coloredlogs
-import logging
 import matplotlib
 import difflib
 import numpy as np
 from refinedp import *
 from refinedp.evaluation import *
-from refinedp.refinelaplace import evaluate_refine_laplace
 
 
 # change the matplotlib settings
@@ -46,18 +44,23 @@ def main(argv=sys.argv[1:]):
 
     for dataset in process_datasets(results.datasets):
         if winning_option == 'All':
-            evaluate((svt_baseline_estimates, gap_svt_estimates), epsilon, dataset, metrics=(mean_square_error,))
-            evaluate((max_baseline_estimates, gap_max_estimates), epsilon, dataset, metrics=(mean_square_error,))
-            evaluate((sparse_vector, adaptive_sparse_vector), epsilon, dataset, metrics=(mean_square_error,))
-        elif winning_option == 'AdaptiveSparseVector':
-            evaluate((sparse_vector, new_adaptive_svt), epsilon, dataset, metrics=(above_threshold_answers, precision),
+            evaluate((sparse_vector, adaptive_sparse_vector), epsilon, dataset,
+                     metrics=(above_threshold_answers, precision),
                      algorithm_names=('Classical Sparse Vector', 'Adaptive Sparse Vector with Gap'))
+            evaluate((svt_baseline_estimates, gap_svt_estimates), epsilon, dataset, metrics=(mean_square_error,),
+                     algorithm_names=('Baseline', 'Sparse Vector with Measures'), **kwargs)
+            evaluate((max_baseline_estimates, gap_max_estimates), epsilon, dataset, metrics=(mean_square_error,),
+                     algorithm_names=('Baseline', 'Noisy Top-k with Measures'), **kwargs)
+        elif winning_option == 'AdaptiveSparseVector':
+            evaluate((sparse_vector, adaptive_sparse_vector), epsilon, dataset,
+                     metrics=(above_threshold_answers, precision),
+                     algorithm_names=('Classical Sparse Vector', 'Adaptive Sparse Vector with Gap'), **kwargs)
         elif winning_option == 'GapSparseVector':
             evaluate((svt_baseline_estimates, gap_svt_estimates), epsilon, dataset, metrics=(mean_square_error,),
-                     algorithm_names=('Baseline', 'Sparse Vector with Measures'))
+                     algorithm_names=('Baseline', 'Sparse Vector with Measures'), **kwargs)
         elif winning_option == 'GapNoisyMax':
             evaluate((max_baseline_estimates, gap_max_estimates), epsilon, dataset, metrics=(mean_square_error,),
-                     algorithm_names=('Baseline', 'Noisy Top-k with Measures'))
+                     algorithm_names=('Baseline', 'Noisy Top-k with Measures'), **kwargs)
 
 
 if __name__ == '__main__':
