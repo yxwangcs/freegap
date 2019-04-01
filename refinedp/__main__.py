@@ -6,6 +6,7 @@ import matplotlib
 import difflib
 import numpy as np
 from refinedp import *
+from refinedp.evaluation import *
 from refinedp.refinelaplace import evaluate_refine_laplace
 
 
@@ -41,22 +42,22 @@ def main(argv=sys.argv[1:]):
                     dtype=np.float).argmax()
     ]
 
-    epsilon = 0.7
+    epsilon = 0.3
 
     for dataset in process_datasets(results.datasets):
         if winning_option == 'All':
-            evaluate((svt_baseline_estimates, gap_svt_estimates), epsilon, dataset)
-            evaluate((max_baseline_estimates, gap_max_estimates), epsilon, dataset)
-            evaluate((sparse_vector, adaptive_sparse_vector), epsilon, dataset)
-            evaluate_refine_laplace(**kwargs)
+            evaluate((svt_baseline_estimates, gap_svt_estimates), epsilon, dataset, metrics=(mean_square_error,))
+            evaluate((max_baseline_estimates, gap_max_estimates), epsilon, dataset, metrics=(mean_square_error,))
+            evaluate((sparse_vector, adaptive_sparse_vector), epsilon, dataset, metrics=(mean_square_error,))
         elif winning_option == 'AdaptiveSparseVector':
-            evaluate((sparse_vector, adaptive_sparse_vector), epsilon, dataset)
+            evaluate((sparse_vector, new_adaptive_svt), epsilon, dataset, metrics=(above_threshold_answers, precision),
+                     algorithm_names=('Classical Sparse Vector', 'Adaptive Sparse Vector with Gap'))
         elif winning_option == 'GapSparseVector':
-            evaluate((svt_baseline_estimates, gap_svt_estimates), epsilon, dataset)
+            evaluate((svt_baseline_estimates, gap_svt_estimates), epsilon, dataset, metrics=(mean_square_error,),
+                     algorithm_names=('Baseline', 'Sparse Vector with Measures'))
         elif winning_option == 'GapNoisyMax':
-            evaluate((max_baseline_estimates, gap_max_estimates), epsilon, dataset)
-        elif winning_option == 'RefineLaplace':
-            evaluate_refine_laplace(**kwargs)
+            evaluate((max_baseline_estimates, gap_max_estimates), epsilon, dataset, metrics=(mean_square_error,),
+                     algorithm_names=('Baseline', 'Noisy Top-k with Measures'))
 
 
 if __name__ == '__main__':
