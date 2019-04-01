@@ -82,12 +82,6 @@ def evaluate_c(c, algorithm, epsilon, metrics, dataset, sorted_indices):
     final_metric_data = []
     final_error_data = []
     for metric_index in range(len(metrics)):
-        """
-        metric_data[epsilon][metric_index][algorithm_index].append(results[metric_index].mean())
-        err_data[epsilon][metric_index][algorithm_index].append(
-            (results[metric_index].mean() - results[metric_index].min(),
-             results[metric_index].max() - results[metric_index].mean()))
-        """
         final_metric_data.append(results[metric_index].mean())
         final_error_data.append((results[metric_index].mean() - results[metric_index].min(),
                                  results[metric_index].max() - results[metric_index].mean()))
@@ -157,10 +151,9 @@ def evaluate(algorithms, epsilons, input_data, output_folder='./figures/', c_arr
             plt.ylim(0.0, 1.0)
         plt.xticks(fontsize=24)
         plt.yticks(fontsize=24)
-        #plt.xlim(c_array.min(), c_array.max())
         legend = plt.legend()
         legend.get_frame().set_linewidth(0.0)
-        plt.tight_layout()
+        plt.gcf().set_tight_layout(True)
         plt.savefig('{}/{}-{}.pdf'.format(output_prefix, dataset_name, metric_name.replace(' ', '_')))
         plt.clf()
 
