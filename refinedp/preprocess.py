@@ -1,4 +1,5 @@
 import logging
+import csv
 import numpy as np
 
 
@@ -32,3 +33,16 @@ def process_kosarak(in_file):
 
 def process_t40100k(in_file):
     return _process(in_file)
+
+
+def process_sf1(in_file):
+    with open(in_file, 'r') as f:
+        reader = csv.reader(f, delimiter=',')
+        data = None
+        for row_index, row in enumerate(reader):
+            if row_index == 1:
+                data = row
+        data = tuple(map(lambda cell: int(cell), data[3:]))
+        logger.info('Statistics for {}:  # of Items: {}'.format(in_file, len(data)))
+        return data
+
