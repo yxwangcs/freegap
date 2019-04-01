@@ -52,6 +52,14 @@ def goal(x, C, estimates, gaps):
 def gap_max_estimates(q, epsilon, k):
     indices, gaps = gap_k_noisy_max(q, 0.5 * epsilon, k)
     estimates = laplace_mechanism(q, 0.5 * epsilon, indices)
+    estimates.shape = len(estimates), 1
+    gaps.shape = len(gaps), 1
+    N = np.eye(k - 1, k) + np.eye(k - 1, k, 1) * -1
+    B = np.eye(k - 1, k - 1) * 10 + np.eye(k - 1, k - 1, 1) * -5 + np.eye(k - 1, k - 1, -1) * -5
+    Y = np.matmul(np.transpose(N), np.linalg.inv(B))
+    X = np.eye(k, k) - np.matmul(Y, N)
+    final_estimates = np.matmul(X, estimates) + np.matmul(Y, gaps)
+    final_estimates = np.asarray(final_estimates.transpose()[0])
     """ old method, this one is asymmetric
     coefficient = np.eye(k, k) * 10 + np.eye(k, k, 1) * -1 + np.eye(k, k, -1) * -1
     coefficient[0][0] = 9
@@ -81,10 +89,12 @@ def gap_max_estimates(q, epsilon, k):
         assert np.fabs(final_estimates[1] - x2) <= 0.00005
         assert np.fabs(final_estimates[2] - x3) <= 0.00005
     """
+    """new method
     A = np.hstack((np.eye(k, k), np.zeros((k, k - 1))))
     B = np.hstack((np.zeros((k - 1, k)), np.eye(k - 1, k - 1) * 8 + np.eye(k - 1, k - 1, -1) * -4 + np.eye(k - 1, k - 1, 1) * -4))
     C = np.vstack((A, B))
     from scipy.optimize import minimize
     final_estimates = minimize(goal, estimates, args=(np.linalg.inv(C), estimates, gaps))
     final_estimates = final_estimates.x if final_estimates.success else None
+    """
     return indices, final_estimates
