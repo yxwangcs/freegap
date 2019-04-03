@@ -61,6 +61,7 @@ def f_measure(sorted_indices, c_val, indices, truth_indices, truth_estimates, es
 
 
 def evaluate_c(c, algorithm, epsilon, metrics, dataset, sorted_indices):
+    np.random.seed()
     # for svts
     kwargs = {}
     threshold_index = 2 * c if 'adaptive' in algorithm.__name__ else c
