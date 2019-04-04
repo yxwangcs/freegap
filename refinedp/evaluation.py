@@ -10,30 +10,11 @@ logger = logging.getLogger(__name__)
 
 
 def mean_square_error(sorted_indices, c_val, indices, truth_indices, truth_estimates, estimates):
-    return 0.0 if estimates is None else np.sum(np.square(truth_estimates - estimates)) / float(len(estimates))
+    return np.sum(np.square(truth_estimates - estimates)) / float(len(estimates))
 
 
 def above_threshold_answers(sorted_indices, c_val, indices, truth_indices, truth_estimates, estimates):
     return len(indices)
-
-
-def accuracy(sorted_indices, c_val, indices, truth_indices, truth_estimates, estimates):
-    total = 0
-    for index in indices:
-        total += 1 if index in truth_indices else 0
-    return float(total) / len(indices)
-
-
-def normalized_cumulative_rank(sorted_indices, c_val, indices, truth_indices, truth_estimates, estimates):
-    scores = {}
-    for order_index, data_index in enumerate(sorted_indices[:2 * c_val]):
-        scores[data_index] = (2 * c_val - order_index)
-
-    total_score = 0
-    for index in indices:
-        total_score += 0 if index not in scores else scores[index]
-
-    return float(total_score) / (c_val * (2 * c_val + 1))
 
 
 def precision(sorted_indices, c_val, indices, truth_indices, truth_estimates, estimates):
@@ -41,15 +22,6 @@ def precision(sorted_indices, c_val, indices, truth_indices, truth_estimates, es
 
 
 def recall(sorted_indices, c_val, indices, truth_indices, truth_estimates, estimates):
-    return len(np.intersect1d(indices, truth_indices)) / float(2 * c_val)
-
-
-def f_measure(sorted_indices, c_val, indices, truth_indices, truth_estimates, estimates):
-    precision = len(np.intersect1d(indices, truth_indices)) / float(len(indices))
-    recall = len(np.intersect1d(indices, truth_indices)) / float(2 * c_val)
-    return 2 * precision * recall / (precision + recall)
-
-
 def evaluate_c(c, algorithm, epsilon, metrics, dataset, sorted_indices):
     np.random.seed()
     # for svts
