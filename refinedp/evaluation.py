@@ -4,19 +4,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import multiprocessing as mp
 from functools import partial
-from refinedp.preprocess import process_bms_pos, process_kosarak, process_t40100k, process_sf1
 
 
 logger = logging.getLogger(__name__)
-
-
-def process_datasets(folder):
-    logger.info('Loading datasets')
-    dataset_folder = os.path.abspath(folder)
-    # yield different datasets with their names
-    yield 'SF1', process_sf1('{}/DEC_10_SF1_PCT3.csv'.format(dataset_folder))
-    yield 'BMS-POS', process_bms_pos('{}/BMS-POS.dat'.format(dataset_folder))
-    yield 'kosarak', process_kosarak('{}/kosarak.dat'.format(dataset_folder))
 
 
 def mean_square_error(sorted_indices, c_val, indices, truth_indices, truth_estimates, estimates):
