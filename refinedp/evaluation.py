@@ -78,12 +78,21 @@ def evaluate(algorithms, epsilons, input_data, metrics, k_array=np.array(range(2
     return metric_data
 
 
-def plot(metrics, c_array, metric_data, algorithm_names):
+def plot(k_array, epsilons, metric_data, metrics, algorithm_names, dataset_name, output_folder='./figures',
+         plot_func=None):
+    assert len(algorithm_names) == len(algorithms), 'algorithm_names must contain names for all algorithms'
+    # create the output folder if not exists
+    output_folder = '{}/{}'.format(os.path.abspath(output_folder), algorithm_names[-1].__name__)
+    os.makedirs(output_folder, exist_ok=True)
+    output_prefix = os.path.abspath(output_folder)
     # plot and save
     formats = ['-o', '-s']
     markers = ['o', 's', '^']
-    for metric_index, metric_func in enumerate(metrics):
+    for (metric_index, metric_func), algorithm_index, (epsilon_index, epsilon) in \
+            product(enumerate(metrics), range(len(algorithm_names)), enumerate(epsilons)):
         metric_name = metric_func.__name__.replace('_', ' ').title()
+
+    for metric_index, metric_func in enumerate(metrics):
         for algorithm_index in range(len(algorithm_names)):
             for epsilon_index, epsilon in enumerate(epsilons):
                 if metric_func == mean_square_error:
@@ -105,11 +114,12 @@ def plot(metrics, c_array, metric_data, algorithm_names):
                     plt.ylabel('{}'.format(metric_name), fontsize=24)
         if metric_func == precision:
             plt.ylim(0.0, 1.0)
-        plt.xlabel('\\huge $k$')
-        plt.xticks(fontsize=24)
-        plt.yticks(fontsize=24)
-        legend = plt.legend()
-        legend.get_frame().set_linewidth(0.0)
-        plt.gcf().set_tight_layout(True)
-        plt.savefig('{}/{}-{}.pdf'.format(output_prefix, dataset_name, metric_name.replace(' ', '_')))
-        plt.clf()
+    plt.xlabel('\\huge $k$')
+    plt.xticks(fontsize=24)
+    plt.yticks(fontsize=24)
+    legend = plt.legend()
+    legend.get_frame().set_linewidth(0.0)
+    plt.gcf().set_tight_layout(True)
+    logger.info('Figures saved to {}'.format(output_prefix))
+    plt.savefig('{}/{}-{}.pdf'.format(output_prefix, dataset_name, metric_name.replace(' ', '_')))
+    plt.clf()
