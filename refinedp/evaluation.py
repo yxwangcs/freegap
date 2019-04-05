@@ -36,7 +36,7 @@ def _evaluate_algorithm(iterations, algorithm, dataset, kwargs, metrics, truth_i
     return np.fromiter((sum(result) for result in results), dtype=np.float, count=len(results))
 
 
-def evaluate(algorithms, epsilons, input_data, metrics, k_array=np.array(range(2, 25))):
+def evaluate(algorithms, epsilons, input_data, metrics, k_array=np.array(range(2, 25)), total_iterations=100):
     # flatten epsilon
     epsilons = (epsilons, ) if isinstance(epsilons, (int, float)) else epsilons
 
@@ -46,7 +46,7 @@ def evaluate(algorithms, epsilons, input_data, metrics, k_array=np.array(range(2
     sorted_indices = np.argsort(dataset)[::-1]
     logger.info('Evaluating {} on {}'.format(algorithms[-1].__name__.replace('_', ' ').title(), dataset_name))
 
-    total_iterations = 100
+    # create the result dict
     # create the result
     metric_data = {epsilon: [[[] for _ in range(len(algorithms))] for _ in range(len(metrics))] for epsilon in epsilons}
     with mp.Pool(mp.cpu_count()) as pool:
