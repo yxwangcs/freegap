@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import multiprocessing as mp
 from functools import partial
+from itertools import product
 
 
 logger = logging.getLogger(__name__)
@@ -58,7 +59,7 @@ def evaluate(algorithms, epsilons, input_data, metrics, output_folder='./figures
     # create the result
     metric_data = {epsilon: [[[] for _ in range(len(algorithms))] for _ in range(len(metrics))] for epsilon in epsilons}
     with mp.Pool(mp.cpu_count()) as pool:
-        for epsilon, (algorithm_index, algorithm), k in zip(epsilons, enumerate(algorithms), k_array):
+        for epsilon, (algorithm_index, algorithm), k in product(epsilons, enumerate(algorithms), k_array):
             # get the iteration list
             iterations = [int(total_iterations / mp.cpu_count()) for _ in range(mp.cpu_count())]
             iterations[mp.cpu_count() - 1] += total_iterations % mp.cpu_count()
