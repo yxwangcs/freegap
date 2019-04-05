@@ -80,9 +80,13 @@ def evaluate(algorithms, epsilons, input_data, metrics, output_folder='./figures
             kwargs['epsilon'] = epsilon
             kwargs['k'] = k
 
-            for local_metric_data in pool.map(partial_evaluate_algorithm, k_array):
-                for metric_index in range(len(metrics)):
-                    metric_data[epsilon][metric_index][algorithm_index].append(local_metric_data[metric_index])
+            partial_evaluate_algorithm = \
+                partial(_evaluate_algorithm, algorithm=algorithm, dataset=dataset, kwargs=kwargs, metrics=metrics,
+                        truth_indices=truth_indices)
+            algorithm_metrics = sum(pool.imap(partial_evaluate_algorithm, iterations)) / total_iterations
+
+            for metric_index in range(len(metrics)):
+                metric_data[epsilon][metric_index][algorithm_index].append(algorithm_metrics[metric_index])
 
     logger.info('Figures saved to {}'.format(output_prefix))
 
