@@ -22,17 +22,18 @@ def precision(indices, estimates, truth_indices, truth_estimates):
     return len(np.intersect1d(indices, truth_indices)) / float(len(indices))
 
 
-def _evaluate_algorithm(iterations, kwargs, metrics, truth_indices, dataset):
+def _evaluate_algorithm(iterations, algorithm, dataset, kwargs, metrics, truth_indices):
     np.random.seed()
+
     # run several times and record average and error
     results = [[] for _ in range(len(metrics))]
     for _ in range(iterations):
-        indices, estimates = algorithm(dataset, epsilon, k, **kwargs)
+        indices, estimates = algorithm(dataset, **kwargs)
         for metric_index, metric_func in enumerate(metrics):
             results[metric_index].append(
                 metric_func(indices, estimates, truth_indices, dataset[indices]))
-
-    return np.fromiter((np.asarray(result).mean() for result in results), dtype=np.float, count=len(results))
+    # returns a numpy array of sum of `iterations` runs for each metric
+    return np.fromiter((sum(result) for result in results), dtype=np.float, count=len(results))
 
 
 def evaluate(algorithms, epsilons, input_data, metrics, output_folder='./figures/', k_array=np.array(range(2, 25)),
@@ -76,6 +77,8 @@ def evaluate(algorithms, epsilons, input_data, metrics, output_folder='./figures
                     sorted_indices[threshold_index + 1]]) / 2.0
                 kwargs['threshold'] = threshold
             truth_indices = sorted_indices[:threshold_index]
+            kwargs['epsilon'] = epsilon
+            kwargs['k'] = k
 
             for local_metric_data in pool.map(partial_evaluate_algorithm, k_array):
                 for metric_index in range(len(metrics)):
