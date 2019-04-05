@@ -36,25 +36,15 @@ def _evaluate_algorithm(iterations, algorithm, dataset, kwargs, metrics, truth_i
     return np.fromiter((sum(result) for result in results), dtype=np.float, count=len(results))
 
 
-def evaluate(algorithms, epsilons, input_data, metrics, output_folder='./figures/', k_array=np.array(range(2, 25)),
-             algorithm_names=None):
-    if algorithm_names is not None:
-        assert len(algorithm_names) == len(algorithms), 'algorithm_names must contain names for all algorithms'
-    else:
-        algorithm_names = tuple(algorithm.__name__.replace('_', ' ').title() for algorithm in algorithms)
+def evaluate(algorithms, epsilons, input_data, metrics, k_array=np.array(range(2, 25))):
     # flatten epsilon
     epsilons = (epsilons, ) if isinstance(epsilons, (int, float)) else epsilons
-
-    # create the output folder if not exists
-    output_folder = '{}/{}'.format(os.path.abspath(output_folder), algorithms[0].__name__)
-    os.makedirs(output_folder, exist_ok=True)
-    output_prefix = os.path.abspath(output_folder)
 
     # unpack the input data
     dataset_name, dataset = input_data
     dataset = np.asarray(dataset)
     sorted_indices = np.argsort(dataset)[::-1]
-    logger.info('Evaluating {} on {}'.format(algorithms[0].__name__.replace('_', ' ').title(), dataset_name))
+    logger.info('Evaluating {} on {}'.format(algorithms[-1].__name__.replace('_', ' ').title(), dataset_name))
 
     total_iterations = 100
     # create the result
@@ -84,7 +74,8 @@ def evaluate(algorithms, epsilons, input_data, metrics, output_folder='./figures
             for metric_index in range(len(metrics)):
                 metric_data[epsilon][metric_index][algorithm_index].append(algorithm_metrics[metric_index])
 
-    logger.info('Figures saved to {}'.format(output_prefix))
+    logger.debug(metric_data)
+    return metric_data
 
 
 def plot(metrics, c_array, metric_data, algorithm_names):
