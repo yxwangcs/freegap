@@ -27,7 +27,7 @@ def gap_sparse_vector(q, epsilon, c, threshold, allocation=(0.5, 0.5)):
     return out
 
 
-def gap_svt_estimates(q, epsilon, c, threshold, allocation=(0.5, 0.5)):
+def gap_svt_estimates(q, epsilon, c, threshold):
     # budget allocation for gap svt
     x, y = 1, np.power(2 * c, 2.0 / 3.0)
     gap_x, gap_y = x / (x + y), y / (x + y)
