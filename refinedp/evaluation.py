@@ -65,16 +65,12 @@ def evaluate(algorithms, epsilons, input_data, metrics, output_folder='./figures
             iterations = [int(total_iterations / mp.cpu_count()) for _ in range(mp.cpu_count())]
             iterations[mp.cpu_count() - 1] += total_iterations % mp.cpu_count()
 
-            partial_evaluate_algorithm = \
-                partial(_evaluate_algorithm, algorithm=algorithm, epsilon=epsilon, metrics=metrics, dataset=dataset,
-                        sorted_indices=sorted_indices)
-
             # for svts
             kwargs = {}
             threshold_index = 2 * k if 'adaptive' in algorithm.__name__ else k
             if 'threshold' in algorithm.__code__.co_varnames:
-                threshold = (dataset[sorted_indices[threshold_index]] + dataset[
-                    sorted_indices[threshold_index + 1]]) / 2.0
+                threshold = (dataset[sorted_indices[threshold_index]] +
+                             dataset[sorted_indices[threshold_index + 1]]) / 2.0
                 kwargs['threshold'] = threshold
             truth_indices = sorted_indices[:threshold_index]
             kwargs['epsilon'] = epsilon
