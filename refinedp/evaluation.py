@@ -47,10 +47,13 @@ def evaluate(algorithms, epsilons, input_data, metrics, k_array=np.array(range(2
     logger.info('Evaluating {} on {}'.format(algorithms[-1].__name__.replace('_', ' ').title(), dataset_name))
 
     # create the result dict
-    # create the result
-    metric_data = {epsilon: [[[] for _ in range(len(algorithms))] for _ in range(len(metrics))] for epsilon in epsilons}
+    metric_data = {
+        epsilon: {
+            metric.__name__: {algorithm.__name__: [] for algorithm in algorithms} for metric in metrics
+        } for epsilon in epsilons
+    }
     with mp.Pool(mp.cpu_count()) as pool:
-        for epsilon, (algorithm_index, algorithm), k in product(epsilons, enumerate(algorithms), k_array):
+        for epsilon, algorithm, k in product(epsilons, algorithms, k_array):
             # get the iteration list
             iterations = [int(total_iterations / mp.cpu_count()) for _ in range(mp.cpu_count())]
             iterations[mp.cpu_count() - 1] += total_iterations % mp.cpu_count()
@@ -71,8 +74,8 @@ def evaluate(algorithms, epsilons, input_data, metrics, k_array=np.array(range(2
                         truth_indices=truth_indices)
             algorithm_metrics = sum(pool.imap(partial_evaluate_algorithm, iterations)) / total_iterations
 
-            for metric_index in range(len(metrics)):
-                metric_data[epsilon][metric_index][algorithm_index].append(algorithm_metrics[metric_index])
+            for metric_index, metric in enumerate(metrics):
+                metric_data[epsilon][metric.__name__][algorithm.__name__].append(algorithm_metrics[metric_index])
 
     logger.debug(metric_data)
     return metric_data
