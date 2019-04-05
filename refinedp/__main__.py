@@ -45,6 +45,9 @@ def main():
     # remove None values
     kwargs = {k: v for k, v in kwargs.items() if v is not None}
 
+    # default value for datasets path
+    results.datasets = './datasets' if results.datasets is None else results.datasets
+
     winning_algorithm = algorithms[
         np.fromiter((difflib.SequenceMatcher(None, results.algorithm, algorithm).ratio() for algorithm in algorithms),
                     dtype=np.float).argmax()
