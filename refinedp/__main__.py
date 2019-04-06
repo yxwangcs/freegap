@@ -23,7 +23,7 @@ matplotlib.rcParams['text.latex.preamble'] = '\\usepackage{libertine},' \
                                              '\\usepackage{sfmath},' \
                                              '\\usepackage[T1]{fontenc}'
 
-coloredlogs.install(level='DEBUG', fmt='%(asctime)s %(levelname)s - %(name)s %(message)s')
+coloredlogs.install(level='INFO', fmt='%(asctime)s %(levelname)s - %(name)s %(message)s')
 
 logger = logging.getLogger(__name__)
 
