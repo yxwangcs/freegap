@@ -2,6 +2,7 @@ import argparse
 import os
 import difflib
 import logging
+import json
 import numpy as np
 import matplotlib
 from matplotlib import pyplot as plt
@@ -39,12 +40,16 @@ def process_datasets(folder):
 
 
 def plot_adaptive(k_array, dataset_name, data, output_prefix):
+    with open('{}/{}.json'.format(output_prefix, dataset_name), 'w') as f:
+        json.dump(data, f)
     algorithm_names = ('Classical Sparse Vector', 'Adaptive Sparse Vector with Gap')
 
     pass
 
 
 def plot_gaptopk(k_array, dataset_name, data, output_prefix):
+    with open('{}/{}.json'.format(output_prefix, dataset_name), 'w') as f:
+        json.dump(data, f)
     theoretical_x = np.arange(k_array.min(), k_array.max())
     theorectical_y = (theoretical_x - 1) / (5 * theoretical_x)
     for epsilon, epsilon_dict in data.items():
@@ -73,6 +78,8 @@ def plot_gaptopk(k_array, dataset_name, data, output_prefix):
 
 
 def plot_gapsvt(k_array, dataset_name, data, output_prefix):
+    with open('{}/{}.json'.format(output_prefix, dataset_name), 'w') as f:
+        json.dump(data, f)
     theoretical_x = np.arange(k_array.min(), k_array.max())
     theorectical_y = 1 / (1 + ((np.power(1 + np.power(2 * theoretical_x, 2.0 / 3), 3)) / (theoretical_x * theoretical_x)))
     for epsilon, epsilon_dict in data.items():
