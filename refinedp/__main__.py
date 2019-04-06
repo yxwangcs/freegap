@@ -39,35 +39,59 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
 
 
 def plot_gaptopk(k_array, dataset_name, data, output_prefix):
-    algorithm_names = ('Baseline', 'Noisy Top-k with Measures')
-    # plot and save
-    formats = ['-o', '-s']
-    markers = ['o', 's', '^']
+    theoretical_x = np.arange(k_array.min(), k_array.max())
+    theorectical_y = (theoretical_x - 1) / (5 * theoretical_x)
     for epsilon, epsilon_dict in data.items():
-        for metric, metric_dict in epsilon_dict.items():
-            for algorithm, algorithm_data in metric_dict.items():
-                plt.plot(k_array,
-                         100 * (np.asarray(metric_data[epsilon][0][0] - np.asarray(
-                             metric_data[epsilon][0][algorithm_index]))) / np.asarray(metric_data[epsilon][0][0]),
-                         label='\\huge {}'.format(algorithm_names[algorithm_index]),
-                         marker=markers[epsilon_index % len(markers)], linewidth=3,
-                         markersize=10)
-                plt.ylim(0, 30)
-                plt.ylabel('\\huge \\% Improvement in MSE')
-            plt.xlabel('\\huge $k$')
-            plt.xticks(fontsize=24)
-            plt.yticks(fontsize=24)
-            legend = plt.legend()
-            legend.get_frame().set_linewidth(0.0)
-            plt.gcf().set_tight_layout(True)
-            logger.info('Figures saved to {}'.format(output_prefix))
-            plt.savefig('{}/{}-{}-.pdf'.format(output_prefix, dataset_name, metric.replace(' ', '_')))
-            plt.clf()
+        assert len(epsilon_dict) == 1 and 'mean_square_error' in epsilon_dict
+        metric_dict = epsilon_dict['mean_square_error']
+        baseline = np.asarray(metric_dict['max_baseline_estimates'])
+        for algorithm, algorithm_data in metric_dict.items():
+            if algorithm == 'max_baseline_estimates':
+                continue
+            plt.plot(k_array, 100 * (baseline - np.asarray(algorithm_data)) / baseline,
+                     label='\\huge {}'.format('Noisy Top-k with Measures'),
+                     linewidth=3, markersize=10)
+            plt.ylim(0, 30)
+            plt.ylabel('\\huge \\% Improvement in MSE')
+            plt.plot(theoretical_x, 100 * theorectical_y, linewidth=3,
+                     linestyle='--', label='\\huge \\% Expected Improvement')
+        plt.xlabel('\\huge $k$')
+        plt.xticks(fontsize=24)
+        plt.yticks(fontsize=24)
+        legend = plt.legend()
+        legend.get_frame().set_linewidth(0.0)
+        plt.gcf().set_tight_layout(True)
+        logger.info('Figures saved to {}'.format(output_prefix))
+        plt.savefig('{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error', epsilon))
+        plt.clf()
 
 
 def plot_gapsvt(k_array, dataset_name, data, output_prefix):
-    algorithm_names = ('Baseline', 'Sparse Vector with Measures')
-    pass
+    theoretical_x = np.arange(k_array.min(), k_array.max())
+    theorectical_y = 1 / (1 + ((np.power(1 + np.power(2 * theoretical_x, 2.0 / 3), 3)) / theoretical_x * theoretical_x))
+    for epsilon, epsilon_dict in data.items():
+        assert len(epsilon_dict) == 1 and 'mean_square_error' in epsilon_dict
+        metric_dict = epsilon_dict['mean_square_error']
+        baseline = np.asarray(metric_dict['svt_baseline_estimates'])
+        for algorithm, algorithm_data in metric_dict.items():
+            if algorithm == 'svt_baseline_estimates':
+                continue
+            plt.plot(k_array, 100 * (baseline - np.asarray(algorithm_data)) / baseline,
+                     label='\\huge {}'.format('Sparse Vector with with Measures'),
+                     linewidth=3, markersize=10)
+            plt.ylim(0, 30)
+            plt.ylabel('\\huge \\% Improvement in MSE')
+            plt.plot(theoretical_x, 100 * theorectical_y, linewidth=3,
+                     linestyle='--', label='\\huge \\% Expected Improvement')
+        plt.xlabel('\\huge $k$')
+        plt.xticks(fontsize=24)
+        plt.yticks(fontsize=24)
+        legend = plt.legend()
+        legend.get_frame().set_linewidth(0.0)
+        plt.gcf().set_tight_layout(True)
+        logger.info('Figures saved to {}'.format(output_prefix))
+        plt.savefig('{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error', epsilon))
+        plt.clf()
 
 
 def main():
@@ -96,9 +120,9 @@ def main():
     for dataset in process_datasets(results.datasets):
         for algorithm in winning_algorithm:
             # create the output folder if not exists
-            output_folder = '{}/{}'.format(os.path.abspath(output_folder), algorithm)
-            os.makedirs(output_folder, exist_ok=True)
-            output_prefix = os.path.abspath(output_folder)
+            algorithm_folder = '{}/{}'.format(os.path.abspath(output_folder), algorithm)
+            os.makedirs(algorithm_folder, exist_ok=True)
+            output_prefix = os.path.abspath(algorithm_folder)
 
             if 'AdaptiveSparseVector' == algorithm:
                 data = evaluate((sparse_vector, adaptive_sparse_vector), epsilons, dataset,
