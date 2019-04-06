@@ -8,15 +8,15 @@ from itertools import product
 logger = logging.getLogger(__name__)
 
 
-def mean_square_error(indices, estimates, truth_indices, truth_estimates):
+def mean_square_error(indices, estimates, truth_indices, truth_estimates, extra):
     return np.sum(np.square(truth_estimates - estimates)) / float(len(estimates))
 
 
-def above_threshold_answers(indices, estimates, truth_indices, truth_estimates):
+def above_threshold_answers(indices, estimates, truth_indices, truth_estimates, extra):
     return len(indices)
 
 
-def precision(indices, estimates, truth_indices, truth_estimates):
+def precision(indices, estimates, truth_indices, truth_estimates, extra):
     return len(np.intersect1d(indices, truth_indices)) / float(len(indices))
 
 
@@ -26,10 +26,10 @@ def _evaluate_algorithm(iterations, algorithm, dataset, kwargs, metrics, truth_i
     # run several times and record average and error
     results = [[] for _ in range(len(metrics))]
     for _ in range(iterations):
-        indices, estimates = algorithm(dataset, **kwargs)
+        indices, estimates, *extra = algorithm(dataset, **kwargs)
         for metric_index, metric_func in enumerate(metrics):
             results[metric_index].append(
-                metric_func(indices, estimates, truth_indices, dataset[indices]))
+                metric_func(indices, estimates, truth_indices, dataset[indices], extra))
     # returns a numpy array of sum of `iterations` runs for each metric
     return np.fromiter((sum(result) for result in results), dtype=np.float, count=len(results))
 
