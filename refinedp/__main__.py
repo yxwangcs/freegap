@@ -1,9 +1,15 @@
 import argparse
-import coloredlogs
-import matplotlib
+import os
 import difflib
-from refinedp import *
-from refinedp.evaluation import evaluate, mean_square_error, above_threshold_answers
+import logging
+import numpy as np
+import matplotlib
+from matplotlib import pyplot as plt
+import coloredlogs
+from refinedp.gapnoisymax import max_baseline_estimates, gap_max_estimates
+from refinedp.gapsvt import svt_baseline_estimates, gap_svt_estimates
+from refinedp.adaptivesvt import adaptive_sparse_vector, sparse_vector
+from refinedp.evaluation import evaluate, mean_square_error, above_threshold_answers, precision
 from refinedp.preprocess import process_t40100k, process_bms_pos, process_kosarak, process_sf1
 
 
@@ -20,6 +26,7 @@ matplotlib.rcParams['text.latex.preamble'] = '\\usepackage{libertine},' \
 coloredlogs.install(level='DEBUG', fmt='%(asctime)s %(levelname)s - %(name)s %(message)s')
 
 logger = logging.getLogger(__name__)
+
 
 def process_datasets(folder):
     logger.info('Loading datasets')
