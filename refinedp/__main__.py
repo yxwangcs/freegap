@@ -21,7 +21,6 @@ coloredlogs.install(level='DEBUG', fmt='%(asctime)s %(levelname)s - %(name)s %(m
 
 logger = logging.getLogger(__name__)
 
-
 def process_datasets(folder):
     logger.info('Loading datasets')
     dataset_folder = os.path.abspath(folder)
@@ -50,11 +49,11 @@ def plot_gaptopk(k_array, dataset_name, data, output_prefix):
                 continue
             plt.plot(k_array, 100 * (baseline - np.asarray(algorithm_data)) / baseline,
                      label='\\huge {}'.format('Noisy Top-k with Measures'),
-                     linewidth=3, markersize=10)
+                     linewidth=3, markersize=10, marker='o')
             plt.ylim(0, 30)
             plt.ylabel('\\huge \\% Improvement in MSE')
             plt.plot(theoretical_x, 100 * theorectical_y, linewidth=3,
-                     linestyle='--', label='\\huge \\% Expected Improvement')
+                     linestyle='--', label='\\huge Expected Improvement')
         plt.xlabel('\\huge $k$')
         plt.xticks(fontsize=24)
         plt.yticks(fontsize=24)
@@ -68,7 +67,7 @@ def plot_gaptopk(k_array, dataset_name, data, output_prefix):
 
 def plot_gapsvt(k_array, dataset_name, data, output_prefix):
     theoretical_x = np.arange(k_array.min(), k_array.max())
-    theorectical_y = 1 / (1 + ((np.power(1 + np.power(2 * theoretical_x, 2.0 / 3), 3)) / theoretical_x * theoretical_x))
+    theorectical_y = 1 / (1 + ((np.power(1 + np.power(2 * theoretical_x, 2.0 / 3), 3)) / (theoretical_x * theoretical_x)))
     for epsilon, epsilon_dict in data.items():
         assert len(epsilon_dict) == 1 and 'mean_square_error' in epsilon_dict
         metric_dict = epsilon_dict['mean_square_error']
@@ -78,11 +77,11 @@ def plot_gapsvt(k_array, dataset_name, data, output_prefix):
                 continue
             plt.plot(k_array, 100 * (baseline - np.asarray(algorithm_data)) / baseline,
                      label='\\huge {}'.format('Sparse Vector with with Measures'),
-                     linewidth=3, markersize=10)
+                     linewidth=3, markersize=10, marker='o')
             plt.ylim(0, 30)
             plt.ylabel('\\huge \\% Improvement in MSE')
             plt.plot(theoretical_x, 100 * theorectical_y, linewidth=3,
-                     linestyle='--', label='\\huge \\% Expected Improvement')
+                     linestyle='--', label='\\huge Expected Improvement')
         plt.xlabel('\\huge $k$')
         plt.xticks(fontsize=24)
         plt.yticks(fontsize=24)
