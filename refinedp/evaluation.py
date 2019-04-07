@@ -20,6 +20,22 @@ def precision(indices, estimates, truth_indices, truth_estimates, extra):
     return len(np.intersect1d(indices, truth_indices)) / float(len(indices))
 
 
+def top_branch(indices, estimates, truth_indices, truth_estimates, extra):
+    return len(extra[0])
+
+
+def middle_branch(indices, estimates, truth_indices, truth_estimates, extra):
+    return len(extra[1])
+
+
+def top_branch_precision(indices, estimates, truth_indices, truth_estimates, extra):
+    return len(np.intersect1d(extra[0], truth_indices)) / float(len(extra[0]))
+
+
+def middle_branch_precision(indices, estimates, truth_indices, truth_estimates, extra):
+    return len(np.intersect1d(extra[1], truth_indices)) / float(len(extra[1]))
+
+
 def _evaluate_algorithm(iterations, algorithm, dataset, kwargs, metrics, truth_indices):
     np.random.seed()
 
