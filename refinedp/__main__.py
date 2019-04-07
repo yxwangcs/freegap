@@ -7,11 +7,10 @@ import numpy as np
 import matplotlib
 from matplotlib import pyplot as plt
 import coloredlogs
-from refinedp.gapnoisymax import max_baseline_estimates, gap_max_estimates
-from refinedp.gapsvt import svt_baseline_estimates, gap_svt_estimates
 from refinedp.adaptivesvt import adaptive_sparse_vector, sparse_vector
-from refinedp.evaluation import evaluate, mean_square_error, \
-    top_branch, middle_branch, top_branch_precision, middle_branch_precision
+from refinedp.gapestimates import gap_svt_estimates, gap_svt_estimates_baseline, \
+    gap_topk_estimates, gap_topk_estimates_baseline
+from refinedp.gapestimates import evaluate as evaluate_gap_estimates
 from refinedp.preprocess import process_t40100k, process_bms_pos, process_kosarak, process_sf1
 
 
@@ -115,23 +114,14 @@ def main():
                                 metrics=(top_branch, middle_branch, top_branch_precision, middle_branch_precision))
                 plot_adaptive(k_array, dataset[0], data, output_prefix)
             if 'GapSparseVector' == algorithm:
-                with open('/Users/Ryan/Downloads/figures 2/GapSparseVector/{}.json'.format(dataset[0]), 'r') as f:
-                    data = json.load(f)
-                #data = evaluate((svt_baseline_estimates, gap_svt_estimates), epsilons, dataset,
-                                #metrics=(mean_square_error,))
-                    plot_mean_square_error(
-                        k_array, dataset[0], data, output_prefix,
-                        lambda x: 1 / (1 + ((np.power(1 + np.power(2 * x, 2.0 / 3), 3)) / (x * x))),
-                        'Sparse Vector with Measures', 'svt_baseline_estimates')
+                data = evaluate_gap_estimates((gap_svt_estimates_baseline, gap_svt_estimates), (0.3, 0.7, 1.5), dataset)
+                plot_mean_square_error(k_array, dataset[0], data, output_prefix,
+                                       lambda x: 1 / (1 + ((np.power(1 + np.power(2 * x, 2.0 / 3), 3)) / (x * x))),
+                                       'Sparse Vector with Measures', 'gap_svt_estimates_baseline')
             if 'GapTopK' == algorithm:
-                with open('/Users/Ryan/Downloads/figures 2/GapTopK/{}.json'.format(dataset[0]), 'r') as f:
-                    data = json.load(f)
-                #data = evaluate((max_baseline_estimates, gap_max_estimates), epsilons, dataset,
-                                #metrics=(mean_square_error,))
-                plot_mean_square_error(
-                    k_array, dataset[0], data, output_prefix,
-                    lambda x: (x - 1) / (5 * x),
-                    'Noisy Top-K with Measures', 'max_baseline_estimates')
+                data = evaluate_gap_estimates((gap_topk_estimates_baseline, gap_topk_estimates), (0.3, 0.7, 1.5), dataset)
+                plot_mean_square_error(k_array, dataset[0], data, output_prefix, lambda x: (x - 1) / (5 * x),
+                                       'Noisy Top-K with Measures', 'gap_topk_estimates_baseline')
 
 
 if __name__ == '__main__':
