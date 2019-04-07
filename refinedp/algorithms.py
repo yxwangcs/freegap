@@ -4,24 +4,22 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def sparse_vector(q, epsilon, c, threshold, allocation=(0.5, 0.5)):
+def sparse_vector(q, epsilon, k, threshold, allocation=(0.5, 0.5)):
     threshold_allocation, query_allocation = allocation
     assert abs(threshold_allocation + query_allocation - 1.0) < 1e-05
     out = []
     count = 0
-    i = 0
-    eta = np.random.laplace(scale=1.0 / (epsilon * threshold_allocation))
-    noisy_threshold = threshold + eta
-    while i < len(q) and count < c:
-        eta_i = np.random.laplace(scale=2.0 * c / (epsilon * query_allocation))
-        noisy_q_i = q[i] + eta_i
-        if noisy_q_i >= noisy_threshold:
+    noisy_threshold = threshold + np.random.laplace(scale=1.0 / (epsilon * threshold_allocation))
+    for qi in q:
+        eta = np.random.laplace(scale=2.0 * k / (epsilon * query_allocation))
+        if qi + eta >= noisy_threshold:
             out.append(True)
             count += 1
+            if count == k:
+                break
         else:
             out.append(False)
-        i += 1
-    return out
+    return np.nonzero(out)[0]
 
 
 def noisy_k_max(q, epsilon, k):
