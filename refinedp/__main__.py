@@ -52,7 +52,7 @@ def plot_mean_square_error(k_array, dataset_name, data, output_prefix, theoretic
     with open('{}/{}.json'.format(output_prefix, dataset_name), 'w') as f:
         json.dump(data, f)
     theoretical_x = np.arange(k_array.min(), k_array.max())
-    theorectical_y = theoretical(theoretical_x)
+    theoretical_y = theoretical(theoretical_x)
     for epsilon, epsilon_dict in data.items():
         assert len(epsilon_dict) == 1 and 'mean_square_error' in epsilon_dict
         metric_dict = epsilon_dict['mean_square_error']
@@ -65,7 +65,7 @@ def plot_mean_square_error(k_array, dataset_name, data, output_prefix, theoretic
                      linewidth=3, markersize=10, marker='o')
             plt.ylim(0, 20)
             plt.ylabel('\\huge \\% Improvement in MSE')
-        plt.plot(theoretical_x, 100 * theorectical_y, linewidth=5,
+        plt.plot(theoretical_x, 100 * theoretical_y, linewidth=5,
                  linestyle='--', label='\\huge Expected Improvement')
         plt.xlabel('\\huge $k$')
         plt.xticks(fontsize=24)
