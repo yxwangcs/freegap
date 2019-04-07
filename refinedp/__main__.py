@@ -75,7 +75,8 @@ def plot_mean_square_error(k_array, dataset_name, data, output_prefix, theoretic
         legend.get_frame().set_linewidth(0.0)
         plt.gcf().set_tight_layout(True)
         logger.info('Figures saved to {}'.format(output_prefix))
-        plt.savefig('{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error', epsilon))
+        plt.savefig('{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',
+                                             str(epsilon).replace('.', '-')))
         plt.clf()
 
 
