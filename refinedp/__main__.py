@@ -96,8 +96,6 @@ def main():
                     dtype=np.float).argmax()
     ]
 
-    epsilons = (0.3, 0.7, 1.5)
-
     winning_algorithm = algorithms[1:] if winning_algorithm == 'All' else (winning_algorithm, )
 
     output_folder = './figures' if results.output is None else results.output
