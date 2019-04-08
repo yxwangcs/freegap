@@ -3,6 +3,7 @@ import numpy as np
 import multiprocessing as mp
 from functools import partial
 from itertools import product
+import tqdm
 
 
 logger = logging.getLogger(__name__)
@@ -135,7 +136,7 @@ def evaluate(algorithms, epsilons, input_data,
         } for epsilon in epsilons
     }
     with mp.Pool(mp.cpu_count()) as pool:
-        for epsilon, k in product(epsilons, k_array):
+        for epsilon, k in tqdm.tqdm(product(epsilons, k_array), total=len(epsilons) * len(k_array)):
             # get the iteration list
             iterations = [int(total_iterations / mp.cpu_count()) for _ in range(mp.cpu_count())]
             iterations[mp.cpu_count() - 1] += total_iterations % mp.cpu_count()

@@ -3,6 +3,7 @@ import numpy as np
 import multiprocessing as mp
 from functools import partial
 from itertools import product
+import tqdm
 from refinedp.algorithms import sparse_vector, noisy_top_k, laplace_mechanism
 
 
@@ -124,7 +125,7 @@ def _evaluate_algorithm(iterations, algorithm, dataset, kwargs, metrics, truth_i
 
 
 def evaluate(algorithms, epsilons, input_data,
-             metrics=(mean_square_error, ), k_array=np.array(range(2, 25)), total_iterations=100000):
+             metrics=(mean_square_error, ), k_array=np.array(range(2, 25)), total_iterations=10000):
     # flatten epsilon
     epsilons = (epsilons, ) if isinstance(epsilons, (int, float)) else epsilons
 
@@ -141,7 +142,8 @@ def evaluate(algorithms, epsilons, input_data,
         } for epsilon in epsilons
     }
     with mp.Pool(mp.cpu_count()) as pool:
-        for epsilon, algorithm, k in product(epsilons, algorithms, k_array):
+        for epsilon, algorithm, k in tqdm.tqdm(product(epsilons, algorithms, k_array),
+                                               total=len(epsilons) * len(algorithms) * len(k_array)):
             # for svts
             kwargs = {}
             if 'threshold' in algorithm.__code__.co_varnames:
