@@ -103,8 +103,8 @@ def gap_svt_estimates(q, epsilon, k, threshold):
 def gap_svt_estimates_baseline(q, epsilon, k, threshold):
     x, y = 1, np.power(2 * k, 2.0 / 3.0)
     gap_x, gap_y = x / (x + y), y / (x + y)
-    answers = sparse_vector(q, epsilon / 2.0, k, threshold, allocation=(gap_x, gap_y))
-    return np.nonzero(answers)[0], np.asarray(laplace_mechanism(q, epsilon / 2.0, np.nonzero(answers)))
+    indices = sparse_vector(q, epsilon / 2.0, k, threshold, allocation=(gap_x, gap_y))
+    return indices, np.asarray(laplace_mechanism(q, epsilon / 2.0, indices))
 
 
 def mean_square_error(indices, estimates, truth_indices, truth_estimates):
