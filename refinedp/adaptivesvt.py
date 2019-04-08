@@ -117,7 +117,7 @@ def _evaluate_algorithm(iterations, algorithms, dataset, kwargs, metrics, truth_
 def evaluate(algorithms, epsilons, input_data,
              metrics=(above_threshold_answers, top_branch, middle_branch, top_branch_precision, middle_branch_precision,
                       left_epsilon),
-             k_array=np.array(range(2, 25)), total_iterations=10):
+             k_array=np.array(range(2, 25)), total_iterations=100000):
     assert len(algorithms) == 2, 'algorithms must contain baseline and the algorithm to evaluate'
     # flatten epsilon
     epsilons = (epsilons, ) if isinstance(epsilons, (int, float)) else epsilons
