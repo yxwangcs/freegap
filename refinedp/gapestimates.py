@@ -82,7 +82,7 @@ def gap_svt_estimates(q, epsilon, k, threshold):
     x, y = 1, 1
     gap_budget, lap_budget = y / (x + y), x / (x + y)
 
-    indices, gaps = np.asarray(gap_sparse_vector(q, gap_budget * epsilon, k, threshold, allocation=(gap_x, gap_y)))
+    indices, gaps = gap_sparse_vector(q, gap_budget * epsilon, k, threshold, allocation=(gap_x, gap_y))
     assert len(indices) == len(gaps)
     initial_estimates = gaps + threshold
     direct_estimates = laplace_mechanism(q, lap_budget * epsilon, indices)
