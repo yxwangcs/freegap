@@ -153,7 +153,7 @@ def evaluate(algorithms, epsilons, input_data,
                         truth_indices=truth_indices)
 
             baseline_metrics, algorithm_metrics = np.zeros((len(metrics), )), np.zeros((len(metrics), ))
-            for local_baseline, local_algorithm in pool.imap(partial_evaluate_algorithm, iterations):
+            for local_baseline, local_algorithm in pool.imap_unordered(partial_evaluate_algorithm, iterations):
                 baseline_metrics += local_baseline
                 algorithm_metrics += local_algorithm
             baseline_metrics, algorithm_metrics = baseline_metrics / total_iterations, algorithm_metrics / total_iterations

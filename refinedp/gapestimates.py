@@ -156,7 +156,7 @@ def evaluate(algorithms, epsilons, input_data,
             partial_evaluate_algorithm = \
                 partial(_evaluate_algorithm, algorithm=algorithm, dataset=dataset, kwargs=kwargs, metrics=metrics,
                         truth_indices=truth_indices)
-            algorithm_metrics = sum(pool.imap(partial_evaluate_algorithm, iterations)) / total_iterations
+            algorithm_metrics = sum(pool.imap_unordered(partial_evaluate_algorithm, iterations)) / total_iterations
 
             for metric_index, metric in enumerate(metrics):
                 metric_data[epsilon][metric.__name__][algorithm.__name__].append(algorithm_metrics[metric_index])
