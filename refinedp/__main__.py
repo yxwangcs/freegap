@@ -8,6 +8,7 @@ import matplotlib
 from matplotlib import pyplot as plt
 import coloredlogs
 from refinedp.adaptivesvt import adaptive_sparse_vector, sparse_vector
+from refinedp.adaptivesvt import evaluate as evaluate_adaptivesvt
 from refinedp.gapestimates import gap_svt_estimates, gap_svt_estimates_baseline, \
     gap_topk_estimates, gap_topk_estimates_baseline
 from refinedp.gapestimates import evaluate as evaluate_gap_estimates
@@ -42,9 +43,44 @@ def process_datasets(folder):
 def plot_adaptive(k_array, dataset_name, data, output_prefix):
     with open('{}/{}.json'.format(output_prefix, dataset_name), 'w') as f:
         json.dump(data, f)
-    algorithm_names = ('Classical Sparse Vector', 'Adaptive Sparse Vector with Gap')
+    left_epsilons = []
+    for epsilon, epsilon_dict in data.items():
+        for metric, metric_dict in epsilon_dict.items():
+            baseline = np.asarray(metric_dict['sparse_vector'])
+            algorithm = np.asarray(metric_dict['adaptive_sparse_vector'])
+            if metric == 'left_epsilon':
+                left_epsilons.append(algorithm[9])
+                continue
+            plt.plot(k_array, baseline,
+                     label='\\huge {}'.format('Classical Sparse Vector'),
+                     linewidth=3, markersize=10, marker='o')
+            plt.plot(k_array, algorithm,
+                     label='\\huge {}'.format('Adaptive Sparse Vector with Gap'),
+                     linewidth=3, markersize=10, marker='s')
+            plt.ylabel('\\huge {}'.format(metric.replace('_', ' ').capitalize()))
+            plt.xlabel('\\huge $k$')
+            plt.xticks(fontsize=24)
+            plt.yticks(fontsize=24)
+            legend = plt.legend()
+            legend.get_frame().set_linewidth(0.0)
+            plt.gcf().set_tight_layout(True)
+            logger.info('Figures saved to {}'.format(output_prefix))
+            plt.savefig('{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, metric, str(epsilon).replace('.', '-')))
+            plt.clf()
 
-    pass
+    plt.plot(tuple(data.keys()), left_epsilons,
+             label='\\huge {}'.format('Adaptive Sparse Vector with Gap'),
+             linewidth=3, markersize=10, marker='o')
+    plt.ylabel('\\huge Remaining Privacy Budget')
+    plt.xlabel('\\huge $\\epsilon$')
+    plt.xticks(fontsize=24)
+    plt.yticks(fontsize=24)
+    legend = plt.legend()
+    legend.get_frame().set_linewidth(0.0)
+    plt.gcf().set_tight_layout(True)
+    logger.info('Figures saved to {}'.format(output_prefix))
+    plt.savefig('{}/{}-{}.pdf'.format(output_prefix, dataset_name, 'left-epsilon'))
+    plt.clf()
 
 
 def plot_mean_square_error(k_array, dataset_name, data, output_prefix, theoretical,
@@ -108,8 +144,8 @@ def main():
             output_prefix = os.path.abspath(algorithm_folder)
 
             if 'AdaptiveSparseVector' == algorithm:
-                data = evaluate((sparse_vector, adaptive_sparse_vector), epsilons, dataset,
-                                metrics=(top_branch, middle_branch, top_branch_precision, middle_branch_precision))
+                data = evaluate_adaptivesvt((sparse_vector, adaptive_sparse_vector),
+                                            tuple(epsilon / 10.0 for epsilon in range(1, 16)), dataset)
                 plot_adaptive(k_array, dataset[0], data, output_prefix)
             if 'GapSparseVector' == algorithm:
                 data = evaluate_gap_estimates((gap_svt_estimates_baseline, gap_svt_estimates), (0.3, 0.7, 1.5), dataset)
