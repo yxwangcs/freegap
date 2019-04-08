@@ -57,24 +57,20 @@ def gap_topk_estimates(q, epsilon, k):
 
 
 def gap_sparse_vector(q, epsilon, k, threshold, allocation=(0.5, 0.5)):
-    x, y = allocation
-    assert abs(x + y - 1.0) < 1e-05
-    epsilon_1, epsilon_2 = x * epsilon, y * epsilon
-    out = []
-    count = 0
-    i = 0
-    eta = np.random.laplace(scale=1.0 / epsilon_1)
-    noisy_threshold = threshold + eta
+    threshold_allocation, query_allocation = allocation
+    assert abs(threshold_allocation + query_allocation - 1.0) < 1e-05
+    epsilon_1, epsilon_2 = threshold_allocation * epsilon, query_allocation * epsilon
+    indices, gaps = [], []
+    i, count = 0, 0
+    noisy_threshold = threshold + np.random.laplace(scale=1.0 / epsilon_1)
     while i < len(q) and count < k:
-        eta_i = np.random.laplace(scale=2.0 * k / epsilon_2)
-        noisy_q_i = q[i] + eta_i
+        noisy_q_i = q[i] + np.random.laplace(scale=2.0 * k / epsilon_2)
         if noisy_q_i >= noisy_threshold:
-            out.append(noisy_q_i - noisy_threshold)
+            indices.append(i)
+            gaps.append(noisy_q_i - noisy_threshold)
             count += 1
-        else:
-            out.append(False)
         i += 1
-    return out
+    return np.asarray(indices), np.asarray(gaps)
 
 
 def gap_svt_estimates(q, epsilon, k, threshold):
@@ -86,9 +82,9 @@ def gap_svt_estimates(q, epsilon, k, threshold):
     x, y = 1, 1
     gap_budget, lap_budget = y / (x + y), x / (x + y)
 
-    answers = np.asarray(gap_sparse_vector(q, gap_budget * epsilon, k, threshold, allocation=(gap_x, gap_y)))
-    indices = np.nonzero(answers)[0]
-    initial_estimates = answers[indices] + threshold
+    indices, gaps = np.asarray(gap_sparse_vector(q, gap_budget * epsilon, k, threshold, allocation=(gap_x, gap_y)))
+    assert len(indices) == len(gaps)
+    initial_estimates = gaps + threshold
     direct_estimates = laplace_mechanism(q, lap_budget * epsilon, indices)
     variance_gap = 8 * np.power((1 + np.power(2 * k, 2.0 / 3)), 3) / np.square(epsilon)
     variance_lap = 8 * np.square(k) / np.square(epsilon)
