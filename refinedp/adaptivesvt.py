@@ -10,52 +10,38 @@ logger = logging.getLogger(__name__)
 
 
 def adaptive_sparse_vector(q, epsilon, k, threshold):
-    out = []
-    top_branch = []
-    middle_branch = []
-    count = 1
-    refine_count = 0
-    i = 0
-    eta = np.random.laplace(scale=2.0 / epsilon)
-    noisy_threshold = threshold + eta
-    while i < len(q) and count < 2 * k - 1:
-        eta_i = np.random.laplace(scale=8.0 * k / epsilon)
-        xi_i = np.random.laplace(scale=4.0 * k / epsilon)
-        if q[i] + eta_i >= noisy_threshold + 16.0 * np.sqrt(2) * k / epsilon:
-            out.append(True)
-            top_branch.append(True)
-            count += 1
-        elif q[i] + xi_i > noisy_threshold:
-            refine_count += 1
-            out.append(True)
-            middle_branch.append(True)
-            count += 2
-        else:
-            out.append(False)
-            top_branch.append(False)
-            middle_branch.append(False)
+    indices, top_indices, middle_indices = [], [], []
+    epsilon_0, epsilon_1, epsilon_2 = epsilon / 2.0, epsilon / (8.0 * k), epsilon / (4.0 * k)
+    sigma = 2 * np.sqrt(2) * epsilon_1
+    i, priv = 0, 0
+    noisy_threshold = threshold + np.random.laplace(scale=2.0 / epsilon)
+    while i < len(q) and priv <= epsilon - 2 * epsilon_2:
+        eta_i = np.random.laplace(scale=1.0 / epsilon_1)
+        xi_i = np.random.laplace(scale=1.0 / epsilon_2)
+        if q[i] + eta_i - noisy_threshold >= sigma:
+            indices.append(i)
+            top_indices.append(i)
+            priv += 2 * epsilon_1
+        elif q[i] + xi_i - noisy_threshold >= 0:
+            indices.append(i)
+            middle_indices.append(i)
+            priv += 2 * epsilon_2
         i += 1
-    logger.debug('Total refined: {}'.format(refine_count))
+    logger.debug('Total refined: {}'.format(len(top_indices)))
 
-    return np.nonzero(out)[0], np.nonzero(top_branch)[0], np.nonzero(middle_branch)[0]
+    return np.asarray(indices), np.asarray(top_indices), np.asarray(middle_indices)
 
 
 def sparse_vector(q, epsilon, k, threshold):
-    out = []
-    count = 0
-    i = 0
-    eta = np.random.laplace(scale=2.0 / epsilon)
-    noisy_threshold = threshold + eta
+    indices = []
+    i, count = 0, 0
+    noisy_threshold = threshold + np.random.laplace(scale=2.0 / epsilon)
     while i < len(q) and count < k:
-        eta_i = np.random.laplace(scale=4.0 * k / epsilon)
-        noisy_q_i = q[i] + eta_i
-        if noisy_q_i >= noisy_threshold:
-            out.append(True)
+        if q[i] + np.random.laplace(scale=4.0 * k / epsilon) >= noisy_threshold:
+            indices.append(i)
             count += 1
-        else:
-            out.append(False)
         i += 1
-    return np.nonzero(out)[0], np.nonzero(out)[0], np.asarray([])
+    return np.asarray(indices), np.asarray(indices), np.asarray([])
 
 
 def above_threshold_answers(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
@@ -116,9 +102,9 @@ def _evaluate_algorithm(iterations, algorithms, dataset, kwargs, metrics, truth_
 
 
 def evaluate(algorithms, epsilons, input_data,
-             metrics=(above_threshold_answers, top_branch, middle_branch, top_branch_precision, middle_branch_precision,
-                      left_epsilon),
-             k_array=np.array(range(2, 25)), total_iterations=100000):
+             metrics=(above_threshold_answers, precision, top_branch, middle_branch, top_branch_precision,
+                      middle_branch_precision, left_epsilon),
+             k_array=np.array(range(2, 25)), total_iterations=20000):
     assert len(algorithms) == 2, 'algorithms must contain baseline and the algorithm to evaluate'
     # flatten epsilon
     epsilons = (epsilons, ) if isinstance(epsilons, (int, float)) else epsilons
