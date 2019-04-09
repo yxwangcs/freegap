@@ -45,33 +45,77 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
         json.dump(data, f)
     left_epsilons = []
     for epsilon, epsilon_dict in data.items():
-        for metric, metric_dict in epsilon_dict.items():
-            baseline = np.asarray(metric_dict['sparse_vector'])
-            algorithm = np.asarray(metric_dict['adaptive_sparse_vector'])
-            if metric == 'left_epsilon':
-                left_epsilons.append(algorithm[9])
-                continue
-            plt.plot(k_array, baseline,
-                     label='\\huge {}'.format('Classical Sparse Vector'),
-                     linewidth=3, markersize=10, marker='o')
-            plt.plot(k_array, algorithm,
-                     label='\\huge {}'.format('Adaptive Sparse Vector with Gap'),
-                     linewidth=3, markersize=10, marker='s')
-            plt.ylabel('\\huge {}'.format(metric.replace('_', ' ').capitalize()))
-            plt.xlabel('\\huge $k$')
-            plt.xticks(fontsize=24)
-            plt.yticks(fontsize=24)
-            legend = plt.legend()
-            legend.get_frame().set_linewidth(0.0)
-            plt.gcf().set_tight_layout(True)
-            logger.info('Figures saved to {}'.format(output_prefix))
-            plt.savefig('{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, metric, str(epsilon).replace('.', '-')))
-            plt.clf()
+        left_epsilons.append(epsilon_dict['left_epsilon']['adaptive_sparse_vector'][8])
 
-    plt.plot(tuple(data.keys()), left_epsilons,
+    epsilon = '0.3'
+    # plot number of above threshold answers
+    baseline_top_branch = data[epsilon]['top_branch']['sparse_vector']
+    algorithm_top_branch = data[epsilon]['top_branch']['adaptive_sparse_vector']
+    algorithm_middle_branch = data[epsilon]['middle_branch']['adaptive_sparse_vector']
+    algorithm_total = data[epsilon]['above_threshold_answers']['adaptive_sparse_vector']
+    plt.plot(k_array, baseline_top_branch,
+             label='\\huge {}'.format('Classical Sparse Vector'),
+             linewidth=3, markersize=10, marker='o')
+    plt.plot(k_array, algorithm_total,
+             label='\\huge {}'.format('Adaptive SVT w/ Gap (Total)'),
+             linewidth=3, markersize=10, marker='P', zorder=5)
+    plt.plot(k_array, algorithm_top_branch,
+             label='\\huge {}'.format('Adaptive SVT w/ Gap (Top)'),
+             linewidth=3, markersize=10, marker='s')
+    plt.plot(k_array, algorithm_middle_branch,
+             label='\\huge {}'.format('Adaptive SVT w/ Gap (Middle)'),
+             linewidth=3, markersize=10, marker='^')
+    plt.ylim(0, 70)
+    plt.ylabel('\\huge {}'.format('\\# of Above-Threshold Answers'))
+    plt.xlabel('\\huge $k$')
+    plt.xticks(fontsize=24)
+    plt.yticks(fontsize=24)
+    legend = plt.legend()
+    legend.get_frame().set_linewidth(0.0)
+    plt.gcf().set_tight_layout(True)
+    logger.info('Figures saved to {}'.format(output_prefix))
+    plt.savefig('{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'above_threshold_answers',
+                                         str(epsilon).replace('.', '-')))
+    plt.clf()
+
+    # plot the precision
+    baseline_top_branch = data[epsilon]['precision']['sparse_vector']
+    algorithm_top_branch = data[epsilon]['top_branch_precision']['adaptive_sparse_vector']
+    algorithm_middle_branch = data[epsilon]['middle_branch_precision']['adaptive_sparse_vector']
+    algorithm_total = data[epsilon]['precision']['adaptive_sparse_vector']
+    plt.plot(k_array, baseline_top_branch,
+             label='\\huge {}'.format('Classical Sparse Vector'),
+             linewidth=3, markersize=10, marker='o')
+    plt.plot(k_array, algorithm_total,
+             label='\\huge {}'.format('Adaptive SVT w/ Gap (Total)'),
+             linewidth=3, markersize=10, marker='P', zorder=5)
+    plt.plot(k_array, algorithm_top_branch,
+             label='\\huge {}'.format('Adaptive SVT w/ Gap (Top)'),
+             linewidth=3, markersize=10, marker='s')
+    plt.plot(k_array, algorithm_middle_branch,
+             label='\\huge {}'.format('Adaptive SVT w/ Gap (Middle)'),
+             linewidth=3, markersize=10, marker='^')
+    plt.ylim(0, 1.0)
+    plt.ylabel('\\huge {}'.format('\\# of Above-Threshold Answers'))
+    plt.xlabel('\\huge $k$')
+    plt.xticks(fontsize=24)
+    plt.yticks(fontsize=24)
+    legend = plt.legend()
+    legend.get_frame().set_linewidth(0.0)
+    plt.gcf().set_tight_layout(True)
+    logger.info('Figures saved to {}'.format(output_prefix))
+    plt.savefig('{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'precision',
+                                         str(epsilon).replace('.', '-')))
+    plt.clf()
+
+    # plot left epsilons
+    epsilons = np.asarray(tuple(data.keys()), dtype=np.float)
+    left_budget = np.asarray(left_epsilons) * 100
+    plt.plot(epsilons, left_budget,
              label='\\huge {}'.format('Adaptive Sparse Vector with Gap'),
              linewidth=3, markersize=10, marker='o')
-    plt.ylabel('\\huge Remaining Privacy Budget')
+    plt.ylim(0, left_budget.max() - (left_budget.max() % 5) + 5)
+    plt.ylabel('\\huge \\% Remaining Privacy Budget')
     plt.xlabel('\\huge $\\epsilon$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
@@ -89,6 +133,7 @@ def plot_mean_square_error(k_array, dataset_name, data, output_prefix, theoretic
         json.dump(data, f)
     theoretical_x = np.arange(k_array.min(), k_array.max())
     theoretical_y = theoretical(theoretical_x)
+    improves_for_epsilons = []
     for epsilon, epsilon_dict in data.items():
         assert len(epsilon_dict) == 1 and 'mean_square_error' in epsilon_dict
         metric_dict = epsilon_dict['mean_square_error']
@@ -96,9 +141,10 @@ def plot_mean_square_error(k_array, dataset_name, data, output_prefix, theoretic
         for algorithm, algorithm_data in metric_dict.items():
             if algorithm == baseline_name:
                 continue
-            plt.plot(k_array, 100 * (baseline - np.asarray(algorithm_data)) / baseline,
-                     label='\\huge {}'.format(algorithm_name),
-                     linewidth=3, markersize=10, marker='o')
+            improvements = 100 * (baseline - np.asarray(algorithm_data)) / baseline
+            improves_for_epsilons.append(improvements[8])
+            plt.plot(k_array, improvements, label='\\huge {}'.format(algorithm_name), linewidth=3, markersize=10,
+                     marker='o')
             plt.ylim(0, 20)
             plt.ylabel('\\huge \\% Improvement in MSE')
         plt.plot(theoretical_x, 100 * theoretical_y, linewidth=5,
@@ -109,10 +155,29 @@ def plot_mean_square_error(k_array, dataset_name, data, output_prefix, theoretic
         legend = plt.legend()
         legend.get_frame().set_linewidth(0.0)
         plt.gcf().set_tight_layout(True)
-        logger.info('Figures saved to {}'.format(output_prefix))
-        plt.savefig('{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',
-                                             str(epsilon).replace('.', '-')))
+        if epsilon == '0.3':
+            logger.info('Figures saved to {}'.format(output_prefix))
+            plt.savefig('{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',
+                                                 str(epsilon).replace('.', '-')))
         plt.clf()
+
+    epsilons = np.asarray(tuple(data.keys()), dtype=np.float)
+    plt.plot(epsilons, improves_for_epsilons, label='\\huge {}'.format(algorithm_name), linewidth=3,
+             markersize=10, marker='o')
+    plt.plot(epsilons, [100 * theoretical(10) for _ in range(len(epsilons))], linewidth=5,
+             linestyle='--', label='\\huge Expected Improvement')
+    plt.ylabel('\\huge \\% Improvement in MSE')
+    plt.ylim(0, 20)
+    plt.xlabel('\\huge $\\epsilon$')
+    plt.xticks(np.arange(epsilons.min(), epsilons.max() + 0.1, 0.2))
+    plt.xticks(fontsize=24)
+    plt.yticks(fontsize=24)
+    legend = plt.legend()
+    legend.get_frame().set_linewidth(0.0)
+    plt.gcf().set_tight_layout(True)
+    logger.info('Figures saved to {}'.format(output_prefix))
+    plt.savefig('{}/{}-{}-epsilons.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',))
+    plt.clf()
 
 
 def main():
@@ -134,7 +199,7 @@ def main():
 
     winning_algorithm = algorithms[1:] if winning_algorithm == 'All' else (winning_algorithm, )
 
-    output_folder = './figures' if results.output is None else results.output
+    output_folder = './figures_new' if results.output is None else results.output
     k_array = np.fromiter(range(2, 25), dtype=np.int)
     for dataset in process_datasets(results.datasets):
         for algorithm in winning_algorithm:
@@ -144,18 +209,26 @@ def main():
             output_prefix = os.path.abspath(algorithm_folder)
 
             if 'AdaptiveSparseVector' == algorithm:
-                data = evaluate_adaptivesvt((sparse_vector, adaptive_sparse_vector),
-                                            tuple(epsilon / 10.0 for epsilon in range(1, 16)), dataset)
-                plot_adaptive(k_array, dataset[0], data, output_prefix)
+                #data = evaluate_adaptivesvt((sparse_vector, adaptive_sparse_vector),
+                                            #tuple(epsilon / 10.0 for epsilon in range(1, 16)), dataset)
+                with open('/home/grads/ykw5163/mll/refinedp/figures/AdaptiveSparseVector/{}.json'.format(dataset[0]), 'r') as f:
+                    data = json.load(f)
+                    plot_adaptive(k_array, dataset[0], data, output_prefix)
             if 'GapSparseVector' == algorithm:
-                data = evaluate_gap_estimates((gap_svt_estimates_baseline, gap_svt_estimates), (0.3, 0.7, 1.5), dataset)
-                plot_mean_square_error(k_array, dataset[0], data, output_prefix,
-                                       lambda x: 1 / (1 + ((np.power(1 + np.power(2 * x, 2.0 / 3), 3)) / (x * x))),
-                                       'Sparse Vector with Measures', 'gap_svt_estimates_baseline')
+                #data = evaluate_gap_estimates((gap_svt_estimates_baseline, gap_svt_estimates),
+                                              #tuple(epsilon / 10.0 for epsilon in range(1, 16)), dataset)
+                with open('/home/grads/ykw5163/mll/refinedp/figures/GapSparseVector/{}.json'.format(dataset[0]), 'r') as f:
+                    data = json.load(f)
+                    plot_mean_square_error(k_array, dataset[0], data, output_prefix,
+                                           lambda x: 1 / (1 + ((np.power(1 + np.power(2 * x, 2.0 / 3), 3)) / (x * x))),
+                                           'Sparse Vector with Measures', 'gap_svt_estimates_baseline')
             if 'GapTopK' == algorithm:
-                data = evaluate_gap_estimates((gap_topk_estimates_baseline, gap_topk_estimates), (0.3, 0.7, 1.5), dataset)
-                plot_mean_square_error(k_array, dataset[0], data, output_prefix, lambda x: (x - 1) / (5 * x),
-                                       'Noisy Top-K with Measures', 'gap_topk_estimates_baseline')
+                with open('/home/grads/ykw5163/mll/refinedp/figures/GapTopK/{}.json'.format(dataset[0]), 'r') as f:
+                    data = json.load(f)
+                #data = evaluate_gap_estimates((gap_topk_estimates_baseline, gap_topk_estimates),
+                                              #tuple(epsilon / 10.0 for epsilon in range(1, 16)), dataset)
+                    plot_mean_square_error(k_array, dataset[0], data, output_prefix, lambda x: (x - 1) / (5 * x),
+                                           'Noisy Top-K with Measures', 'gap_topk_estimates_baseline')
 
 
 if __name__ == '__main__':
