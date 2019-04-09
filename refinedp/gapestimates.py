@@ -121,7 +121,7 @@ def _evaluate_algorithm(iterations, algorithm, dataset, kwargs, metrics, truth_i
 
 
 def evaluate(algorithms, epsilons, input_data,
-             metrics=(mean_square_error, ), k_array=np.array(range(2, 25)), total_iterations=10000):
+             metrics=(mean_square_error, ), k_array=np.array(range(2, 25)), total_iterations=20000):
     # flatten epsilon
     epsilons = (epsilons, ) if isinstance(epsilons, (int, float)) else epsilons
 
