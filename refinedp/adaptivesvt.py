@@ -127,7 +127,6 @@ def evaluate(algorithms, epsilons, input_data,
     # unpack the input data
     dataset_name, dataset = input_data
     dataset = np.asarray(dataset)
-    sorted_indices = np.argsort(dataset)[::-1]
     logger.info('Evaluating {} on {}'.format(algorithms[-1].__name__.replace('_', ' ').title(), dataset_name))
 
     # create the result dict
@@ -138,6 +137,8 @@ def evaluate(algorithms, epsilons, input_data,
     }
     with mp.Pool(mp.cpu_count()) as pool:
         for epsilon, k in tqdm.tqdm(product(epsilons, k_array), total=len(epsilons) * len(k_array)):
+            np.random.shuffle(dataset)
+            sorted_indices = np.argsort(dataset)[::-1]
             # get the iteration list
             iterations = [int(total_iterations / mp.cpu_count()) for _ in range(mp.cpu_count())]
             iterations[mp.cpu_count() - 1] += total_iterations % mp.cpu_count()
