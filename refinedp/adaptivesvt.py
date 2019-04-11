@@ -52,6 +52,10 @@ def precision(indices, top_indices, middle_indices, baseline_result, truth_indic
     return len(np.intersect1d(indices, truth_indices)) / float(len(indices))
 
 
+def recall(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
+    return len(np.intersect1d(indices, truth_indices)) / float(len(truth_indices))
+
+
 def top_branch(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
     return len(top_indices)
 
@@ -67,11 +71,19 @@ def top_branch_precision(indices, top_indices, middle_indices, baseline_result, 
         return len(np.intersect1d(top_indices, truth_indices)) / float(len(top_indices))
 
 
+def top_branch_recall(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
+    return len(np.intersect1d(top_indices, truth_indices)) / float(len(truth_indices))
+
+
 def middle_branch_precision(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
     if len(middle_indices) == 0:
         return 1.0
     else:
         return len(np.intersect1d(middle_indices, truth_indices)) / float(len(middle_indices))
+
+
+def middle_branch_recall(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
+    return len(np.intersect1d(middle_indices, truth_indices)) / float(len(truth_indices))
 
 
 def left_epsilon(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
