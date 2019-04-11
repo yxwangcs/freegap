@@ -9,15 +9,15 @@ import tqdm
 logger = logging.getLogger(__name__)
 
 
-def adaptive_sparse_vector(q, epsilon, k, threshold):
+def adaptive_sparse_vector(q, epsilon, k, threshold, top_prng=np.random, middle_prng=np.random):
     indices, top_indices, middle_indices = [], [], []
     epsilon_0, epsilon_1, epsilon_2 = epsilon / 2.0, epsilon / (8.0 * k), epsilon / (4.0 * k)
-    sigma = 2 * np.sqrt(2) * epsilon_1
-    i, priv = 0, 0
-    noisy_threshold = threshold + np.random.laplace(scale=2.0 / epsilon)
+    sigma = 2 * np.sqrt(2) / epsilon_1
+    i, priv = 0, epsilon_0
+    noisy_threshold = threshold + top_prng.laplace(scale=1.0 / epsilon_0)
     while i < len(q) and priv <= epsilon - 2 * epsilon_2:
-        eta_i = np.random.laplace(scale=1.0 / epsilon_1)
-        xi_i = np.random.laplace(scale=1.0 / epsilon_2)
+        eta_i = top_prng.laplace(scale=1.0 / epsilon_1)
+        xi_i = middle_prng.laplace(scale=1.0 / epsilon_2)
         if q[i] + eta_i - noisy_threshold >= sigma:
             indices.append(i)
             top_indices.append(i)
@@ -32,12 +32,12 @@ def adaptive_sparse_vector(q, epsilon, k, threshold):
     return np.asarray(indices), np.asarray(top_indices), np.asarray(middle_indices)
 
 
-def sparse_vector(q, epsilon, k, threshold):
+def sparse_vector(q, epsilon, k, threshold, middle_prng=np.random):
     indices = []
     i, count = 0, 0
     noisy_threshold = threshold + np.random.laplace(scale=2.0 / epsilon)
     while i < len(q) and count < k:
-        if q[i] + np.random.laplace(scale=4.0 * k / epsilon) >= noisy_threshold:
+        if q[i] + middle_prng.laplace(scale=4.0 * k / epsilon) >= noisy_threshold:
             indices.append(i)
             count += 1
         i += 1
