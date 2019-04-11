@@ -132,7 +132,7 @@ def evaluate(algorithms, epsilons, input_data,
 
     # create the result dict
     metric_data = {
-        epsilon: {
+        str(epsilon): {
             metric.__name__: {algorithm.__name__: [] for algorithm in algorithms} for metric in metrics
         } for epsilon in epsilons
     }
@@ -160,8 +160,8 @@ def evaluate(algorithms, epsilons, input_data,
             baseline_metrics, algorithm_metrics = baseline_metrics / total_iterations, algorithm_metrics / total_iterations
 
             for metric_index, metric in enumerate(metrics):
-                metric_data[epsilon][metric.__name__][algorithms[0].__name__].append(baseline_metrics[metric_index])
-                metric_data[epsilon][metric.__name__][algorithms[1].__name__].append(algorithm_metrics[metric_index])
+                metric_data[str(epsilon)][metric.__name__][algorithms[0].__name__].append(baseline_metrics[metric_index])
+                metric_data[str(epsilon)][metric.__name__][algorithms[1].__name__].append(algorithm_metrics[metric_index])
 
     logger.debug(metric_data)
     return metric_data
