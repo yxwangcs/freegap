@@ -96,7 +96,7 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
              label='\\huge {}'.format('Adaptive SVT w/ Gap (Middle)'),
              linewidth=3, markersize=10, marker='^')
     plt.ylim(0, 1.0)
-    plt.ylabel('\\huge {}'.format('\\# of Above-Threshold Answers'))
+    plt.ylabel('\\huge {}'.format('Precision'))
     plt.xlabel('\\huge $k$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
@@ -199,7 +199,7 @@ def main():
 
     winning_algorithm = algorithms[1:] if winning_algorithm == 'All' else (winning_algorithm, )
 
-    output_folder = './figures_new' if results.output is None else results.output
+    output_folder = './figures' if results.output is None else results.output
     k_array = np.fromiter(range(2, 25), dtype=np.int)
     for dataset in process_datasets(results.datasets):
         for algorithm in winning_algorithm:
