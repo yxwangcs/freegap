@@ -95,15 +95,18 @@ def left_epsilon(indices, top_indices, middle_indices, baseline_result, truth_in
 
 
 def _evaluate_algorithm(iterations, algorithms, dataset, kwargs, metrics, truth_indices):
-    np.random.seed()
     baseline, algorithm = algorithms
+    top_prng = np.random.RandomState()
+    middle_prng = np.random.RandomState()
+    middle_prng2 = np.random.RandomState()
+    middle_prng2.set_state(middle_prng.get_state())
 
     # run several times and record average and error
     baseline_results = [[] for _ in range(len(metrics))]
     algorithm_results = [[] for _ in range(len(metrics))]
     for _ in range(iterations):
-        baseline_result = baseline(dataset, **kwargs)
-        algorithm_result = algorithm(dataset, **kwargs)
+        baseline_result = baseline(dataset, middle_prng=middle_prng, **kwargs)
+        algorithm_result = algorithm(dataset, top_prng=top_prng, middle_prng=middle_prng, **kwargs)
         for metric_index, metric_func in enumerate(metrics):
             baseline_results[metric_index].append(metric_func(*baseline_result, baseline_result, truth_indices, kwargs['k']))
             algorithm_results[metric_index].append(metric_func(*algorithm_result, baseline_result, truth_indices, kwargs['k']))
