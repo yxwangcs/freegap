@@ -51,7 +51,7 @@ def gap_topk_estimates(q, epsilon, k):
     Y = np.tile(np.fromiter((k - (i + 1) for i in range(k - 1)), dtype=np.float, count=k - 1), (k, 1))
     Y = Y - np.tri(k, k - 1, -1) * k
     Y = (1.0 / (5 * k)) * Y
-    final_estimates = np.matmul(X, estimates) + np.matmul(Y, gaps)
+    final_estimates = X @ estimates + Y @ gaps
     final_estimates = np.asarray(final_estimates.transpose()[0])
     return indices, final_estimates
 
