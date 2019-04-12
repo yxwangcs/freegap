@@ -27,7 +27,7 @@ def gap_noisy_max(q, epsilon):
 
 def gap_noisy_topk(q, epsilon, k):
     assert k <= len(q), 'k must be less or equal to the length of q'
-    noisy_q = np.asarray(q, dtype=np.float) + np.random.laplace(scale=2.0 * k / epsilon, size=len(q))
+    noisy_q = q + np.random.laplace(scale=2.0 * k / epsilon, size=len(q))
     indices = np.argpartition(noisy_q, -k)[-k:]
     indices = indices[np.argsort(-noisy_q[indices])]
     gaps = np.fromiter((noisy_q[first] - noisy_q[second] for first, second in zip(indices[:-1], indices[1:])),
