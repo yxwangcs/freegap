@@ -45,14 +45,11 @@ def gap_topk_estimates_baseline(q, epsilon, k):
 def gap_topk_estimates(q, epsilon, k):
     indices, gaps = gap_noisy_topk(q, 0.5 * epsilon, k)
     estimates = laplace_mechanism(q, 0.5 * epsilon, indices)
-    estimates.shape = len(estimates), 1
-    gaps.shape = len(gaps), 1
-    X = (np.full((k, k), 1) + np.eye(k, k) * 4 * k) * (1.0 / (5 * k))
-    Y = np.tile(np.fromiter((k - (i + 1) for i in range(k - 1)), dtype=np.float, count=k - 1), (k, 1))
-    Y = Y - np.tri(k, k - 1, -1) * k
-    Y = (1.0 / (5 * k)) * Y
-    final_estimates = X @ estimates + Y @ gaps
-    final_estimates = np.asarray(final_estimates.transpose()[0])
+    p_total = (np.fromiter((k - i for i in range(1, k)), dtype=np.int, count=k - 1) * gaps).sum()
+    p = np.empty(k, dtype=np.float)
+    np.cumsum(gaps, out=p[1:])
+    p[0] = 0
+    final_estimates = (estimates.sum() + 4 * k * estimates + p_total - k * p) / (5 * k)
     return indices, final_estimates
 
 
