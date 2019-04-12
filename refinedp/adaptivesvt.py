@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 def adaptive_sparse_vector(q, epsilon, k, threshold, top_prng=np.random, middle_prng=np.random):
     indices, top_indices, middle_indices = [], [], []
     epsilon_0, epsilon_1, epsilon_2 = epsilon / 2.0, epsilon / (8.0 * k), epsilon / (4.0 * k)
-    sigma = 2 * np.sqrt(2) / epsilon_1
+    sigma = 3 * np.sqrt(2) / epsilon_1
     i, priv = 0, epsilon_0
     noisy_threshold = threshold + top_prng.laplace(scale=1.0 / epsilon_0)
     while i < len(q) and priv <= epsilon - 2 * epsilon_2:
