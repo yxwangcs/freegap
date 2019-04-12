@@ -4,27 +4,22 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def sparse_vector(q, epsilon, c, threshold, allocation=(0.5, 0.5)):
+def sparse_vector(q, epsilon, k, threshold, allocation=(0.5, 0.5)):
     threshold_allocation, query_allocation = allocation
     assert abs(threshold_allocation + query_allocation - 1.0) < 1e-05
-    out = []
-    count = 0
-    i = 0
-    eta = np.random.laplace(scale=1.0 / (epsilon * threshold_allocation))
-    noisy_threshold = threshold + eta
-    while i < len(q) and count < c:
-        eta_i = np.random.laplace(scale=2.0 * c / (epsilon * query_allocation))
-        noisy_q_i = q[i] + eta_i
-        if noisy_q_i >= noisy_threshold:
-            out.append(True)
+    epsilon_1, epsilon_2 = threshold_allocation * epsilon, query_allocation * epsilon
+    indices = []
+    i, count = 0, 0
+    noisy_threshold = threshold + np.random.laplace(scale=1.0 / epsilon_1)
+    while i < len(q) and count < k:
+        if q[i] + np.random.laplace(scale=2.0 * k / epsilon_2) >= noisy_threshold:
+            indices.append(i)
             count += 1
-        else:
-            out.append(False)
         i += 1
-    return out
+    return np.asarray(indices)
 
 
-def noisy_k_max(q, epsilon, k):
+def noisy_top_k(q, epsilon, k):
     assert k <= len(q), 'k must be less or equal to the length of q'
     noisy_q = np.asarray(q, dtype=np.float) + np.random.laplace(scale=2.0 * k / epsilon, size=len(q))
     indices = np.argpartition(noisy_q, -k)[-k:]
