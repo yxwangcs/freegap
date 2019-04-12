@@ -145,9 +145,11 @@ def evaluate(algorithms, epsilons, input_data,
 
             kwargs = {
                 'threshold': (dataset[sorted_indices[2 * k]] + dataset[sorted_indices[2 * k + 1]]) / 2.0,
+                #'threshold': dataset[sorted_indices[int(0.9 * len(sorted_indices))]],
                 'epsilon': epsilon,
                 'k': k
             }
+            #truth_indices = sorted_indices[:int(0.9 * len(sorted_indices)) + 1]
             truth_indices = sorted_indices[:2 * k + 1]
 
             partial_evaluate_algorithm = \

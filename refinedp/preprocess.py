@@ -19,7 +19,9 @@ def _process(in_file, delimiter=' '):
                     itemsets.append(ch)
     itemsets = np.unique(np.asarray(np.asarray(itemsets, dtype=np.int)), return_counts=True)
     logger.info('Statistics for {}: # of records: {} and # of Items: {}'.format(in_file, records + 1, len(itemsets[0])))
-    return itemsets[1]
+    res = itemsets[1]
+    np.random.RandomState(0).shuffle(res)
+    return res
 
 
 # helper functions
@@ -42,7 +44,8 @@ def process_sf1(in_file):
         for row_index, row in enumerate(reader):
             if row_index == 1:
                 data = row
-        data = tuple(map(lambda cell: int(cell), data[3:]))
+        data = np.asarray(tuple(map(lambda cell: int(cell), data[3:])))
         logger.info('Statistics for {}:  # of Items: {}'.format(in_file, len(data)))
+        np.random.RandomState(0).shuffle(data)
         return data
 
