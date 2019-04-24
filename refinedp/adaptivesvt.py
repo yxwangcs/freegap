@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 def adaptive_sparse_vector(q, epsilon, k, threshold, top_prng=np.random, middle_prng=np.random):
     indices, top_indices, middle_indices = [], [], []
     epsilon_0, epsilon_1, epsilon_2 = epsilon / 2.0, epsilon / (8.0 * k), epsilon / (4.0 * k)
-    sigma = 3 * np.sqrt(2) / epsilon_1
+    sigma = 2 * np.sqrt(2) / epsilon_1
     i, priv = 0, epsilon_0
     noisy_threshold = threshold + top_prng.laplace(scale=1.0 / epsilon_0)
     while i < len(q) and priv <= epsilon - 2 * epsilon_2:
@@ -129,14 +129,17 @@ def evaluate(algorithms, epsilons, input_data,
     dataset = np.asarray(dataset)
     logger.info('Evaluating {} on {}'.format(algorithms[-1].__name__.replace('_', ' ').title(), dataset_name))
 
+    quantiles = (0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5)
     # create the result dict
     metric_data = {
         str(epsilon): {
-            metric.__name__: {algorithm.__name__: [] for algorithm in algorithms} for metric in metrics
+            metric.__name__: {
+                algorithm.__name__: {str(quantile): [] for quantile in quantiles} for algorithm in algorithms
+            } for metric in metrics
         } for epsilon in epsilons
     }
     with mp.Pool(mp.cpu_count()) as pool:
-        for epsilon, k in tqdm.tqdm(product(epsilons, k_array), total=len(epsilons) * len(k_array)):
+        for epsilon, k, quantile in tqdm.tqdm(product(epsilons, k_array, quantiles), total=len(epsilons) * len(k_array) * len(quantiles)):
             np.random.shuffle(dataset)
             sorted_indices = np.argsort(dataset)[::-1]
             # get the iteration list
@@ -144,13 +147,11 @@ def evaluate(algorithms, epsilons, input_data,
             iterations[mp.cpu_count() - 1] += total_iterations % mp.cpu_count()
 
             kwargs = {
-                'threshold': (dataset[sorted_indices[2 * k]] + dataset[sorted_indices[2 * k + 1]]) / 2.0,
-                #'threshold': dataset[sorted_indices[int(0.9 * len(sorted_indices))]],
+                'threshold': dataset[sorted_indices[int(quantile * len(sorted_indices))]],
                 'epsilon': epsilon,
                 'k': k
             }
-            #truth_indices = sorted_indices[:int(0.9 * len(sorted_indices)) + 1]
-            truth_indices = sorted_indices[:2 * k + 1]
+            truth_indices = sorted_indices[:int(quantile * len(sorted_indices)) + 1]
 
             partial_evaluate_algorithm = \
                 partial(_evaluate_algorithm, algorithms=algorithms, dataset=dataset, kwargs=kwargs, metrics=metrics,
@@ -163,8 +164,8 @@ def evaluate(algorithms, epsilons, input_data,
             baseline_metrics, algorithm_metrics = baseline_metrics / total_iterations, algorithm_metrics / total_iterations
 
             for metric_index, metric in enumerate(metrics):
-                metric_data[str(epsilon)][metric.__name__][algorithms[0].__name__].append(baseline_metrics[metric_index])
-                metric_data[str(epsilon)][metric.__name__][algorithms[1].__name__].append(algorithm_metrics[metric_index])
+                metric_data[str(epsilon)][metric.__name__][algorithms[0].__name__][str(quantile)].append(baseline_metrics[metric_index])
+                metric_data[str(epsilon)][metric.__name__][algorithms[1].__name__][str(quantile)].append(algorithm_metrics[metric_index])
 
     logger.debug(metric_data)
     return metric_data
