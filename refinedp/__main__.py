@@ -35,7 +35,7 @@ def process_datasets(folder):
     dataset_folder = os.path.abspath(folder)
     # yield different datasets with their names
     yield 'T40100K', process_t40100k('{}/T40I10D100K.dat'.format(dataset_folder))
-    yield 'SF1', process_sf1('{}/DEC_10_SF1_PCT3.csv'.format(dataset_folder))
+    #yield 'SF1', process_sf1('{}/DEC_10_SF1_PCT3.csv'.format(dataset_folder))
     yield 'BMS-POS', process_bms_pos('{}/BMS-POS.dat'.format(dataset_folder))
     yield 'kosarak', process_kosarak('{}/kosarak.dat'.format(dataset_folder))
 
@@ -43,16 +43,27 @@ def process_datasets(folder):
 def plot_adaptive(k_array, dataset_name, data, output_prefix):
     with open('{}/{}.json'.format(output_prefix, dataset_name), 'w') as f:
         json.dump(data, f)
-    left_epsilons = []
-    for epsilon, epsilon_dict in data.items():
-        left_epsilons.append(epsilon_dict['left_epsilon']['adaptive_sparse_vector'][8])
 
     epsilon = '0.3'
+    # first find the best quantile
+    quantiles = tuple(data[epsilon]['top_branch']['adaptive_sparse_vector'].keys())
+    quantile_scores = []
+    for quantile in quantiles:
+        top = np.asarray(data[epsilon]['top_branch']['adaptive_sparse_vector'][quantile], dtype=np.int)
+        middle = np.asarray(data[epsilon]['middle_branch']['adaptive_sparse_vector'][quantile], dtype=np.int)
+        quantile_scores.append(((top + middle) - np.abs(top - middle)).sum())
+    quantile_scores = np.asarray(quantile_scores)
+    quantile = quantiles[quantile_scores.argmax()]
+
+    left_epsilons = []
+    for epsilon, epsilon_dict in data.items():
+        left_epsilons.append(epsilon_dict['left_epsilon']['adaptive_sparse_vector'][quantile][8])
+
     # plot number of above threshold answers
-    baseline_top_branch = data[epsilon]['top_branch']['sparse_vector']
-    algorithm_top_branch = data[epsilon]['top_branch']['adaptive_sparse_vector']
-    algorithm_middle_branch = data[epsilon]['middle_branch']['adaptive_sparse_vector']
-    algorithm_total = data[epsilon]['above_threshold_answers']['adaptive_sparse_vector']
+    baseline_top_branch = data[epsilon]['top_branch']['sparse_vector'][quantile]
+    algorithm_top_branch = data[epsilon]['top_branch']['adaptive_sparse_vector'][quantile]
+    algorithm_middle_branch = data[epsilon]['middle_branch']['adaptive_sparse_vector'][quantile]
+    algorithm_total = data[epsilon]['above_threshold_answers']['adaptive_sparse_vector'][quantile]
     plt.plot(k_array, baseline_top_branch,
              label='\\huge {}'.format('Classical Sparse Vector'),
              linewidth=3, markersize=10, marker='o')
@@ -79,24 +90,36 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
     plt.clf()
 
     # plot the precision
-    baseline_top_branch = data[epsilon]['precision']['sparse_vector']
-    algorithm_top_branch = data[epsilon]['top_branch_precision']['adaptive_sparse_vector']
-    algorithm_middle_branch = data[epsilon]['middle_branch_precision']['adaptive_sparse_vector']
-    algorithm_total = data[epsilon]['precision']['adaptive_sparse_vector']
-    plt.plot(k_array, baseline_top_branch,
-             label='\\huge {}'.format('Classical Sparse Vector'),
-             linewidth=3, markersize=10, marker='o')
-    plt.plot(k_array, algorithm_total,
-             label='\\huge {}'.format('Adaptive SVT w/ Gap (Total)'),
+    #baseline_top_branch = data[epsilon]['precision']['sparse_vector']
+    #algorithm_top_branch = data[epsilon]['top_branch_precision']['adaptive_sparse_vector']
+    #algorithm_middle_branch = data[epsilon]['middle_branch_precision']['adaptive_sparse_vector']
+    algorithm_total = data[epsilon]['precision']['adaptive_sparse_vector'][quantile]
+    sparse_vector_precision = data[epsilon]['precision']['sparse_vector'][quantile]
+    sparse_vector_recall = data[epsilon]['recall']['sparse_vector'][quantile]
+    algorithm_recall = data[epsilon]['recall']['adaptive_sparse_vector'][quantile]
+    #plt.plot(k_array, baseline_top_branch,
+             #label='\\huge {}'.format('Classical Sparse Vector'),
+             #linewidth=3, markersize=10, marker='o')
+    plt.plot(k_array, sparse_vector_precision,
+             label='\\huge {}'.format('Precision - Sparse Vector'),
              linewidth=3, markersize=10, marker='P', zorder=5)
-    plt.plot(k_array, algorithm_top_branch,
-             label='\\huge {}'.format('Adaptive SVT w/ Gap (Top)'),
-             linewidth=3, markersize=10, marker='s')
-    plt.plot(k_array, algorithm_middle_branch,
-             label='\\huge {}'.format('Adaptive SVT w/ Gap (Middle)'),
-             linewidth=3, markersize=10, marker='^')
+    plt.plot(k_array, algorithm_total,
+             label='\\huge {}'.format('Precision - Adaptive SVT w/ Gap'),
+             linewidth=3, markersize=10, marker='P', zorder=5)
+    plt.plot(k_array, sparse_vector_recall,
+             label='\\huge {}'.format('Recall - Sparse Vector'),
+             linewidth=3, markersize=10, marker='P', zorder=5)
+    plt.plot(k_array, algorithm_recall,
+             label='\\huge {}'.format('Recall - Adaptive SVT w/ Gap'),
+             linewidth=3, markersize=10, marker='P', zorder=5)
+    #plt.plot(k_array, algorithm_top_branch,
+             #label='\\huge {}'.format('Adaptive SVT w/ Gap (Top)'),
+             #linewidth=3, markersize=10, marker='s')
+    #plt.plot(k_array, algorithm_middle_branch,
+             #label='\\huge {}'.format('Adaptive SVT w/ Gap (Middle)'),
+             #linewidth=3, markersize=10, marker='^')
     plt.ylim(0, 1.0)
-    plt.ylabel('\\huge {}'.format('Precision'))
+    plt.ylabel('\\huge {}'.format('Precision and Recall'))
     plt.xlabel('\\huge $k$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
