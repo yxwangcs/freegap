@@ -56,7 +56,7 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
     quantile = quantiles[quantile_scores.argmax()]
 
     left_epsilons = []
-    for epsilon, epsilon_dict in data.items():
+    for _, epsilon_dict in data.items():
         left_epsilons.append(epsilon_dict['left_epsilon']['adaptive_sparse_vector'][quantile][8])
 
     # plot number of above threshold answers
