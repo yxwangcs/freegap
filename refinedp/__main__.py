@@ -107,12 +107,12 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
     plt.plot(k_array, algorithm_total,
              label='\\huge {}'.format('Precision - Adaptive SVT w/ Gap'),
              linewidth=3, markersize=10, marker='P', zorder=5)
-    plt.plot(k_array, sparse_vector_recall,
-             label='\\huge {}'.format('Recall - Sparse Vector'),
-             linewidth=3, markersize=10, marker='P', zorder=5)
-    plt.plot(k_array, algorithm_recall,
-             label='\\huge {}'.format('Recall - Adaptive SVT w/ Gap'),
-             linewidth=3, markersize=10, marker='P', zorder=5)
+    #plt.plot(k_array, sparse_vector_recall,
+             #label='\\huge {}'.format('Recall - Sparse Vector'),
+             #linewidth=3, markersize=10, marker='P', zorder=5)
+    #plt.plot(k_array, algorithm_recall,
+             #label='\\huge {}'.format('Recall - Adaptive SVT w/ Gap'),
+             #linewidth=3, markersize=10, marker='P', zorder=5)
     #plt.plot(k_array, algorithm_top_branch,
              #label='\\huge {}'.format('Adaptive SVT w/ Gap (Top)'),
              #linewidth=3, markersize=10, marker='s')
