@@ -58,6 +58,7 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
     left_epsilons = []
     for _, epsilon_dict in data.items():
         left_epsilons.append(epsilon_dict['left_epsilon']['adaptive_sparse_vector'][quantile][8])
+    logger.info('best quantile is {}'.format(quantile))
 
     # plot number of above threshold answers
     baseline_top_branch = data[epsilon]['top_branch']['sparse_vector'][quantile]
