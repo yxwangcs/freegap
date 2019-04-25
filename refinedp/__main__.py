@@ -138,7 +138,7 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
     plt.plot(epsilons, left_budget,
              label='\\huge {}'.format('Adaptive Sparse Vector with Gap'),
              linewidth=3, markersize=10, marker='o')
-    plt.ylim(0, left_budget.max() - (left_budget.max() % 5) + 5)
+    plt.ylim(0, 25)
     plt.ylabel('\\huge \\% Remaining Privacy Budget')
     plt.xlabel('\\huge $\\epsilon$')
     plt.xticks(fontsize=24)
