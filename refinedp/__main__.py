@@ -231,6 +231,9 @@ def main():
             algorithm_folder = '{}/{}'.format(os.path.abspath(output_folder), algorithm)
             os.makedirs(algorithm_folder, exist_ok=True)
             output_prefix = os.path.abspath(algorithm_folder)
+            plt.hist(dataset[1], bins=200, range=(1, 1000))
+            plt.savefig('{}/{}.pdf'.format(output_prefix, dataset[0]))
+            plt.clf()
 
             if 'AdaptiveSparseVector' == algorithm:
                 #data = evaluate_adaptivesvt((sparse_vector, adaptive_sparse_vector),
