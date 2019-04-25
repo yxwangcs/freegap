@@ -77,7 +77,7 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
     plt.plot(k_array, algorithm_middle_branch,
              label='\\huge {}'.format('Adaptive SVT w/ Gap (Middle)'),
              linewidth=3, markersize=10, marker='^')
-    plt.ylim(0, 70)
+    plt.ylim(0, 50)
     plt.ylabel('\\huge {}'.format('\\# of Above-Threshold Answers'))
     plt.xlabel('\\huge $k$')
     plt.xticks(fontsize=24)
