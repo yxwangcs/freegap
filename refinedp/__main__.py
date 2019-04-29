@@ -76,10 +76,11 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
     logger.info('best quantile is {}'.format(quantile))
 
     # plot number of above threshold answers
-    baseline_top_branch = data[epsilon]['top_branch']['sparse_vector'][quantile]
-    algorithm_top_branch = data[epsilon]['top_branch']['adaptive_sparse_vector'][quantile]
-    algorithm_middle_branch = data[epsilon]['middle_branch']['adaptive_sparse_vector'][quantile]
-    algorithm_total = data[epsilon]['above_threshold_answers']['adaptive_sparse_vector'][quantile]
+    baseline_top_branch = np.asarray(data[epsilon]['top_branch']['sparse_vector'][quantile])
+    algorithm_top_branch = np.asarray(data[epsilon]['top_branch']['adaptive_sparse_vector'][quantile])
+    algorithm_middle_branch = np.asarray(data[epsilon]['middle_branch']['adaptive_sparse_vector'][quantile])
+    #algorithm_total = np.asarray(data[epsilon]['above_threshold_answers']['adaptive_sparse_vector'][quantile])
+    """
     plt.plot(k_array, baseline_top_branch,
              label='\\huge {}'.format('Classical Sparse Vector'),
              linewidth=3, markersize=10, marker='o')
