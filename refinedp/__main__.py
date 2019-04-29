@@ -209,7 +209,7 @@ def plot_mean_square_error(k_array, dataset_name, data, output_prefix, theoretic
             plt.ylim(0, 20)
             plt.ylabel('\\huge \\% Improvement in MSE')
         plt.plot(theoretical_x, 100 * theoretical_y, linewidth=5,
-                 linestyle='--', label='\\huge Expected Improvement')
+                 linestyle='--', label='\\huge Theoretical Expected Improvement')
         plt.xlabel('\\huge $k$')
         plt.xticks(fontsize=24)
         plt.yticks(fontsize=24)
@@ -226,7 +226,7 @@ def plot_mean_square_error(k_array, dataset_name, data, output_prefix, theoretic
     plt.plot(epsilons, improves_for_epsilons, label='\\huge {}'.format(algorithm_name), linewidth=3,
              markersize=10, marker='o')
     plt.plot(epsilons, [100 * theoretical(10) for _ in range(len(epsilons))], linewidth=5,
-             linestyle='--', label='\\huge Expected Improvement')
+             linestyle='--', label='\\huge Theoretical Expected Improvement')
     plt.ylabel('\\huge \\% Improvement in MSE')
     plt.ylim(0, 20)
     plt.xlabel('\\huge $\\epsilon$')
