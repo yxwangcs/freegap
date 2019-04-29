@@ -213,13 +213,15 @@ def plot_mean_square_error(k_array, dataset_name, data, output_prefix, theoretic
         plt.xlabel('\\huge $k$')
         plt.xticks(fontsize=24)
         plt.yticks(fontsize=24)
-        legend = plt.legend()
+        legend = plt.legend(loc=3)
         legend.get_frame().set_linewidth(0.0)
         plt.gcf().set_tight_layout(True)
-        if epsilon == '0.3':
+        if epsilon == '0.7':
             logger.info('Figures saved to {}'.format(output_prefix))
-            plt.savefig('{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',
-                                                 str(epsilon).replace('.', '-')))
+            filename = '{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',
+                                                 str(epsilon).replace('.', '-'))
+            plt.savefig(filename)
+            compress_pdf(filename)
         plt.clf()
 
     epsilons = np.asarray(tuple(data.keys()), dtype=np.float)
@@ -233,11 +235,13 @@ def plot_mean_square_error(k_array, dataset_name, data, output_prefix, theoretic
     plt.xticks(np.arange(epsilons.min(), epsilons.max() + 0.1, 0.2))
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
-    legend = plt.legend()
+    legend = plt.legend(loc=3)
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
     logger.info('Figures saved to {}'.format(output_prefix))
-    plt.savefig('{}/{}-{}-epsilons.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',))
+    filename = '{}/{}-{}-epsilons.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',)
+    plt.savefig(filename)
+    compress_pdf(filename)
     plt.clf()
 
 
@@ -269,8 +273,10 @@ def main():
             os.makedirs(algorithm_folder, exist_ok=True)
             output_prefix = os.path.abspath(algorithm_folder)
             plt.hist(dataset[1], bins=200, range=(1, 1000))
-            plt.savefig('{}/{}.pdf'.format(output_prefix, dataset[0]))
+            filename = '{}/{}.pdf'.format(output_prefix, dataset[0])
             plt.savefig(filename)
+            compress_pdf(filename)
+
             plt.clf()
 
             if 'AdaptiveSparseVector' == algorithm:
