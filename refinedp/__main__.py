@@ -58,14 +58,17 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
 
     epsilon = '0.3'
     # first find the best quantile
+    """
     quantiles = tuple(data[epsilon]['top_branch']['adaptive_sparse_vector'].keys())
     quantile_scores = []
     for quantile in quantiles:
         top = np.asarray(data[epsilon]['top_branch']['adaptive_sparse_vector'][quantile], dtype=np.int)
         middle = np.asarray(data[epsilon]['middle_branch']['adaptive_sparse_vector'][quantile], dtype=np.int)
-        quantile_scores.append(((top + middle) - np.abs(top - middle)).sum())
+        quantile_scores.append((top + middle).sum())
     quantile_scores = np.asarray(quantile_scores)
     quantile = quantiles[quantile_scores.argmax()]
+    """
+    quantile = '0.05'
 
     left_epsilons = []
     for _, epsilon_dict in data.items():
