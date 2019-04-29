@@ -56,7 +56,7 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
     with open('{}/{}.json'.format(output_prefix, dataset_name), 'w') as f:
         json.dump(data, f)
 
-    epsilon = '0.3'
+    epsilon = '0.7'
     # first find the best quantile
     """
     quantiles = tuple(data[epsilon]['top_branch']['adaptive_sparse_vector'].keys())
