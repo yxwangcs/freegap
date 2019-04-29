@@ -93,17 +93,34 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
     plt.plot(k_array, algorithm_middle_branch,
              label='\\huge {}'.format('Adaptive SVT w/ Gap (Middle)'),
              linewidth=3, markersize=10, marker='^')
+    """
+    width = 0.6
     plt.ylim(0, 50)
+    sub_k_array = np.arange(2, 24, 2)
+    colormap = plt.get_cmap('tab10')
+    plt.bar(sub_k_array - width, baseline_top_branch[sub_k_array - 1], width, align='edge',
+            label='\\huge Sparse Vector', facecolor=colormap.colors[0] + (0.8,), edgecolor='black', hatch='/')
+    #plt.bar(sub_k_array - width, algorithm_total[sub_k_array - 1], width, align='edge',
+            #label='\\huge Adaptive SVT w/ Gap  (Total)', facecolor=colormap.colors[1] + (0.8,), hatch='O')
+    plt.bar(sub_k_array, algorithm_middle_branch[sub_k_array - 1], width, align='edge', facecolor=colormap.colors[1] + (0.8,),
+            edgecolor='black',
+            label='\\huge Adaptive SVT w/ Gap (Middle)', hatch='.')
+    plt.bar(sub_k_array, algorithm_top_branch[sub_k_array - 1], width, bottom=algorithm_middle_branch[sub_k_array - 1], align='edge', facecolor=colormap.colors[3] + (0.8,),
+            edgecolor='black',
+            label='\\huge Adaptive SVT w/ Gap (Top)', hatch='*')
     plt.ylabel('\\huge {}'.format('\\# of Above-Threshold Answers'))
     plt.xlabel('\\huge $k$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
-    legend = plt.legend()
+    plt.xticks(sub_k_array)
+    legend = plt.legend(framealpha=0, loc=2)
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
     logger.info('Figures saved to {}'.format(output_prefix))
-    plt.savefig('{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'above_threshold_answers',
-                                         str(epsilon).replace('.', '-')))
+    filename = '{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'above_threshold_answers',
+                                         str(epsilon).replace('.', '-'))
+    plt.savefig(filename)
+    compress_pdf(filename)
     plt.clf()
 
     # plot the precision
