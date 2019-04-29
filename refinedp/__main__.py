@@ -30,12 +30,24 @@ coloredlogs.install(level='INFO', fmt='%(asctime)s %(levelname)s - %(name)s %(me
 logger = logging.getLogger(__name__)
 
 
+def compress_pdf(file):
+    import subprocess
+    import os
+    os.rename(file, '{}.temp'.format(file))
+    subprocess.call(['gs', '-sDEVICE=pdfwrite', '-dCompatibilityLevel=1.4',
+                     '-dPDFSETTINGS=/default',
+                     '-dNOPAUSE', '-dQUIET', '-dBATCH',
+                     '-sOutputFile={}'.format(file),
+                     '{}.temp'.format(file)]
+                    )
+    os.remove('{}.temp'.format(file))
+
+
 def process_datasets(folder):
     logger.info('Loading datasets')
     dataset_folder = os.path.abspath(folder)
     # yield different datasets with their names
     yield 'T40100K', process_t40100k('{}/T40I10D100K.dat'.format(dataset_folder))
-    #yield 'SF1', process_sf1('{}/DEC_10_SF1_PCT3.csv'.format(dataset_folder))
     yield 'BMS-POS', process_bms_pos('{}/BMS-POS.dat'.format(dataset_folder))
     yield 'kosarak', process_kosarak('{}/kosarak.dat'.format(dataset_folder))
 
@@ -233,6 +245,7 @@ def main():
             output_prefix = os.path.abspath(algorithm_folder)
             plt.hist(dataset[1], bins=200, range=(1, 1000))
             plt.savefig('{}/{}.pdf'.format(output_prefix, dataset[0]))
+            plt.savefig(filename)
             plt.clf()
 
             if 'AdaptiveSparseVector' == algorithm:
