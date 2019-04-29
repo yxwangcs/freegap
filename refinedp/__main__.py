@@ -129,16 +129,16 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
     #algorithm_middle_branch = data[epsilon]['middle_branch_precision']['adaptive_sparse_vector']
     algorithm_total = data[epsilon]['precision']['adaptive_sparse_vector'][quantile]
     sparse_vector_precision = data[epsilon]['precision']['sparse_vector'][quantile]
-    sparse_vector_recall = data[epsilon]['recall']['sparse_vector'][quantile]
-    algorithm_recall = data[epsilon]['recall']['adaptive_sparse_vector'][quantile]
+    #sparse_vector_recall = data[epsilon]['recall']['sparse_vector'][quantile]
+    #algorithm_recall = data[epsilon]['recall']['adaptive_sparse_vector'][quantile]
     #plt.plot(k_array, baseline_top_branch,
              #label='\\huge {}'.format('Classical Sparse Vector'),
              #linewidth=3, markersize=10, marker='o')
     plt.plot(k_array, sparse_vector_precision,
-             label='\\huge {}'.format('Precision - Sparse Vector'),
+             label='\\huge {}'.format('Sparse Vector'),
              linewidth=3, markersize=10, marker='P', zorder=5)
     plt.plot(k_array, algorithm_total,
-             label='\\huge {}'.format('Precision - Adaptive SVT w/ Gap'),
+             label='\\huge {}'.format('Adaptive SVT w/ Gap'),
              linewidth=3, markersize=10, marker='P', zorder=5)
     #plt.plot(k_array, sparse_vector_recall,
              #label='\\huge {}'.format('Recall - Sparse Vector'),
@@ -153,16 +153,18 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
              #label='\\huge {}'.format('Adaptive SVT w/ Gap (Middle)'),
              #linewidth=3, markersize=10, marker='^')
     plt.ylim(0, 1.0)
-    plt.ylabel('\\huge {}'.format('Precision and Recall'))
+    plt.ylabel('\\huge {}'.format('Precision'))
     plt.xlabel('\\huge $k$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
-    legend = plt.legend()
+    legend = plt.legend(loc=3)
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
     logger.info('Figures saved to {}'.format(output_prefix))
-    plt.savefig('{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'precision',
-                                         str(epsilon).replace('.', '-')))
+    filename = '{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'precision',
+                                         str(epsilon).replace('.', '-'))
+    plt.savefig(filename)
+    compress_pdf(filename)
     plt.clf()
 
     # plot left epsilons
@@ -176,11 +178,13 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
     plt.xlabel('\\huge $\\epsilon$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
-    legend = plt.legend()
+    legend = plt.legend(loc=3)
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
     logger.info('Figures saved to {}'.format(output_prefix))
-    plt.savefig('{}/{}-{}.pdf'.format(output_prefix, dataset_name, 'left-epsilon'))
+    filename = '{}/{}-{}.pdf'.format(output_prefix, dataset_name, 'left-epsilon')
+    plt.savefig(filename)
+    compress_pdf(filename)
     plt.clf()
 
 
