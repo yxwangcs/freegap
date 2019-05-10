@@ -140,7 +140,7 @@ def evaluate(algorithms, epsilons, input_data,
             # for svts
             kwargs = {}
             if 'threshold' in algorithm.__code__.co_varnames:
-                threshold = (dataset[sorted_indices[k]] + dataset[sorted_indices[k + 1]]) / 2.0
+                threshold = dataset[sorted_indices[int(0.05 * len(sorted_indices))]]#(dataset[sorted_indices[k]] + dataset[sorted_indices[k + 1]]) / 2.0
                 kwargs['threshold'] = threshold
             truth_indices = sorted_indices[:k]
             kwargs['epsilon'] = epsilon
