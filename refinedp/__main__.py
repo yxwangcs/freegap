@@ -35,7 +35,6 @@ def process_datasets(folder):
     dataset_folder = os.path.abspath(folder)
     # yield different datasets with their names
     yield 'T40100K', process_t40100k('{}/T40I10D100K.dat'.format(dataset_folder))
-    #yield 'SF1', process_sf1('{}/DEC_10_SF1_PCT3.csv'.format(dataset_folder))
     yield 'BMS-POS', process_bms_pos('{}/BMS-POS.dat'.format(dataset_folder))
     yield 'kosarak', process_kosarak('{}/kosarak.dat'.format(dataset_folder))
 
@@ -64,11 +63,11 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
     baseline_top_branch = data[epsilon]['top_branch']['sparse_vector'][quantile]
     algorithm_top_branch = data[epsilon]['top_branch']['adaptive_sparse_vector'][quantile]
     algorithm_middle_branch = data[epsilon]['middle_branch']['adaptive_sparse_vector'][quantile]
-    algorithm_total = data[epsilon]['above_threshold_answers']['adaptive_sparse_vector'][quantile]
+    adaptive_precision = data[epsilon]['above_threshold_answers']['adaptive_sparse_vector'][quantile]
     plt.plot(k_array, baseline_top_branch,
              label='\\huge {}'.format('Classical Sparse Vector'),
              linewidth=3, markersize=10, marker='o')
-    plt.plot(k_array, algorithm_total,
+    plt.plot(k_array, adaptive_precision,
              label='\\huge {}'.format('Adaptive SVT w/ Gap (Total)'),
              linewidth=3, markersize=10, marker='P', zorder=5)
     plt.plot(k_array, algorithm_top_branch,
@@ -91,36 +90,16 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
     plt.clf()
 
     # plot the precision
-    #baseline_top_branch = data[epsilon]['precision']['sparse_vector']
-    #algorithm_top_branch = data[epsilon]['top_branch_precision']['adaptive_sparse_vector']
-    #algorithm_middle_branch = data[epsilon]['middle_branch_precision']['adaptive_sparse_vector']
-    algorithm_total = data[epsilon]['precision']['adaptive_sparse_vector'][quantile]
+    adaptive_precision = data[epsilon]['precision']['adaptive_sparse_vector'][quantile]
     sparse_vector_precision = data[epsilon]['precision']['sparse_vector'][quantile]
-    sparse_vector_recall = data[epsilon]['recall']['sparse_vector'][quantile]
-    algorithm_recall = data[epsilon]['recall']['adaptive_sparse_vector'][quantile]
-    #plt.plot(k_array, baseline_top_branch,
-             #label='\\huge {}'.format('Classical Sparse Vector'),
-             #linewidth=3, markersize=10, marker='o')
     plt.plot(k_array, sparse_vector_precision,
              label='\\huge {}'.format('Precision - Sparse Vector'),
              linewidth=3, markersize=10, marker='P', zorder=5)
-    plt.plot(k_array, algorithm_total,
+    plt.plot(k_array, adaptive_precision,
              label='\\huge {}'.format('Precision - Adaptive SVT w/ Gap'),
              linewidth=3, markersize=10, marker='P', zorder=5)
-    #plt.plot(k_array, sparse_vector_recall,
-             #label='\\huge {}'.format('Recall - Sparse Vector'),
-             #linewidth=3, markersize=10, marker='P', zorder=5)
-    #plt.plot(k_array, algorithm_recall,
-             #label='\\huge {}'.format('Recall - Adaptive SVT w/ Gap'),
-             #linewidth=3, markersize=10, marker='P', zorder=5)
-    #plt.plot(k_array, algorithm_top_branch,
-             #label='\\huge {}'.format('Adaptive SVT w/ Gap (Top)'),
-             #linewidth=3, markersize=10, marker='s')
-    #plt.plot(k_array, algorithm_middle_branch,
-             #label='\\huge {}'.format('Adaptive SVT w/ Gap (Middle)'),
-             #linewidth=3, markersize=10, marker='^')
     plt.ylim(0, 1.0)
-    plt.ylabel('\\huge {}'.format('Precision and Recall'))
+    plt.ylabel('\\huge {}'.format('Precision'))
     plt.xlabel('\\huge $k$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
@@ -132,7 +111,7 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
                                          str(epsilon).replace('.', '-')))
     plt.clf()
 
-    # plot left epsilons
+    # plot remaining epsilons
     epsilons = np.asarray(tuple(data.keys()), dtype=np.float)
     left_budget = np.asarray(left_epsilons) * 100
     plt.plot(epsilons, left_budget,
@@ -236,25 +215,25 @@ def main():
             plt.clf()
 
             if 'AdaptiveSparseVector' == algorithm:
-                #data = evaluate_adaptivesvt((sparse_vector, adaptive_sparse_vector),
-                                            #tuple(epsilon / 10.0 for epsilon in range(1, 16)), dataset)
-                with open('/home/grads/ykw5163/mll/refinedp/figures/AdaptiveSparseVector/{}.json'.format(dataset[0]), 'r') as f:
-                    data = json.load(f)
-                    plot_adaptive(k_array, dataset[0], data, output_prefix)
+                data = evaluate_adaptivesvt((sparse_vector, adaptive_sparse_vector),
+                                            tuple(epsilon / 10.0 for epsilon in range(1, 16)), dataset)
+                #with open('/home/grads/ykw5163/mll/refinedp/figures/AdaptiveSparseVector/{}.json'.format(dataset[0]), 'r') as f:
+                    #data = json.load(f)
+                plot_adaptive(k_array, dataset[0], data, output_prefix)
             if 'GapSparseVector' == algorithm:
-                #data = evaluate_gap_estimates((gap_svt_estimates_baseline, gap_svt_estimates),
-                                              #tuple(epsilon / 10.0 for epsilon in range(1, 16)), dataset)
-                with open('/home/grads/ykw5163/mll/refinedp/figures/GapSparseVector/{}.json'.format(dataset[0]), 'r') as f:
-                    data = json.load(f)
-                    plot_mean_square_error(k_array, dataset[0], data, output_prefix,
+                data = evaluate_gap_estimates((gap_svt_estimates_baseline, gap_svt_estimates),
+                                              tuple(epsilon / 10.0 for epsilon in range(1, 16)), dataset, total_iterations=20000)
+                #with open('/home/grads/ykw5163/mll/refinedp/figures/GapSparseVector/{}.json'.format(dataset[0]), 'r') as f:
+                    #data = json.load(f)
+                plot_mean_square_error(k_array, dataset[0], data, output_prefix,
                                            lambda x: 1 / (1 + ((np.power(1 + np.power(2 * x, 2.0 / 3), 3)) / (x * x))),
                                            'Sparse Vector with Measures', 'gap_svt_estimates_baseline')
             if 'GapTopK' == algorithm:
-                with open('/home/grads/ykw5163/mll/refinedp/figures/GapTopK/{}.json'.format(dataset[0]), 'r') as f:
-                    data = json.load(f)
-                #data = evaluate_gap_estimates((gap_topk_estimates_baseline, gap_topk_estimates),
-                                              #tuple(epsilon / 10.0 for epsilon in range(1, 16)), dataset)
-                    plot_mean_square_error(k_array, dataset[0], data, output_prefix, lambda x: (x - 1) / (5 * x),
+                #with open('/home/grads/ykw5163/mll/refinedp/figures/GapTopK/{}.json'.format(dataset[0]), 'r') as f:
+                    #data = json.load(f)
+                data = evaluate_gap_estimates((gap_topk_estimates_baseline, gap_topk_estimates),
+                                              tuple(epsilon / 10.0 for epsilon in range(1, 16)), dataset, total_iterations=20000)
+                plot_mean_square_error(k_array, dataset[0], data, output_prefix, lambda x: (x - 1) / (5 * x),
                                            'Noisy Top-K with Measures', 'gap_topk_estimates_baseline')
 
 

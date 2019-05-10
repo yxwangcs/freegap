@@ -52,10 +52,6 @@ def precision(indices, top_indices, middle_indices, baseline_result, truth_indic
     return len(np.intersect1d(indices, truth_indices)) / float(len(indices))
 
 
-def recall(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
-    return len(np.intersect1d(indices, truth_indices)) / float(len(truth_indices))
-
-
 def top_branch(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
     return len(top_indices)
 
@@ -71,19 +67,11 @@ def top_branch_precision(indices, top_indices, middle_indices, baseline_result, 
         return len(np.intersect1d(top_indices, truth_indices)) / float(len(top_indices))
 
 
-def top_branch_recall(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
-    return len(np.intersect1d(top_indices, truth_indices)) / float(len(truth_indices))
-
-
 def middle_branch_precision(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
     if len(middle_indices) == 0:
         return 1.0
     else:
         return len(np.intersect1d(middle_indices, truth_indices)) / float(len(middle_indices))
-
-
-def middle_branch_recall(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
-    return len(np.intersect1d(middle_indices, truth_indices)) / float(len(truth_indices))
 
 
 def left_epsilon(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
@@ -118,8 +106,8 @@ def _evaluate_algorithm(iterations, algorithms, dataset, kwargs, metrics, truth_
 
 def evaluate(algorithms, epsilons, input_data,
              metrics=(above_threshold_answers, precision, top_branch, middle_branch, top_branch_precision,
-                      middle_branch_precision, left_epsilon, recall, middle_branch_recall, top_branch_recall),
-             k_array=np.array(range(2, 25)), total_iterations=20000):
+                      middle_branch_precision, left_epsilon),
+             k_array=np.array(range(2, 25)), total_iterations=40000):
     assert len(algorithms) == 2, 'algorithms must contain baseline and the algorithm to evaluate'
     # flatten epsilon
     epsilons = (epsilons, ) if isinstance(epsilons, (int, float)) else epsilons
@@ -129,17 +117,17 @@ def evaluate(algorithms, epsilons, input_data,
     dataset = np.asarray(dataset)
     logger.info('Evaluating {} on {}'.format(algorithms[-1].__name__.replace('_', ' ').title(), dataset_name))
 
-    quantiles = (0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5)
+    QUANTILE = 0.05
     # create the result dict
+    # epsilon -> metric -> algorithm -> [data for each k]
     metric_data = {
         str(epsilon): {
-            metric.__name__: {
-                algorithm.__name__: {str(quantile): [] for quantile in quantiles} for algorithm in algorithms
-            } for metric in metrics
+            metric.__name__: {algorithm.__name__: [] for algorithm in algorithms}
+            for metric in metrics
         } for epsilon in epsilons
     }
     with mp.Pool(mp.cpu_count()) as pool:
-        for epsilon, k, quantile in tqdm.tqdm(product(epsilons, k_array, quantiles), total=len(epsilons) * len(k_array) * len(quantiles)):
+        for epsilon, k in tqdm.tqdm(product(epsilons, k_array), total=len(epsilons) * len(k_array)):
             np.random.shuffle(dataset)
             sorted_indices = np.argsort(dataset)[::-1]
             # get the iteration list
@@ -147,25 +135,27 @@ def evaluate(algorithms, epsilons, input_data,
             iterations[mp.cpu_count() - 1] += total_iterations % mp.cpu_count()
 
             kwargs = {
-                'threshold': dataset[sorted_indices[int(quantile * len(sorted_indices))]],
+                'threshold': dataset[sorted_indices[int(QUANTILE * len(sorted_indices))]],
                 'epsilon': epsilon,
                 'k': k
             }
-            truth_indices = sorted_indices[:int(quantile * len(sorted_indices)) + 1]
+            truth_indices = sorted_indices[:int(QUANTILE * len(sorted_indices)) + 1]
 
             partial_evaluate_algorithm = \
                 partial(_evaluate_algorithm, algorithms=algorithms, dataset=dataset, kwargs=kwargs, metrics=metrics,
                         truth_indices=truth_indices)
 
+            # run and collect data
             baseline_metrics, algorithm_metrics = np.zeros((len(metrics), )), np.zeros((len(metrics), ))
             for local_baseline, local_algorithm in pool.imap_unordered(partial_evaluate_algorithm, iterations):
                 baseline_metrics += local_baseline
                 algorithm_metrics += local_algorithm
             baseline_metrics, algorithm_metrics = baseline_metrics / total_iterations, algorithm_metrics / total_iterations
 
+            # merge the results
             for metric_index, metric in enumerate(metrics):
-                metric_data[str(epsilon)][metric.__name__][algorithms[0].__name__][str(quantile)].append(baseline_metrics[metric_index])
-                metric_data[str(epsilon)][metric.__name__][algorithms[1].__name__][str(quantile)].append(algorithm_metrics[metric_index])
+                metric_data[str(epsilon)][metric.__name__][algorithms[0].__name__].append(baseline_metrics[metric_index])
+                metric_data[str(epsilon)][metric.__name__][algorithms[1].__name__].append(algorithm_metrics[metric_index])
 
     logger.debug(metric_data)
     return metric_data
