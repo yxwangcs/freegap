@@ -30,6 +30,19 @@ coloredlogs.install(level='INFO', fmt='%(asctime)s %(levelname)s - %(name)s %(me
 logger = logging.getLogger(__name__)
 
 
+def compress_pdf(file):
+    import subprocess
+    import os
+    os.rename(file, '{}.temp'.format(file))
+    subprocess.call(['gs', '-sDEVICE=pdfwrite', '-dCompatibilityLevel=1.4',
+                     '-dPDFSETTINGS=/default',
+                     '-dNOPAUSE', '-dQUIET', '-dBATCH',
+                     '-sOutputFile={}'.format(file),
+                     '{}.temp'.format(file)]
+                    )
+    os.remove('{}.temp'.format(file))
+
+
 def process_datasets(folder):
     logger.info('Loading datasets')
     dataset_folder = os.path.abspath(folder)
@@ -43,16 +56,19 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
     with open('{}/{}.json'.format(output_prefix, dataset_name), 'w') as f:
         json.dump(data, f)
 
-    epsilon = '0.3'
+    epsilon = '0.7'
     # first find the best quantile
+    """
     quantiles = tuple(data[epsilon]['top_branch']['adaptive_sparse_vector'].keys())
     quantile_scores = []
     for quantile in quantiles:
         top = np.asarray(data[epsilon]['top_branch']['adaptive_sparse_vector'][quantile], dtype=np.int)
         middle = np.asarray(data[epsilon]['middle_branch']['adaptive_sparse_vector'][quantile], dtype=np.int)
-        quantile_scores.append(((top + middle) - np.abs(top - middle)).sum())
+        quantile_scores.append((top + middle).sum())
     quantile_scores = np.asarray(quantile_scores)
     quantile = quantiles[quantile_scores.argmax()]
+    """
+    quantile = '0.05'
 
     left_epsilons = []
     for _, epsilon_dict in data.items():
@@ -76,24 +92,41 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
     plt.plot(k_array, algorithm_middle_branch,
              label='\\huge {}'.format('Adaptive SVT w/ Gap (Middle)'),
              linewidth=3, markersize=10, marker='^')
+    """
+    width = 0.6
     plt.ylim(0, 50)
+    sub_k_array = np.arange(2, 24, 2)
+    colormap = plt.get_cmap('tab10')
+    plt.bar(sub_k_array - width, baseline_top_branch[sub_k_array - 1], width, align='edge',
+            label='\\huge Sparse Vector', facecolor=colormap.colors[0] + (0.8,), edgecolor='black', hatch='/')
+    #plt.bar(sub_k_array - width, algorithm_total[sub_k_array - 1], width, align='edge',
+            #label='\\huge Adaptive SVT w/ Gap  (Total)', facecolor=colormap.colors[1] + (0.8,), hatch='O')
+    plt.bar(sub_k_array, algorithm_middle_branch[sub_k_array - 1], width, align='edge', facecolor=colormap.colors[1] + (0.8,),
+            edgecolor='black',
+            label='\\huge Adaptive SVT w/ Gap (Middle)', hatch='.')
+    plt.bar(sub_k_array, algorithm_top_branch[sub_k_array - 1], width, bottom=algorithm_middle_branch[sub_k_array - 1], align='edge', facecolor=colormap.colors[3] + (0.8,),
+            edgecolor='black',
+            label='\\huge Adaptive SVT w/ Gap (Top)', hatch='*')
     plt.ylabel('\\huge {}'.format('\\# of Above-Threshold Answers'))
     plt.xlabel('\\huge $k$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
-    legend = plt.legend()
+    plt.xticks(sub_k_array)
+    legend = plt.legend(framealpha=0, loc=2)
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
     logger.info('Figures saved to {}'.format(output_prefix))
-    plt.savefig('{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'above_threshold_answers',
-                                         str(epsilon).replace('.', '-')))
+    filename = '{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'above_threshold_answers',
+                                         str(epsilon).replace('.', '-'))
+    plt.savefig(filename)
+    compress_pdf(filename)
     plt.clf()
 
     # plot the precision
     adaptive_precision = data[epsilon]['precision']['adaptive_sparse_vector'][quantile]
     sparse_vector_precision = data[epsilon]['precision']['sparse_vector'][quantile]
     plt.plot(k_array, sparse_vector_precision,
-             label='\\huge {}'.format('Precision - Sparse Vector'),
+             label='\\huge {}'.format('Sparse Vector'),
              linewidth=3, markersize=10, marker='P', zorder=5)
     plt.plot(k_array, adaptive_precision,
              label='\\huge {}'.format('Precision - Adaptive SVT w/ Gap'),
@@ -103,12 +136,14 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
     plt.xlabel('\\huge $k$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
-    legend = plt.legend()
+    legend = plt.legend(loc=3)
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
     logger.info('Figures saved to {}'.format(output_prefix))
-    plt.savefig('{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'precision',
-                                         str(epsilon).replace('.', '-')))
+    filename = '{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'precision',
+                                         str(epsilon).replace('.', '-'))
+    plt.savefig(filename)
+    compress_pdf(filename)
     plt.clf()
 
     # plot remaining epsilons
@@ -122,11 +157,13 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
     plt.xlabel('\\huge $\\epsilon$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
-    legend = plt.legend()
+    legend = plt.legend(loc=3)
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
     logger.info('Figures saved to {}'.format(output_prefix))
-    plt.savefig('{}/{}-{}.pdf'.format(output_prefix, dataset_name, 'left-epsilon'))
+    filename = '{}/{}-{}.pdf'.format(output_prefix, dataset_name, 'left-epsilon')
+    plt.savefig(filename)
+    compress_pdf(filename)
     plt.clf()
 
 
@@ -151,35 +188,39 @@ def plot_mean_square_error(k_array, dataset_name, data, output_prefix, theoretic
             plt.ylim(0, 20)
             plt.ylabel('\\huge \\% Improvement in MSE')
         plt.plot(theoretical_x, 100 * theoretical_y, linewidth=5,
-                 linestyle='--', label='\\huge Expected Improvement')
+                 linestyle='--', label='\\huge Theoretical Expected Improvement')
         plt.xlabel('\\huge $k$')
         plt.xticks(fontsize=24)
         plt.yticks(fontsize=24)
-        legend = plt.legend()
+        legend = plt.legend(loc=3)
         legend.get_frame().set_linewidth(0.0)
         plt.gcf().set_tight_layout(True)
-        if epsilon == '0.3':
+        if epsilon == '0.7':
             logger.info('Figures saved to {}'.format(output_prefix))
-            plt.savefig('{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',
-                                                 str(epsilon).replace('.', '-')))
+            filename = '{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',
+                                                 str(epsilon).replace('.', '-'))
+            plt.savefig(filename)
+            compress_pdf(filename)
         plt.clf()
 
     epsilons = np.asarray(tuple(data.keys()), dtype=np.float)
     plt.plot(epsilons, improves_for_epsilons, label='\\huge {}'.format(algorithm_name), linewidth=3,
              markersize=10, marker='o')
     plt.plot(epsilons, [100 * theoretical(10) for _ in range(len(epsilons))], linewidth=5,
-             linestyle='--', label='\\huge Expected Improvement')
+             linestyle='--', label='\\huge Theoretical Expected Improvement')
     plt.ylabel('\\huge \\% Improvement in MSE')
     plt.ylim(0, 20)
     plt.xlabel('\\huge $\\epsilon$')
     plt.xticks(np.arange(epsilons.min(), epsilons.max() + 0.1, 0.2))
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
-    legend = plt.legend()
+    legend = plt.legend(loc=3)
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
     logger.info('Figures saved to {}'.format(output_prefix))
-    plt.savefig('{}/{}-{}-epsilons.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',))
+    filename = '{}/{}-{}-epsilons.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',)
+    plt.savefig(filename)
+    compress_pdf(filename)
     plt.clf()
 
 
@@ -211,7 +252,10 @@ def main():
             os.makedirs(algorithm_folder, exist_ok=True)
             output_prefix = os.path.abspath(algorithm_folder)
             plt.hist(dataset[1], bins=200, range=(1, 1000))
-            plt.savefig('{}/{}.pdf'.format(output_prefix, dataset[0]))
+            filename = '{}/{}.pdf'.format(output_prefix, dataset[0])
+            plt.savefig(filename)
+            compress_pdf(filename)
+
             plt.clf()
 
             if 'AdaptiveSparseVector' == algorithm:
