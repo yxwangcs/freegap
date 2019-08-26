@@ -12,7 +12,7 @@ from refinedp.adaptivesvt import evaluate as evaluate_adaptivesvt
 from refinedp.gapestimates import gap_svt_estimates, gap_svt_estimates_baseline, \
     gap_topk_estimates, gap_topk_estimates_baseline
 from refinedp.gapestimates import evaluate as evaluate_gap_estimates
-from refinedp.preprocess import process_t40100k, process_bms_pos, process_kosarak, process_sf1
+from refinedp.preprocess import process_t40100k, process_bms_pos, process_kosarak
 
 
 matplotlib.use('PDF')
