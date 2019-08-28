@@ -227,7 +227,7 @@ def main():
     arg_parser.add_argument('algorithm', help='The algorithm to evaluate, options are `{}`.'.format(', '.join(algorithms)))
     arg_parser.add_argument('--datasets', help='The datasets folder', required=False)
     arg_parser.add_argument('--output', help='The output folder', required=False)
-    arg_parser.add_argument('--rerun', help='Ignore the json output file and rerun the experiment', required=False, default=False)
+    arg_parser.add_argument('--clear', help='Clear the output folder', required=False, default=False, action='store_true')
     results = arg_parser.parse_args()
 
     # default value for datasets path
@@ -240,6 +240,10 @@ def main():
 
     winning_algorithm = algorithms[1:] if winning_algorithm == 'All' else (winning_algorithm, )
     output_folder = os.path.abspath('./figures' if results.output is None else results.output)
+
+    if results.clear:
+        logger.info('Clear flag set, removing the output folder...')
+        shutil.rmtree(output_folder)
 
     k_array = np.fromiter(range(2, 25), dtype=np.int)
     for dataset in process_datasets(results.datasets):
