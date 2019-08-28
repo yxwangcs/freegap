@@ -227,10 +227,14 @@ def main():
                                  evaluate_adaptivesvt, plot_adaptive, {}),
         'GapSparseVector': ((gap_svt_estimates_baseline, gap_svt_estimates),
                             evaluate_gap_estimates, plot_mean_square_error,
-                            {'theoretical': lambda x: 1 / (1 + ((np.power(1 + np.power(2 * x, 2.0 / 3), 3)) / (x * x)))}),
+                            {'theoretical': lambda x: 1 / (1 + ((np.power(1 + np.power(2 * x, 2.0 / 3), 3)) / (x * x))),
+                             'algorithm_name': 'Sparse Vector with Measures',
+                             'baseline_name': 'gap_svt_estimates_baseline'}),
         'GapTopK': ((gap_topk_estimates_baseline, gap_topk_estimates),
                     evaluate_gap_estimates, plot_mean_square_error,
-                    {'theoretical': lambda x: (x - 1) / (2 * x)})
+                    {'theoretical': lambda x: (x - 1) / (2 * x),
+                     'algorithm_name': 'Noisy Top-K with Measures',
+                     'baseline_name': 'gap_topk_estimates_baseline'})
     }
 
     algorithm_names = tuple(algorithms.keys())
