@@ -7,11 +7,9 @@ import numpy as np
 import matplotlib
 from matplotlib import pyplot as plt
 import coloredlogs
-from refinedp.adaptivesvt import adaptive_sparse_vector, sparse_vector
-from refinedp.adaptivesvt import evaluate as evaluate_adaptivesvt
+from refinedp.adaptivesvt import adaptive_sparse_vector, sparse_vector, evaluate as evaluate_adaptivesvt
 from refinedp.gapestimates import gap_svt_estimates, gap_svt_estimates_baseline, \
-    gap_topk_estimates, gap_topk_estimates_baseline
-from refinedp.gapestimates import evaluate as evaluate_gap_estimates
+    gap_topk_estimates, gap_topk_estimates_baseline, evaluate as evaluate_gap_estimates
 from refinedp.preprocess import process_t40100k, process_bms_pos, process_kosarak
 
 
