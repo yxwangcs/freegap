@@ -227,6 +227,7 @@ def main():
     arg_parser.add_argument('algorithm', help='The algorithm to evaluate, options are `{}`.'.format(', '.join(algorithms)))
     arg_parser.add_argument('--datasets', help='The datasets folder', required=False)
     arg_parser.add_argument('--output', help='The output folder', required=False)
+    arg_parser.add_argument('--rerun', help='Ignore the json output file and rerun the experiment', required=False, default=False)
     results = arg_parser.parse_args()
 
     # default value for datasets path
