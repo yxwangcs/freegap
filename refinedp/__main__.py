@@ -205,7 +205,7 @@ def plot_mean_square_error(k_array, dataset_name, data, output_prefix, theoretic
     plt.plot(epsilons, [100 * theoretical(10) for _ in range(len(epsilons))], linewidth=5,
              linestyle='--', label=r'\huge Theoretical Expected Improvement')
     plt.ylabel(r'\huge \% Improvement in MSE')
-    plt.ylim(0, 20)
+    plt.ylim(0, 50)
     plt.xlabel(r'\huge $\epsilon$')
     plt.xticks(np.arange(epsilons.min(), epsilons.max() + 0.1, 0.2))
     plt.xticks(fontsize=24)

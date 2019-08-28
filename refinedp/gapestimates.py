@@ -29,7 +29,10 @@ def sparse_vector(q, epsilon, k, threshold, allocation=(0.5, 0.5)):
 
 def noisy_top_k(q, epsilon, k):
     assert k <= len(q), 'k must be less or equal to the length of q'
-    noisy_q = q + np.random.laplace(scale=2.0 * k / epsilon, size=len(q))
+    # counting queries case
+    noisy_q = q + np.random.laplace(scale=k / epsilon, size=len(q))
+    # otherwise
+    # noisy_q = q + np.random.laplace(scale=2 * k / epsilon, size=len(q))
     indices = np.argpartition(noisy_q, -k)[-k:]
     indices = indices[np.argsort(-noisy_q[indices])]
     return indices
@@ -60,7 +63,10 @@ def gap_noisy_max(q, epsilon):
 # Noisy Top-K with Gap
 def gap_noisy_topk(q, epsilon, k):
     assert k <= len(q), 'k must be less or equal to the length of q'
-    noisy_q = q + np.random.laplace(scale=2.0 * k / epsilon, size=len(q))
+    # counting queries case
+    noisy_q = q + np.random.laplace(scale=k / epsilon, size=len(q))
+    # otherwise
+    # noisy_q = q + np.random.laplace(scale=2 * k / epsilon, size=len(q))
     indices = np.argpartition(noisy_q, -k)[-k:]
     indices = indices[np.argsort(-noisy_q[indices])]
     gaps = np.fromiter((noisy_q[first] - noisy_q[second] for first, second in zip(indices[:-1], indices[1:])),
@@ -84,7 +90,10 @@ def gap_topk_estimates(q, epsilon, k):
     p = np.empty(k, dtype=np.float)
     np.cumsum(gaps, out=p[1:])
     p[0] = 0
-    final_estimates = (estimates.sum() + 4 * k * estimates + p_total - k * p) / (5 * k)
+    # counting queries case
+    final_estimates = (estimates.sum() + k * estimates + p_total - k * p) / (2 * k)
+    # otherwise
+    final_estimates = (estimates.sum() + k * estimates + p_total - k * p) / (5 * k)
     return indices, final_estimates
 
 
