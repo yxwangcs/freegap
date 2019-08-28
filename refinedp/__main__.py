@@ -221,66 +221,86 @@ def plot_mean_square_error(k_array, dataset_name, data, output_prefix, theoretic
 
 
 def main():
-    algorithms = ('All', 'AdaptiveSparseVector', 'GapSparseVector', 'GapTopK')
+    algorithms = {
+        'All': (),
+        'AdaptiveSparseVector': ((sparse_vector, adaptive_sparse_vector),
+                                 evaluate_adaptivesvt, plot_adaptive, {}),
+        'GapSparseVector': ((gap_svt_estimates_baseline, gap_svt_estimates),
+                            evaluate_gap_estimates, plot_mean_square_error,
+                            {'theoretical': lambda x: 1 / (1 + ((np.power(1 + np.power(2 * x, 2.0 / 3), 3)) / (x * x)))}),
+        'GapTopK': ((gap_topk_estimates_baseline, gap_topk_estimates),
+                    evaluate_gap_estimates, plot_mean_square_error,
+                    {'theoretical': lambda x: (x - 1) / (2 * x)})
+    }
+
+    algorithm_names = tuple(algorithms.keys())
 
     arg_parser = argparse.ArgumentParser(description=__doc__)
     arg_parser.add_argument('algorithm', help='The algorithm to evaluate, options are `{}`.'.format(', '.join(algorithms)))
     arg_parser.add_argument('--datasets', help='The datasets folder', required=False)
     arg_parser.add_argument('--output', help='The output folder', required=False)
-    arg_parser.add_argument('--clear', help='Clear the output folder', required=False, default=False, action='store_true')
+    arg_parser.add_argument('--clear', help='Clear the output folder', required=False, default=False,
+                            action='store_true')
     results = arg_parser.parse_args()
 
     # default value for datasets path
     results.datasets = './datasets' if results.datasets is None else results.datasets
 
-    winning_algorithm = algorithms[
-        np.fromiter((difflib.SequenceMatcher(None, results.algorithm, algorithm).ratio() for algorithm in algorithms),
+    winning_algorithm = algorithm_names[
+        np.fromiter((difflib.SequenceMatcher(None, results.algorithm, name).ratio() for name in algorithm_names),
                     dtype=np.float).argmax()
     ]
 
-    winning_algorithm = algorithms[1:] if winning_algorithm == 'All' else (winning_algorithm, )
+    winning_algorithm = algorithm_names[1:] if winning_algorithm == 'All' else (winning_algorithm, )
     output_folder = os.path.abspath('./figures' if results.output is None else results.output)
 
     if results.clear:
         logger.info('Clear flag set, removing the output folder...')
         shutil.rmtree(output_folder)
 
-    k_array = np.fromiter(range(2, 25), dtype=np.int)
     for dataset in process_datasets(results.datasets):
-        for algorithm in winning_algorithm:
+        for algorithm_name in winning_algorithm:
             # create the algorithm output folder if not exists
-            algorithm_folder = os.path.join(output_folder, algorithm)
+            algorithm_folder = os.path.join(output_folder, algorithm_name)
             os.makedirs(algorithm_folder, exist_ok=True)
+
+            # plot statistics figure for dataset
             plt.hist(dataset[1], bins=200, range=(1, 1000))
             filename = os.path.join(algorithm_folder, '{}.pdf'.format(dataset[0]))
             plt.savefig(filename)
             compress_pdf(filename)
             plt.clf()
 
-            if 'AdaptiveSparseVector' == algorithm:
-                data = evaluate_adaptivesvt((sparse_vector, adaptive_sparse_vector),
-                                            tuple(epsilon / 10.0 for epsilon in range(1, 16)), dataset)
-                #with open('/home/grads/ykw5163/mll/refinedp/figures/AdaptiveSparseVector/{}.json'.format(dataset[0]), 'r') as f:
-                    #data = json.load(f)
-                logger.info('Dumping results data')
-                with open('{}/{}.json'.format(output_prefix, dataset[0]), 'w') as f:
-                    json.dump(data, f)
-                plot_adaptive(k_array, dataset[0], data, output_prefix)
-            if 'GapSparseVector' == algorithm:
-                data = evaluate_gap_estimates((gap_svt_estimates_baseline, gap_svt_estimates),
-                                              tuple(epsilon / 10.0 for epsilon in range(1, 16)), dataset, total_iterations=20000)
-                #with open('/home/grads/ykw5163/mll/refinedp/figures/GapSparseVector/{}.json'.format(dataset[0]), 'r') as f:
-                    #data = json.load(f)
-                plot_mean_square_error(k_array, dataset[0], data, output_prefix,
-                                           lambda x: 1 / (1 + ((np.power(1 + np.power(2 * x, 2.0 / 3), 3)) / (x * x))),
+            # evaluate the algorithms and plot the figures
+            evaluate_algorithms, evaluate, plot, kwargs = algorithms[algorithm_name]
+            k_array = np.fromiter(range(2, 25), dtype=np.int)
+
+            # check if result json is present (so we don't have to run again)
+            # if --clear flag is specified, output folder will be empty, thus won't cause problem here
+            json_file = os.path.join(algorithm_folder, '{}-{}.json'.format(algorithm_name, dataset[0]))
+            if os.path.exists(json_file):
+                logger.info('Found stored json file, loading...')
+                with open(json_file, 'r') as fp:
+                    data = json.load(fp)
+            else:
+                logger.info('No json file exists, running experiments...')
+                data = evaluate(evaluate_algorithms, tuple(epsilon / 10.0 for epsilon in range(1, 16)), dataset)
+                logger.info('Dumping data into json file...')
+                with open(json_file, 'w') as fp:
+                    json.dump(data, fp)
+                logger.info('Plotting')
+                plot(k_array, dataset[0], data, algorithm_folder, **kwargs)
+
+                """ old code
                                            'Sparse Vector with Measures', 'gap_svt_estimates_baseline')
             if 'GapTopK' == algorithm:
                 #with open('/home/grads/ykw5163/mll/refinedp/figures/GapTopK/{}.json'.format(dataset[0]), 'r') as f:
                     #data = json.load(f)
                 data = evaluate_gap_estimates((gap_topk_estimates_baseline, gap_topk_estimates),
                                               tuple(epsilon / 10.0 for epsilon in range(1, 16)), dataset, total_iterations=20000)
-                plot_mean_square_error(k_array, dataset[0], data, output_prefix, lambda x: (x - 1) / (5 * x),
+                plot_mean_square_error(k_array, dataset[0], data, algorithm_folder, ,
                                            'Noisy Top-K with Measures', 'gap_topk_estimates_baseline')
+                """
 
 
 if __name__ == '__main__':
