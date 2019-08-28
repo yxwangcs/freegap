@@ -164,9 +164,6 @@ def evaluate(algorithms, epsilons, input_data,
 
 
 def plot(k_array, dataset_name, data, output_prefix):
-    with open('{}/{}.json'.format(output_prefix, dataset_name), 'w') as f:
-        json.dump(data, f)
-
     epsilon = '0.7'
     # first find the best quantile
     """
