@@ -102,7 +102,7 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
     plt.bar(sub_k_array, algorithm_top_branch[sub_k_array - 1], width, bottom=algorithm_middle_branch[sub_k_array - 1], align='edge', facecolor=colormap.colors[3] + (0.8,),
             edgecolor='black',
             label=r'\huge Adaptive SVT w/ Gap (Top)', hatch='*')
-    plt.ylabel(r'\huge {}'.format('\\# of Above-Threshold Answers'))
+    plt.ylabel(r'\huge {}'.format(r'\# of Above-Threshold Answers'))
     plt.xlabel(r'\huge $k$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
@@ -178,13 +178,13 @@ def plot_mean_square_error(k_array, dataset_name, data, output_prefix, theoretic
                 continue
             improvements = 100 * (baseline - np.asarray(algorithm_data)) / baseline
             improves_for_epsilons.append(improvements[8])
-            plt.plot(k_array, improvements, label='\\huge {}'.format(algorithm_name), linewidth=3, markersize=10,
+            plt.plot(k_array, improvements, label=r'\huge {}'.format(algorithm_name), linewidth=3, markersize=10,
                      marker='o')
-            plt.ylim(0, 20)
-            plt.ylabel('\\huge \\% Improvement in MSE')
+            plt.ylim(0, 50)
+            plt.ylabel(r'\huge \% Improvement in MSE')
         plt.plot(theoretical_x, 100 * theoretical_y, linewidth=5,
-                 linestyle='--', label='\\huge Theoretical Expected Improvement')
-        plt.xlabel('\\huge $k$')
+                 linestyle='--', label=r'\huge Theoretical Expected Improvement')
+        plt.xlabel(r'\huge $k$')
         plt.xticks(fontsize=24)
         plt.yticks(fontsize=24)
         legend = plt.legend(loc=3)
@@ -199,10 +199,10 @@ def plot_mean_square_error(k_array, dataset_name, data, output_prefix, theoretic
         plt.clf()
 
     epsilons = np.asarray(tuple(data.keys()), dtype=np.float)
-    plt.plot(epsilons, improves_for_epsilons, label='\\huge {}'.format(algorithm_name), linewidth=3,
+    plt.plot(epsilons, improves_for_epsilons, label=r'\huge {}'.format(algorithm_name), linewidth=3,
              markersize=10, marker='o')
     plt.plot(epsilons, [100 * theoretical(10) for _ in range(len(epsilons))], linewidth=5,
-             linestyle='--', label='\\huge Theoretical Expected Improvement')
+             linestyle='--', label=r'\huge Theoretical Expected Improvement')
     plt.ylabel(r'\huge \% Improvement in MSE')
     plt.ylim(0, 20)
     plt.xlabel(r'\huge $\epsilon$')
