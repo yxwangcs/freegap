@@ -20,10 +20,8 @@ matplotlib.use('PDF')
 
 # change the matplotlib settings
 matplotlib.rcParams['text.usetex'] = True
-matplotlib.rcParams['text.latex.preamble'] = '\\usepackage{libertine},' \
-                                             '\\usepackage[libertine]{newtxmath},' \
-                                             '\\usepackage{sfmath},' \
-                                             '\\usepackage[T1]{fontenc}'
+matplotlib.rcParams['text.latex.preamble'] = \
+    r'\usepackage{libertine}\usepackage[libertine]{newtxmath}\usepackage{sfmath}\usepackage[T1]{fontenc}'
 
 coloredlogs.install(level='INFO', fmt='%(asctime)s %(levelname)s - %(name)s %(message)s')
 
