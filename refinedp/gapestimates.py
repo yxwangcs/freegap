@@ -4,21 +4,23 @@ import multiprocessing as mp
 from functools import partial
 from itertools import product
 import tqdm
+from numba import jit
 
 
 logger = logging.getLogger(__name__)
 
 
 # classical algorithms as building blocks
+@jit(nopython=True)
 def sparse_vector(q, epsilon, k, threshold, allocation=(0.5, 0.5)):
     threshold_allocation, query_allocation = allocation
     assert abs(threshold_allocation + query_allocation - 1.0) < 1e-05
     epsilon_1, epsilon_2 = threshold_allocation * epsilon, query_allocation * epsilon
     indices = []
     i, count = 0, 0
-    noisy_threshold = threshold + np.random.laplace(scale=1.0 / epsilon_1)
+    noisy_threshold = threshold + np.random.laplace(0, 1.0 / epsilon_1)
     while i < len(q) and count < k:
-        if q[i] + np.random.laplace(scale=2.0 * k / epsilon_2) >= noisy_threshold:
+        if q[i] + np.random.laplace(0, 2.0 * k / epsilon_2) >= noisy_threshold:
             indices.append(i)
             count += 1
         i += 1
@@ -87,15 +89,16 @@ def gap_topk_estimates(q, epsilon, k):
 
 
 # Sparse Vector with Gap
+@jit(nopython=True)
 def gap_sparse_vector(q, epsilon, k, threshold, allocation=(0.5, 0.5)):
     threshold_allocation, query_allocation = allocation
     assert abs(threshold_allocation + query_allocation - 1.0) < 1e-05
     epsilon_1, epsilon_2 = threshold_allocation * epsilon, query_allocation * epsilon
     indices, gaps = [], []
     i, count = 0, 0
-    noisy_threshold = threshold + np.random.laplace(scale=1.0 / epsilon_1)
+    noisy_threshold = threshold + np.random.laplace(0, 1.0 / epsilon_1)
     while i < len(q) and count < k:
-        noisy_q_i = q[i] + np.random.laplace(scale=2.0 * k / epsilon_2)
+        noisy_q_i = q[i] + np.random.laplace(0, 2.0 * k / epsilon_2)
         if noisy_q_i >= noisy_threshold:
             indices.append(i)
             gaps.append(noisy_q_i - noisy_threshold)
