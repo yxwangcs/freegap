@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 def compress_pdf(file):
-    if not shutil.which('gs'):
+    if shutil.which('gs'):
         os.rename(file, '{}.temp'.format(file))
         subprocess.call(['gs', '-sDEVICE=pdfwrite', '-dCompatibilityLevel=1.4',
                          '-dPDFSETTINGS=/default',
