@@ -177,9 +177,9 @@ def plot(k_array, dataset_name, data, output_prefix):
     """
     quantile = '0.05'
 
-    left_epsilons = []
+    remaining_epsilons = []
     for _, epsilon_dict in data.items():
-        left_epsilons.append(epsilon_dict['left_epsilon']['adaptive_sparse_vector'][quantile][8])
+        remaining_epsilons.append(epsilon_dict['left_epsilon']['adaptive_sparse_vector'][quantile][8])
     logger.info('best quantile is {}'.format(quantile))
 
     # plot number of above threshold answers
@@ -254,7 +254,7 @@ def plot(k_array, dataset_name, data, output_prefix):
 
     # plot remaining epsilons
     epsilons = np.asarray(tuple(data.keys()), dtype=np.float)
-    left_budget = np.asarray(left_epsilons) * 100
+    left_budget = np.asarray(remaining_epsilons) * 100
     plt.plot(epsilons, left_budget,
              label=r'\huge {}'.format('Adaptive Sparse Vector with Gap'),
              linewidth=3, markersize=10, marker='o')
