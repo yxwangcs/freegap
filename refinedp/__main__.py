@@ -1,10 +1,12 @@
 import argparse
 import os
+import subprocess
 import difflib
 import logging
 import json
 import numpy as np
 import matplotlib
+import shutil
 from matplotlib import pyplot as plt
 import coloredlogs
 from refinedp.adaptivesvt import adaptive_sparse_vector, sparse_vector, evaluate as evaluate_adaptivesvt
@@ -27,16 +29,17 @@ logger = logging.getLogger(__name__)
 
 
 def compress_pdf(file):
-    import subprocess
-    import os
-    os.rename(file, '{}.temp'.format(file))
-    subprocess.call(['gs', '-sDEVICE=pdfwrite', '-dCompatibilityLevel=1.4',
-                     '-dPDFSETTINGS=/default',
-                     '-dNOPAUSE', '-dQUIET', '-dBATCH',
-                     '-sOutputFile={}'.format(file),
-                     '{}.temp'.format(file)]
-                    )
-    os.remove('{}.temp'.format(file))
+    if not shutil.which('gs'):
+        os.rename(file, '{}.temp'.format(file))
+        subprocess.call(['gs', '-sDEVICE=pdfwrite', '-dCompatibilityLevel=1.4',
+                         '-dPDFSETTINGS=/default',
+                         '-dNOPAUSE', '-dQUIET', '-dBATCH',
+                         '-sOutputFile={}'.format(file),
+                         '{}.temp'.format(file)]
+                        )
+        os.remove('{}.temp'.format(file))
+    else:
+        logger.warning('Cannot find Ghost Script executable \'gs\', failed to compress produced PDFs.')
 
 
 def process_datasets(folder):
