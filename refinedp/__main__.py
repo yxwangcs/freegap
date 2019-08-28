@@ -239,17 +239,16 @@ def main():
     ]
 
     winning_algorithm = algorithms[1:] if winning_algorithm == 'All' else (winning_algorithm, )
+    output_folder = os.path.abspath('./figures' if results.output is None else results.output)
 
-    output_folder = './figures' if results.output is None else results.output
     k_array = np.fromiter(range(2, 25), dtype=np.int)
     for dataset in process_datasets(results.datasets):
         for algorithm in winning_algorithm:
-            # create the output folder if not exists
-            algorithm_folder = '{}/{}'.format(os.path.abspath(output_folder), algorithm)
+            # create the algorithm output folder if not exists
+            algorithm_folder = os.path.join(output_folder, algorithm)
             os.makedirs(algorithm_folder, exist_ok=True)
-            output_prefix = os.path.abspath(algorithm_folder)
             plt.hist(dataset[1], bins=200, range=(1, 1000))
-            filename = '{}/{}.pdf'.format(output_prefix, dataset[0])
+            filename = os.path.join(algorithm_folder, '{}.pdf'.format(dataset[0]))
             plt.savefig(filename)
             compress_pdf(filename)
 
