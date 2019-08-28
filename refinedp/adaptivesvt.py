@@ -165,8 +165,7 @@ def evaluate(algorithms, epsilons, input_data,
 
 def plot(k_array, dataset_name, data, output_prefix):
     epsilon = '0.7'
-    # first find the best quantile
-    """
+    """ code to find the best quantile
     quantiles = tuple(data[epsilon]['top_branch']['adaptive_sparse_vector'].keys())
     quantile_scores = []
     for quantile in quantiles:
