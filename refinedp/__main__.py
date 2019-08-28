@@ -292,8 +292,8 @@ def main():
                 logger.info('Dumping data into json file...')
                 with open(json_file, 'w') as fp:
                     json.dump(data, fp)
-                logger.info('Plotting')
-                plot(k_array, dataset[0], data, algorithm_folder, **kwargs)
+            logger.info('Plotting')
+            plot(k_array, dataset[0], data, algorithm_folder, **kwargs)
 
 
 if __name__ == '__main__':
