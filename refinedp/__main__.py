@@ -213,7 +213,7 @@ def plot_mean_square_error(k_array, dataset_name, data, output_prefix, theoretic
     legend = plt.legend(loc=3)
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
-    logger.info('Figures saved to {}'.format(output_prefix))
+    logger.info('Fix-k Figures saved to {}'.format(output_prefix))
     filename = '{}/{}-{}-epsilons.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',)
     plt.savefig(filename)
     compress_pdf(filename)
@@ -255,7 +255,6 @@ def main():
             filename = os.path.join(algorithm_folder, '{}.pdf'.format(dataset[0]))
             plt.savefig(filename)
             compress_pdf(filename)
-
             plt.clf()
 
             if 'AdaptiveSparseVector' == algorithm:
