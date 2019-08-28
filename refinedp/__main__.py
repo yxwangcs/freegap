@@ -95,17 +95,17 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
     sub_k_array = np.arange(2, 24, 2)
     colormap = plt.get_cmap('tab10')
     plt.bar(sub_k_array - width, baseline_top_branch[sub_k_array - 1], width, align='edge',
-            label='\\huge Sparse Vector', facecolor=colormap.colors[0] + (0.8,), edgecolor='black', hatch='/')
+            label=r'\huge Sparse Vector', facecolor=colormap.colors[0] + (0.8,), edgecolor='black', hatch='/')
     #plt.bar(sub_k_array - width, algorithm_total[sub_k_array - 1], width, align='edge',
             #label='\\huge Adaptive SVT w/ Gap  (Total)', facecolor=colormap.colors[1] + (0.8,), hatch='O')
     plt.bar(sub_k_array, algorithm_middle_branch[sub_k_array - 1], width, align='edge', facecolor=colormap.colors[1] + (0.8,),
             edgecolor='black',
-            label='\\huge Adaptive SVT w/ Gap (Middle)', hatch='.')
+            label=r'\huge Adaptive SVT w/ Gap (Middle)', hatch='.')
     plt.bar(sub_k_array, algorithm_top_branch[sub_k_array - 1], width, bottom=algorithm_middle_branch[sub_k_array - 1], align='edge', facecolor=colormap.colors[3] + (0.8,),
             edgecolor='black',
-            label='\\huge Adaptive SVT w/ Gap (Top)', hatch='*')
-    plt.ylabel('\\huge {}'.format('\\# of Above-Threshold Answers'))
-    plt.xlabel('\\huge $k$')
+            label=r'\huge Adaptive SVT w/ Gap (Top)', hatch='*')
+    plt.ylabel(r'\huge {}'.format('\\# of Above-Threshold Answers'))
+    plt.xlabel(r'\huge $k$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
     plt.xticks(sub_k_array)
@@ -123,14 +123,14 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
     adaptive_precision = data[epsilon]['precision']['adaptive_sparse_vector'][quantile]
     sparse_vector_precision = data[epsilon]['precision']['sparse_vector'][quantile]
     plt.plot(k_array, sparse_vector_precision,
-             label='\\huge {}'.format('Sparse Vector'),
+             label=r'\huge {}'.format('Sparse Vector'),
              linewidth=3, markersize=10, marker='P', zorder=5)
     plt.plot(k_array, adaptive_precision,
-             label='\\huge {}'.format('Precision - Adaptive SVT w/ Gap'),
+             label=r'\huge {}'.format('Precision - Adaptive SVT w/ Gap'),
              linewidth=3, markersize=10, marker='P', zorder=5)
     plt.ylim(0, 1.0)
-    plt.ylabel('\\huge {}'.format('Precision'))
-    plt.xlabel('\\huge $k$')
+    plt.ylabel(r'\huge {}'.format('Precision'))
+    plt.xlabel(r'\huge $k$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
     legend = plt.legend(loc=3)
@@ -147,11 +147,11 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
     epsilons = np.asarray(tuple(data.keys()), dtype=np.float)
     left_budget = np.asarray(left_epsilons) * 100
     plt.plot(epsilons, left_budget,
-             label='\\huge {}'.format('Adaptive Sparse Vector with Gap'),
+             label=r'\huge {}'.format('Adaptive Sparse Vector with Gap'),
              linewidth=3, markersize=10, marker='o')
     plt.ylim(0, 25)
-    plt.ylabel('\\huge \\% Remaining Privacy Budget')
-    plt.xlabel('\\huge $\\epsilon$')
+    plt.ylabel(r'\huge \% Remaining Privacy Budget')
+    plt.xlabel(r'\huge $\epsilon$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
     legend = plt.legend(loc=3)
@@ -205,9 +205,9 @@ def plot_mean_square_error(k_array, dataset_name, data, output_prefix, theoretic
              markersize=10, marker='o')
     plt.plot(epsilons, [100 * theoretical(10) for _ in range(len(epsilons))], linewidth=5,
              linestyle='--', label='\\huge Theoretical Expected Improvement')
-    plt.ylabel('\\huge \\% Improvement in MSE')
+    plt.ylabel(r'\huge \% Improvement in MSE')
     plt.ylim(0, 20)
-    plt.xlabel('\\huge $\\epsilon$')
+    plt.xlabel(r'\huge $\epsilon$')
     plt.xticks(np.arange(epsilons.min(), epsilons.max() + 0.1, 0.2))
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
