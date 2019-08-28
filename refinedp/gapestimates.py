@@ -5,6 +5,7 @@ from functools import partial
 from itertools import product
 import tqdm
 from numba import jit
+import matplotlib.pyplot as plt
 
 
 logger = logging.getLogger(__name__)
@@ -207,3 +208,56 @@ def evaluate(algorithms, epsilons, input_data,
     logger.debug(metric_data)
     return metric_data
 
+
+def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name, baseline_name):
+    theoretical_x = np.arange(k_array.min(), k_array.max())
+    theoretical_y = theoretical(theoretical_x)
+    improves_for_epsilons = []
+    for epsilon, epsilon_dict in data.items():
+        assert len(epsilon_dict) == 1 and 'mean_square_error' in epsilon_dict
+        metric_dict = epsilon_dict['mean_square_error']
+        baseline = np.asarray(metric_dict[baseline_name])
+        for algorithm, algorithm_data in metric_dict.items():
+            if algorithm == baseline_name:
+                continue
+            improvements = 100 * (baseline - np.asarray(algorithm_data)) / baseline
+            improves_for_epsilons.append(improvements[8])
+            plt.plot(k_array, improvements, label=r'\huge {}'.format(algorithm_name), linewidth=3, markersize=10,
+                     marker='o')
+            plt.ylim(0, 50)
+            plt.ylabel(r'\huge \% Improvement in MSE')
+        plt.plot(theoretical_x, 100 * theoretical_y, linewidth=5,
+                 linestyle='--', label=r'\huge Theoretical Expected Improvement')
+        plt.xlabel(r'\huge $k$')
+        plt.xticks(fontsize=24)
+        plt.yticks(fontsize=24)
+        legend = plt.legend(loc=3)
+        legend.get_frame().set_linewidth(0.0)
+        plt.gcf().set_tight_layout(True)
+        if float(epsilon) - 0.7 < abs(1e-5):
+            logger.info('Fix-epsilon Figures saved to {}'.format(output_prefix))
+            filename = '{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',
+                                                 str(epsilon).replace('.', '-'))
+            plt.savefig(filename)
+            compress_pdf(filename)
+        plt.clf()
+
+    epsilons = np.asarray(tuple(data.keys()), dtype=np.float)
+    plt.plot(epsilons, improves_for_epsilons, label=r'\huge {}'.format(algorithm_name), linewidth=3,
+             markersize=10, marker='o')
+    plt.plot(epsilons, [100 * theoretical(10) for _ in range(len(epsilons))], linewidth=5,
+             linestyle='--', label=r'\huge Theoretical Expected Improvement')
+    plt.ylabel(r'\huge \% Improvement in MSE')
+    plt.ylim(0, 50)
+    plt.xlabel(r'\huge $\epsilon$')
+    plt.xticks(np.arange(epsilons.min(), epsilons.max() + 0.1, 0.2))
+    plt.xticks(fontsize=24)
+    plt.yticks(fontsize=24)
+    legend = plt.legend(loc=3)
+    legend.get_frame().set_linewidth(0.0)
+    plt.gcf().set_tight_layout(True)
+    logger.info('Fix-k Figures saved to {}'.format(output_prefix))
+    filename = '{}/{}-{}-epsilons.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',)
+    plt.savefig(filename)
+    compress_pdf(filename)
+    plt.clf()
