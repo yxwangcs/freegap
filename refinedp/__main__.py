@@ -191,8 +191,8 @@ def plot_mean_square_error(k_array, dataset_name, data, output_prefix, theoretic
         legend = plt.legend(loc=3)
         legend.get_frame().set_linewidth(0.0)
         plt.gcf().set_tight_layout(True)
-        if epsilon == '0.7':
-            logger.info('Figures saved to {}'.format(output_prefix))
+        if float(epsilon) - 0.7 < abs(1e-5):
+            logger.info('Fix-epsilon Figures saved to {}'.format(output_prefix))
             filename = '{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',
                                                  str(epsilon).replace('.', '-'))
             plt.savefig(filename)
