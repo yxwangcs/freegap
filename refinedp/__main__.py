@@ -167,8 +167,6 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
 
 def plot_mean_square_error(k_array, dataset_name, data, output_prefix, theoretical,
                            algorithm_name, baseline_name):
-    with open('{}/{}.json'.format(output_prefix, dataset_name), 'w') as f:
-        json.dump(data, f)
     theoretical_x = np.arange(k_array.min(), k_array.max())
     theoretical_y = theoretical(theoretical_x)
     improves_for_epsilons = []
@@ -261,6 +259,9 @@ def main():
                                             tuple(epsilon / 10.0 for epsilon in range(1, 16)), dataset)
                 #with open('/home/grads/ykw5163/mll/refinedp/figures/AdaptiveSparseVector/{}.json'.format(dataset[0]), 'r') as f:
                     #data = json.load(f)
+                logger.info('Dumping results data')
+                with open('{}/{}.json'.format(output_prefix, dataset[0]), 'w') as f:
+                    json.dump(data, f)
                 plot_adaptive(k_array, dataset[0], data, output_prefix)
             if 'GapSparseVector' == algorithm:
                 data = evaluate_gap_estimates((gap_svt_estimates_baseline, gap_svt_estimates),
