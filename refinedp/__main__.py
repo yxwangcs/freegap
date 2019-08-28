@@ -79,16 +79,16 @@ def plot_adaptive(k_array, dataset_name, data, output_prefix):
     algorithm_middle_branch = data[epsilon]['middle_branch']['adaptive_sparse_vector'][quantile]
     adaptive_precision = data[epsilon]['above_threshold_answers']['adaptive_sparse_vector'][quantile]
     plt.plot(k_array, baseline_top_branch,
-             label='\\huge {}'.format('Classical Sparse Vector'),
+             label=r'\huge {}'.format('Classical Sparse Vector'),
              linewidth=3, markersize=10, marker='o')
     plt.plot(k_array, adaptive_precision,
-             label='\\huge {}'.format('Adaptive SVT w/ Gap (Total)'),
+             label=r'\huge {}'.format('Adaptive SVT w/ Gap (Total)'),
              linewidth=3, markersize=10, marker='P', zorder=5)
     plt.plot(k_array, algorithm_top_branch,
-             label='\\huge {}'.format('Adaptive SVT w/ Gap (Top)'),
+             label=r'\huge {}'.format('Adaptive SVT w/ Gap (Top)'),
              linewidth=3, markersize=10, marker='s')
     plt.plot(k_array, algorithm_middle_branch,
-             label='\\huge {}'.format('Adaptive SVT w/ Gap (Middle)'),
+             label=r'\huge {}'.format('Adaptive SVT w/ Gap (Middle)'),
              linewidth=3, markersize=10, marker='^')
     width = 0.6
     plt.ylim(0, 50)
