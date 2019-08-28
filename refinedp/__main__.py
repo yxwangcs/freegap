@@ -295,17 +295,6 @@ def main():
                 logger.info('Plotting')
                 plot(k_array, dataset[0], data, algorithm_folder, **kwargs)
 
-                """ old code
-                                           'Sparse Vector with Measures', 'gap_svt_estimates_baseline')
-            if 'GapTopK' == algorithm:
-                #with open('/home/grads/ykw5163/mll/refinedp/figures/GapTopK/{}.json'.format(dataset[0]), 'r') as f:
-                    #data = json.load(f)
-                data = evaluate_gap_estimates((gap_topk_estimates_baseline, gap_topk_estimates),
-                                              tuple(epsilon / 10.0 for epsilon in range(1, 16)), dataset, total_iterations=20000)
-                plot_mean_square_error(k_array, dataset[0], data, algorithm_folder, ,
-                                           'Noisy Top-K with Measures', 'gap_topk_estimates_baseline')
-                """
-
 
 if __name__ == '__main__':
     main()
