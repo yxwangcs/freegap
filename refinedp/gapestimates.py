@@ -39,6 +39,7 @@ def laplace_mechanism(q, epsilon, indices):
 
 
 # implementation of Noisy Max with Measures / Sparse Vector with Measures
+# Noisy Max with Gap
 def gap_noisy_max(q, epsilon):
     i, imax, max_val, gap = 0, 1, 0, 0
     while i < len(q):
@@ -54,6 +55,7 @@ def gap_noisy_max(q, epsilon):
     return imax, gap
 
 
+# Noisy Top-K with Gap
 def gap_noisy_topk(q, epsilon, k):
     assert k <= len(q), 'k must be less or equal to the length of q'
     noisy_q = q + np.random.laplace(scale=2.0 * k / epsilon, size=len(q))
@@ -64,6 +66,7 @@ def gap_noisy_topk(q, epsilon, k):
     return indices, gaps
 
 
+# Baseline algorithm for Noisy Top-K with Measures
 def gap_topk_estimates_baseline(q, epsilon, k):
     # allocate the privacy budget 1:1 to noisy k max and laplace mechanism
     indices = noisy_top_k(q, 0.5 * epsilon, k)
@@ -71,6 +74,7 @@ def gap_topk_estimates_baseline(q, epsilon, k):
     return indices, estimates
 
 
+# Noisy Top-K with Measures
 def gap_topk_estimates(q, epsilon, k):
     indices, gaps = gap_noisy_topk(q, 0.5 * epsilon, k)
     estimates = laplace_mechanism(q, 0.5 * epsilon, indices)
@@ -82,6 +86,7 @@ def gap_topk_estimates(q, epsilon, k):
     return indices, final_estimates
 
 
+# Sparse Vector with Gap
 def gap_sparse_vector(q, epsilon, k, threshold, allocation=(0.5, 0.5)):
     threshold_allocation, query_allocation = allocation
     assert abs(threshold_allocation + query_allocation - 1.0) < 1e-05
@@ -99,6 +104,7 @@ def gap_sparse_vector(q, epsilon, k, threshold, allocation=(0.5, 0.5)):
     return np.asarray(indices), np.asarray(gaps)
 
 
+# Sparse Vector with Measures
 def gap_svt_estimates(q, epsilon, k, threshold):
     # budget allocation for gap svt
     x, y = 1, np.power(2 * k, 2.0 / 3.0)
@@ -115,13 +121,11 @@ def gap_svt_estimates(q, epsilon, k, threshold):
     variance_gap = 8 * np.power((1 + np.power(2 * k, 2.0 / 3)), 3) / np.square(epsilon)
     variance_lap = 8 * np.square(k) / np.square(epsilon)
 
-    # variance_lap = 2.0 * c * c / ((epsilon * lap_budget) * (epsilon * lap_budget))
-    # variance_gap = (32 + 128 * np.square(c)) / np.square(epsilon)
-
     # do weighted average
     return indices, (initial_estimates / variance_gap + direct_estimates / variance_lap) / (1.0 / variance_gap + 1.0 / variance_lap)
 
 
+# baseline algorithm for Sparse Vector with Measures
 def gap_svt_estimates_baseline(q, epsilon, k, threshold):
     x, y = 1, np.power(2 * k, 2.0 / 3.0)
     gap_x, gap_y = x / (x + y), y / (x + y)
@@ -129,6 +133,7 @@ def gap_svt_estimates_baseline(q, epsilon, k, threshold):
     return indices, np.asarray(laplace_mechanism(q, epsilon / 2.0, indices))
 
 
+# metric functions
 def mean_square_error(indices, estimates, truth_indices, truth_estimates):
     return np.sum(np.square(truth_estimates - estimates)) / float(len(estimates))
 
@@ -169,7 +174,7 @@ def evaluate(algorithms, epsilons, input_data,
             # for svts
             kwargs = {}
             if 'threshold' in algorithm.__code__.co_varnames:
-                threshold = dataset[sorted_indices[int(0.05 * len(sorted_indices))]]#(dataset[sorted_indices[k]] + dataset[sorted_indices[k + 1]]) / 2.0
+                threshold = dataset[sorted_indices[int(0.05 * len(sorted_indices))]]
                 kwargs['threshold'] = threshold
             truth_indices = sorted_indices[:k]
             kwargs['epsilon'] = epsilon

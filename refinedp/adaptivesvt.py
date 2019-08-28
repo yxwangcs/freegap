@@ -9,6 +9,19 @@ import tqdm
 logger = logging.getLogger(__name__)
 
 
+# classical sparse vector to compare with
+def sparse_vector(q, epsilon, k, threshold, middle_prng=np.random):
+    indices = []
+    i, count = 0, 0
+    noisy_threshold = threshold + np.random.laplace(scale=2.0 / epsilon)
+    while i < len(q) and count < k:
+        if q[i] + middle_prng.laplace(scale=4.0 * k / epsilon) >= noisy_threshold:
+            indices.append(i)
+            count += 1
+        i += 1
+    return np.asarray(indices), np.asarray(indices), np.asarray([])
+
+
 def adaptive_sparse_vector(q, epsilon, k, threshold, top_prng=np.random, middle_prng=np.random):
     indices, top_indices, middle_indices = [], [], []
     epsilon_0, epsilon_1, epsilon_2 = epsilon / 2.0, epsilon / (8.0 * k), epsilon / (4.0 * k)
@@ -30,18 +43,6 @@ def adaptive_sparse_vector(q, epsilon, k, threshold, top_prng=np.random, middle_
     logger.debug('Total refined: {}'.format(len(top_indices)))
 
     return np.asarray(indices), np.asarray(top_indices), np.asarray(middle_indices)
-
-
-def sparse_vector(q, epsilon, k, threshold, middle_prng=np.random):
-    indices = []
-    i, count = 0, 0
-    noisy_threshold = threshold + np.random.laplace(scale=2.0 / epsilon)
-    while i < len(q) and count < k:
-        if q[i] + middle_prng.laplace(scale=4.0 * k / epsilon) >= noisy_threshold:
-            indices.append(i)
-            count += 1
-        i += 1
-    return np.asarray(indices), np.asarray(indices), np.asarray([])
 
 
 def above_threshold_answers(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
