@@ -4,12 +4,14 @@ import multiprocessing as mp
 from functools import partial
 from itertools import product
 import tqdm
+import os
 import matplotlib.pyplot as plt
+from numba import jit
 
 
 logger = logging.getLogger(__name__)
 
-
+"""deprecated
 # classical sparse vector to compare with
 def sparse_vector(q, epsilon, k, threshold, middle_prng=np.random):
     indices = []
@@ -21,54 +23,81 @@ def sparse_vector(q, epsilon, k, threshold, middle_prng=np.random):
             count += 1
         i += 1
     return np.asarray(indices), i
+"""
+
+_INVALID_ARRAY = np.array([-1])
 
 
-def adaptive_sparse_vector(q, epsilon, k, threshold, top_prng=np.random, middle_prng=np.random):
-    indices = []
-    refined = 0
+# this is a combination of classical and adaptive svt
+@jit(nopython=True)
+def adaptive_sparse_vector(q, epsilon, k, threshold):
+    top_indices, middle_indices = [], []
+    classical_indices, count, classical_i = [], 0, 0
     epsilon_0, epsilon_1, epsilon_2 = epsilon / 2.0, epsilon / (8.0 * k), epsilon / (4.0 * k)
     sigma = 2 * np.sqrt(2) / epsilon_1
     i, priv = 0, epsilon_0
-    noisy_threshold = threshold + np.random.laplace(scale=1.0 / epsilon_0)
+    noisy_threshold = threshold + np.random.laplace(0, 1.0 / epsilon_0)
     while i < len(q) and priv <= epsilon - 2 * epsilon_2:
-        eta_i = top_prng.laplace(scale=1.0 / epsilon_1)
-        xi_i = middle_prng.laplace(scale=1.0 / epsilon_2)
+        eta_i = np.random.laplace(0, 1.0 / epsilon_1)
+        xi_i = np.random.laplace(0, 1.0 / epsilon_2)
         if q[i] + eta_i - noisy_threshold >= sigma:
-            indices.append(i)
-            refined += 1
+            top_indices.append(i)
             priv += 2 * epsilon_1
         elif q[i] + xi_i - noisy_threshold >= 0:
-            indices.append(i)
+            middle_indices.append(i)
             priv += 2 * epsilon_2
+
+        # classical svt
+        if count < k:
+            if q[i] + xi_i - noisy_threshold >= 0:
+                classical_indices.append(i)
+                count += 1
+            classical_i += 1
         i += 1
-    logger.debug('Total refined: {}'.format(refined))
 
-    return np.asarray(indices), i
+    indices = np.asarray(top_indices + middle_indices)
+    indices.sort()
+    classical_indices = np.asarray(classical_indices)
+    return indices, i, top_indices, middle_indices, \
+           classical_indices, classical_i, classical_indices, _INVALID_ARRAY
 
 
-def above_threshold_answers(indices, total, truth_indices):
+def above_threshold_answers(indices, total, top_indices, middle_indices, truth_indices):
     return len(indices)
 
 
-def f_measure(indices, total, truth_indices):
-    precision_val = len(np.intersect1d(indices, truth_indices)) / float(len(indices))
+def f_measure(indices, total, top_indices, middle_indices, truth_indices):
+    if len(indices) == 0:
+        precision_val = 1
+        logger.warning('precision = 0 / 0, replacing with 1')
+    else:
+        precision_val = len(np.intersect1d(indices, truth_indices)) / float(len(indices))
     # generate truth_indices based on total returned indices
     local_truth_indices = truth_indices[truth_indices <= total]
-    recall_val = len(np.intersect1d(indices, truth_indices)) / float(len(local_truth_indices))
-    return 2 * precision_val * recall_val / (precision_val + recall_val)
+    if len(local_truth_indices) == 0:
+        recall_val = 1
+        logger.warning('recall = 0 / 0, replacing with 1')
+    else:
+        recall_val = len(np.intersect1d(indices, local_truth_indices)) / float(len(local_truth_indices))
+
+    try:
+        return 2 * precision_val * recall_val / (precision_val + recall_val)
+    except ZeroDivisionError:
+        logger.warning('F measure = 0, replacing with 1')
+        return 1
+
+
+def top_branch(indices, total, top_indices, middle_indices, truth_indices):
+    return len(top_indices)
+
+
+def middle_branch(indices, total, top_indices, middle_indices, truth_indices):
+    return len(middle_indices)
 
 
 """deprecated metrics
 def precision(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
     return len(np.intersect1d(indices, truth_indices)) / float(len(indices))
-
-
-def top_branch(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
-    return len(top_indices)
-
-
-def middle_branch(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
-    return len(middle_indices)
 
     
 def top_branch_precision(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
@@ -94,19 +123,14 @@ def left_epsilon(indices, top_indices, middle_indices, baseline_result, truth_in
 """
 
 
-def _evaluate_algorithm(iterations, algorithms, dataset, kwargs, metrics, truth_indices):
-    baseline, algorithm = algorithms
-    top_prng = np.random.RandomState()
-    middle_prng = np.random.RandomState()
-    middle_prng2 = np.random.RandomState()
-    middle_prng2.set_state(middle_prng.get_state())
-
+def _evaluate_algorithm(iterations, algorithm, dataset, kwargs, metrics, truth_indices):
     # run several times and record average and error
     baseline_results = [[] for _ in range(len(metrics))]
     algorithm_results = [[] for _ in range(len(metrics))]
     for _ in range(iterations):
-        baseline_result = baseline(dataset, middle_prng=middle_prng, **kwargs)
-        algorithm_result = algorithm(dataset, top_prng=top_prng, middle_prng=middle_prng, **kwargs)
+        algorithm_result = algorithm(dataset, **kwargs)
+        baseline_result = algorithm_result[int(len(algorithm_result) / 2):len(algorithm_result)]
+        algorithm_result = algorithm_result[0:int(len(algorithm_result) / 2)]
         for metric_index, metric_func in enumerate(metrics):
             baseline_results[metric_index].append(metric_func(*baseline_result, truth_indices))
             algorithm_results[metric_index].append(metric_func(*algorithm_result, truth_indices))
@@ -116,24 +140,24 @@ def _evaluate_algorithm(iterations, algorithms, dataset, kwargs, metrics, truth_
            np.fromiter((sum(result) for result in algorithm_results), dtype=np.float, count=len(algorithm_results))
 
 
-def evaluate(algorithms, input_data, epsilons,
-             metrics=(above_threshold_answers, f_measure),
+def evaluate(algorithm, input_data, epsilons, metrics=(above_threshold_answers, f_measure, top_branch, middle_branch),
              k_array=np.array(range(2, 25)), total_iterations=20000):
-    assert len(algorithms) == 2, 'algorithms must contain baseline and the algorithm to evaluate'
+    # TODO: function names are hard-coded, fix later
+
     # make epsilons a tuple if only one is given
     epsilons = (epsilons, ) if isinstance(epsilons, (int, float)) else epsilons
 
     # unpack the input data
     dataset_name, dataset = input_data
     dataset = np.asarray(dataset)
-    logger.info('Evaluating {} on {}'.format(algorithms[-1].__name__.replace('_', ' ').title(), dataset_name))
+    logger.info('Evaluating {} on {}'.format(algorithm.__name__.replace('_', ' ').title(), dataset_name))
 
     QUANTILE = 0.05
     # create the result dict
     # epsilon -> metric -> algorithm -> [data for each k]
     metric_data = {
         str(epsilon): {
-            metric.__name__: {algorithm.__name__: [] for algorithm in algorithms}
+            metric.__name__: {'sparse_vector': [], 'adaptive_sparse_vector': []}
             for metric in metrics
         } for epsilon in epsilons
     }
@@ -153,7 +177,7 @@ def evaluate(algorithms, input_data, epsilons,
             truth_indices = sorted_indices[:int(QUANTILE * len(sorted_indices)) + 1]
 
             partial_evaluate_algorithm = \
-                partial(_evaluate_algorithm, algorithms=algorithms, dataset=dataset, kwargs=kwargs, metrics=metrics,
+                partial(_evaluate_algorithm, algorithm=algorithm, dataset=dataset, kwargs=kwargs, metrics=metrics,
                         truth_indices=truth_indices)
 
             # run and collect data
@@ -165,8 +189,8 @@ def evaluate(algorithms, input_data, epsilons,
 
             # merge the results
             for metric_index, metric in enumerate(metrics):
-                metric_data[str(epsilon)][metric.__name__][algorithms[0].__name__].append(baseline_metrics[metric_index])
-                metric_data[str(epsilon)][metric.__name__][algorithms[1].__name__].append(algorithm_metrics[metric_index])
+                metric_data[str(epsilon)][metric.__name__]['sparse_vector'].append(baseline_metrics[metric_index])
+                metric_data[str(epsilon)][metric.__name__]['adaptive_sparse_vector'].append(algorithm_metrics[metric_index])
 
     logger.debug(metric_data)
     return metric_data
@@ -186,29 +210,12 @@ def plot(k_array, dataset_name, data, output_prefix):
     quantile = quantiles[quantile_scores.argmax()]
     """
     quantile = '0.05'
-
-    remaining_epsilons = []
-    for _, epsilon_dict in data.items():
-        remaining_epsilons.append(epsilon_dict['left_epsilon']['adaptive_sparse_vector'][quantile][8])
     logger.info('best quantile is {}'.format(quantile))
 
     # plot number of above threshold answers
-    baseline_top_branch = data[epsilon]['top_branch']['sparse_vector'][quantile]
-    algorithm_top_branch = data[epsilon]['top_branch']['adaptive_sparse_vector'][quantile]
-    algorithm_middle_branch = data[epsilon]['middle_branch']['adaptive_sparse_vector'][quantile]
-    adaptive_precision = data[epsilon]['above_threshold_answers']['adaptive_sparse_vector'][quantile]
-    plt.plot(k_array, baseline_top_branch,
-             label=r'\huge {}'.format('Classical Sparse Vector'),
-             linewidth=3, markersize=10, marker='o')
-    plt.plot(k_array, adaptive_precision,
-             label=r'\huge {}'.format('Adaptive SVT w/ Gap (Total)'),
-             linewidth=3, markersize=10, marker='P', zorder=5)
-    plt.plot(k_array, algorithm_top_branch,
-             label=r'\huge {}'.format('Adaptive SVT w/ Gap (Top)'),
-             linewidth=3, markersize=10, marker='s')
-    plt.plot(k_array, algorithm_middle_branch,
-             label=r'\huge {}'.format('Adaptive SVT w/ Gap (Middle)'),
-             linewidth=3, markersize=10, marker='^')
+    baseline_top_branch = np.asarray(data[epsilon]['top_branch']['sparse_vector'])
+    algorithm_top_branch = np.asarray(data[epsilon]['top_branch']['adaptive_sparse_vector'])
+    algorithm_middle_branch = np.asarray(data[epsilon]['middle_branch']['adaptive_sparse_vector'])
     width = 0.6
     plt.ylim(0, 50)
     sub_k_array = np.arange(2, 24, 2)
@@ -232,23 +239,24 @@ def plot(k_array, dataset_name, data, output_prefix):
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
     logger.info('Figures saved to {}'.format(output_prefix))
-    filename = '{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'above_threshold_answers',
-                                         str(epsilon).replace('.', '-'))
+    filename = os.path.join(output_prefix,
+                            '{}-{}-{}.pdf'.format(dataset_name, 'above_threshold_answers',
+                                                  str(epsilon).replace('.', '-')))
     plt.savefig(filename)
     generated_files.append(filename)
     plt.clf()
 
-    # plot the precision
-    adaptive_precision = data[epsilon]['precision']['adaptive_sparse_vector'][quantile]
-    sparse_vector_precision = data[epsilon]['precision']['sparse_vector'][quantile]
-    plt.plot(k_array, sparse_vector_precision,
+    # plot the f-measure
+    adaptive_f_measure = np.asarray(data[epsilon]['f_measure']['adaptive_sparse_vector'])
+    sparse_vector_f_measure = np.asarray(data[epsilon]['f_measure']['sparse_vector'])
+    plt.plot(k_array, sparse_vector_f_measure,
              label=r'\huge {}'.format('Sparse Vector'),
              linewidth=3, markersize=10, marker='P', zorder=5)
-    plt.plot(k_array, adaptive_precision,
-             label=r'\huge {}'.format('Precision - Adaptive SVT w/ Gap'),
+    plt.plot(k_array, adaptive_f_measure,
+             label=r'\huge {}'.format('Adaptive SVT w/ Gap'),
              linewidth=3, markersize=10, marker='P', zorder=5)
     plt.ylim(0, 1.0)
-    plt.ylabel(r'\huge {}'.format('Precision'))
+    plt.ylabel(r'\huge {}'.format('F-Measure'))
     plt.xlabel(r'\huge $k$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
@@ -256,13 +264,14 @@ def plot(k_array, dataset_name, data, output_prefix):
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
     logger.info('Figures saved to {}'.format(output_prefix))
-    filename = '{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'precision',
+    filename = '{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'fmeasure',
                                          str(epsilon).replace('.', '-'))
     plt.savefig(filename)
     generated_files.append(filename)
     plt.clf()
 
     # plot remaining epsilons
+    """
     epsilons = np.asarray(tuple(data.keys()), dtype=np.float)
     left_budget = np.asarray(remaining_epsilons) * 100
     plt.plot(epsilons, left_budget,
@@ -281,4 +290,5 @@ def plot(k_array, dataset_name, data, output_prefix):
     plt.savefig(filename)
     generated_files.append(filename)
     plt.clf()
+    """
     return generated_files
