@@ -67,24 +67,13 @@ def above_threshold_answers(indices, total, top_indices, middle_indices, truth_i
 
 
 def f_measure(indices, total, top_indices, middle_indices, truth_indices):
-    if len(indices) == 0:
-        precision_val = 1
-        logger.warning('precision = 0 / 0, replacing with 1')
-    else:
-        precision_val = len(np.intersect1d(indices, truth_indices)) / float(len(indices))
+    precision_val = len(np.intersect1d(indices, truth_indices)) / float(len(indices))
     # generate truth_indices based on total returned indices
-    local_truth_indices = truth_indices[truth_indices <= total]
-    if len(local_truth_indices) == 0:
-        recall_val = 1
-        logger.warning('recall = 0 / 0, replacing with 1')
+    recall_val = len(np.intersect1d(indices, truth_indices)) / float(len(truth_indices))
+    if precision_val == 0:
+        return 0
     else:
-        recall_val = len(np.intersect1d(indices, local_truth_indices)) / float(len(local_truth_indices))
-
-    try:
         return 2 * precision_val * recall_val / (precision_val + recall_val)
-    except ZeroDivisionError:
-        logger.warning('F measure = 0, replacing with 1')
-        return 1
 
 
 def top_branch(indices, total, top_indices, middle_indices, truth_indices):
