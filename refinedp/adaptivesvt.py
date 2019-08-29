@@ -84,32 +84,22 @@ def middle_branch(indices, total, top_indices, middle_indices, truth_indices):
     return len(middle_indices)
 
 
-"""deprecated metrics
-def precision(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
+def precision(indices, total, top_indices, middle_indices, truth_indices):
     return len(np.intersect1d(indices, truth_indices)) / float(len(indices))
 
-    
-def top_branch_precision(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
+
+def top_branch_precision(indices, total, top_indices, middle_indices, truth_indices):
     if len(top_indices) == 0:
         return 1.0
     else:
         return len(np.intersect1d(top_indices, truth_indices)) / float(len(top_indices))
 
 
-def middle_branch_precision(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
+def middle_branch_precision(indices, total, top_indices, middle_indices, truth_indices):
     if len(middle_indices) == 0:
         return 1.0
     else:
         return len(np.intersect1d(middle_indices, truth_indices)) / float(len(middle_indices))
-        
-
-def left_epsilon(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
-    baseline_indices, *_ = baseline_result
-    stopped_index = baseline_indices.max()
-    left_privacy = np.count_nonzero(top_indices > stopped_index) * 0.25 / k + \
-                   np.count_nonzero(middle_indices > stopped_index) * 0.5 / k
-    return left_privacy
-"""
 
 
 def _evaluate_algorithm(iterations, algorithm, dataset, kwargs, metrics, truth_indices):
@@ -129,7 +119,7 @@ def _evaluate_algorithm(iterations, algorithm, dataset, kwargs, metrics, truth_i
            np.fromiter((sum(result) for result in algorithm_results), dtype=np.float, count=len(algorithm_results))
 
 
-def evaluate(algorithm, input_data, epsilons, metrics=(above_threshold_answers, f_measure, top_branch, middle_branch),
+def evaluate(algorithm, input_data, epsilons, metrics=(above_threshold_answers, f_measure, top_branch, middle_branch, precision, top_branch_precision, middle_branch_precision),
              k_array=np.array(range(2, 25)), total_iterations=20000):
     # TODO: function names are hard-coded, fix later
 
@@ -255,6 +245,30 @@ def plot(k_array, dataset_name, data, output_prefix):
     logger.info('Figures saved to {}'.format(output_prefix))
     filename = '{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'fmeasure',
                                          str(epsilon).replace('.', '-'))
+    plt.savefig(filename)
+    generated_files.append(filename)
+    plt.clf()
+
+    # plot the precision
+    adaptive_f_measure = np.asarray(data[epsilon]['precision']['adaptive_sparse_vector'])
+    sparse_vector_f_measure = np.asarray(data[epsilon]['precision']['sparse_vector'])
+    plt.plot(k_array, sparse_vector_f_measure,
+             label=r'\huge {}'.format('Sparse Vector'),
+             linewidth=3, markersize=10, marker='P', zorder=5)
+    plt.plot(k_array, adaptive_f_measure,
+             label=r'\huge {}'.format('Adaptive SVT w/ Gap'),
+             linewidth=3, markersize=10, marker='P', zorder=5)
+    plt.ylim(0, 1.0)
+    plt.ylabel(r'\huge {}'.format('Precision'))
+    plt.xlabel(r'\huge $k$')
+    plt.xticks(fontsize=24)
+    plt.yticks(fontsize=24)
+    legend = plt.legend(loc=3)
+    legend.get_frame().set_linewidth(0.0)
+    plt.gcf().set_tight_layout(True)
+    logger.info('Figures saved to {}'.format(output_prefix))
+    filename = '{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'precision',
+                                        str(epsilon).replace('.', '-'))
     plt.savefig(filename)
     generated_files.append(filename)
     plt.clf()
