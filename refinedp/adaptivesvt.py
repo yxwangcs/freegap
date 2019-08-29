@@ -62,6 +62,11 @@ def middle_branch(indices, top_indices, middle_indices, baseline_result, truth_i
     return len(middle_indices)
 
 
+"""deprecated metrics
+def precision(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
+    return len(np.intersect1d(indices, truth_indices)) / float(len(indices))
+    
+    
 def top_branch_precision(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
     if len(top_indices) == 0:
         return 1.0
@@ -74,7 +79,7 @@ def middle_branch_precision(indices, top_indices, middle_indices, baseline_resul
         return 1.0
     else:
         return len(np.intersect1d(middle_indices, truth_indices)) / float(len(middle_indices))
-
+        
 
 def left_epsilon(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
     baseline_indices, *_ = baseline_result
@@ -82,6 +87,7 @@ def left_epsilon(indices, top_indices, middle_indices, baseline_result, truth_in
     left_privacy = np.count_nonzero(top_indices > stopped_index) * 0.25 / k + \
                    np.count_nonzero(middle_indices > stopped_index) * 0.5 / k
     return left_privacy
+"""
 
 
 def _evaluate_algorithm(iterations, algorithms, dataset, kwargs, metrics, truth_indices):
