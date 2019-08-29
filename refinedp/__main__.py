@@ -30,16 +30,17 @@ coloredlogs.install(level='INFO', fmt='%(asctime)s %(levelname)s - %(name)s %(me
 logger = logging.getLogger(__name__)
 
 
-def compress_pdf(file):
+def compress_pdfs(files):
     if shutil.which('gs'):
-        os.rename(file, '{}.temp'.format(file))
-        subprocess.call(['gs', '-sDEVICE=pdfwrite', '-dCompatibilityLevel=1.4',
-                         '-dPDFSETTINGS=/default',
-                         '-dNOPAUSE', '-dQUIET', '-dBATCH',
-                         '-sOutputFile={}'.format(file),
-                         '{}.temp'.format(file)]
-                        )
-        os.remove('{}.temp'.format(file))
+        for file in files:
+            os.rename(file, '{}.temp'.format(file))
+            subprocess.call(['gs', '-sDEVICE=pdfwrite', '-dCompatibilityLevel=1.4',
+                             '-dPDFSETTINGS=/default',
+                             '-dNOPAUSE', '-dQUIET', '-dBATCH',
+                             '-sOutputFile={}'.format(file),
+                             '{}.temp'.format(file)]
+                            )
+            os.remove('{}.temp'.format(file))
     else:
         logger.warning('Cannot find Ghost Script executable \'gs\', failed to compress produced PDFs.')
 
@@ -103,9 +104,8 @@ def main():
 
             # plot statistics figure for dataset
             plt.hist(dataset[1], bins=200, range=(1, 1000))
-            filename = os.path.join(algorithm_folder, '{}.pdf'.format(dataset[0]))
-            plt.savefig(filename)
-            compress_pdf(filename)
+            dataset_figure = os.path.join(algorithm_folder, '{}.pdf'.format(dataset[0]))
+            plt.savefig(dataset_figure)
             plt.clf()
 
             # evaluate the algorithms and plot the figures
@@ -127,7 +127,9 @@ def main():
                 with open(json_file, 'w') as fp:
                     json.dump(data, fp)
             logger.info('Plotting')
-            plot(k_array, dataset[0], data, algorithm_folder, **kwargs)
+            generated_files = plot(k_array, dataset[0], data, algorithm_folder, **kwargs)
+            generated_files.append(dataset_figure)
+            compress_pdfs(generated_files)
 
 
 if __name__ == '__main__':
