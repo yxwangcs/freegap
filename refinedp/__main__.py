@@ -76,7 +76,7 @@ def main():
     arg_parser = argparse.ArgumentParser(description=__doc__)
     arg_parser.add_argument('algorithm', help='The algorithm to evaluate, options are `{}`.'.format(', '.join(algorithms)))
     arg_parser.add_argument('--datasets', help='The datasets folder', required=False)
-    arg_parser.add_argument('--output', help='The output folder', required=False)
+    arg_parser.add_argument('--output', help='The output folder', required=False, default='./output')
     arg_parser.add_argument('--clear', help='Clear the output folder', required=False, default=False,
                             action='store_true')
     results = arg_parser.parse_args()
@@ -90,7 +90,7 @@ def main():
     ]
 
     winning_algorithm = algorithm_names[1:] if winning_algorithm == 'All' else (winning_algorithm, )
-    output_folder = os.path.abspath('./figures' if results.output is None else results.output)
+    output_folder = os.path.abspath(results.output)
 
     if results.clear:
         logger.info('Clear flag set, removing the output folder...')

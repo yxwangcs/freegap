@@ -47,7 +47,6 @@ result_*.json
 
 # datasets for evaluation
 datasets/*
-!datasets/DEC_10_SF1_PCT3.csv
 
-# folder for figues
-figures/
+# default output folder figues
+output/
