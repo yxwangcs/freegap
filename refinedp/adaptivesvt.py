@@ -20,11 +20,12 @@ def sparse_vector(q, epsilon, k, threshold, middle_prng=np.random):
             indices.append(i)
             count += 1
         i += 1
-    return np.asarray(indices), np.asarray(indices), np.asarray([]), i
+    return np.asarray(indices), i
 
 
 def adaptive_sparse_vector(q, epsilon, k, threshold, top_prng=np.random, middle_prng=np.random):
-    indices, top_indices, middle_indices = [], [], []
+    indices = []
+    refined = 0
     epsilon_0, epsilon_1, epsilon_2 = epsilon / 2.0, epsilon / (8.0 * k), epsilon / (4.0 * k)
     sigma = 2 * np.sqrt(2) / epsilon_1
     i, priv = 0, epsilon_0
@@ -34,28 +35,32 @@ def adaptive_sparse_vector(q, epsilon, k, threshold, top_prng=np.random, middle_
         xi_i = middle_prng.laplace(scale=1.0 / epsilon_2)
         if q[i] + eta_i - noisy_threshold >= sigma:
             indices.append(i)
-            top_indices.append(i)
+            refined += 1
             priv += 2 * epsilon_1
         elif q[i] + xi_i - noisy_threshold >= 0:
             indices.append(i)
-            middle_indices.append(i)
             priv += 2 * epsilon_2
         i += 1
-    logger.debug('Total refined: {}'.format(len(top_indices)))
+    logger.debug('Total refined: {}'.format(refined))
 
-    return np.asarray(indices), np.asarray(top_indices), np.asarray(middle_indices), i
+    return np.asarray(indices), i
 
 
-def above_threshold_answers(indices, top_indices, middle_indices, total, truth_indices, k):
+def above_threshold_answers(indices, total, truth_indices):
     return len(indices)
 
 
-def f_measure(indices, top_indices, middle_indices, total, truth_indices, k):
+def f_measure(indices, total, truth_indices):
     precision_val = len(np.intersect1d(indices, truth_indices)) / float(len(indices))
     # generate truth_indices based on total returned indices
     local_truth_indices = truth_indices[truth_indices <= total]
     recall_val = len(np.intersect1d(indices, truth_indices)) / float(len(local_truth_indices))
     return 2 * precision_val * recall_val / (precision_val + recall_val)
+
+
+"""deprecated metrics
+def precision(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
+    return len(np.intersect1d(indices, truth_indices)) / float(len(indices))
 
 
 def top_branch(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
@@ -65,11 +70,6 @@ def top_branch(indices, top_indices, middle_indices, baseline_result, truth_indi
 def middle_branch(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
     return len(middle_indices)
 
-
-"""deprecated metrics
-def precision(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
-    return len(np.intersect1d(indices, truth_indices)) / float(len(indices))
-    
     
 def top_branch_precision(indices, top_indices, middle_indices, baseline_result, truth_indices, k):
     if len(top_indices) == 0:
@@ -108,8 +108,8 @@ def _evaluate_algorithm(iterations, algorithms, dataset, kwargs, metrics, truth_
         baseline_result = baseline(dataset, middle_prng=middle_prng, **kwargs)
         algorithm_result = algorithm(dataset, top_prng=top_prng, middle_prng=middle_prng, **kwargs)
         for metric_index, metric_func in enumerate(metrics):
-            baseline_results[metric_index].append(metric_func(*baseline_result, truth_indices, kwargs['k']))
-            algorithm_results[metric_index].append(metric_func(*algorithm_result, truth_indices, kwargs['k']))
+            baseline_results[metric_index].append(metric_func(*baseline_result, truth_indices))
+            algorithm_results[metric_index].append(metric_func(*algorithm_result, truth_indices))
 
     # returns a numpy array of sum of `iterations` runs for each metric
     return np.fromiter((sum(result) for result in baseline_results), dtype=np.float, count=len(baseline_results)),\
@@ -117,7 +117,7 @@ def _evaluate_algorithm(iterations, algorithms, dataset, kwargs, metrics, truth_
 
 
 def evaluate(algorithms, input_data, epsilons,
-             metrics=(above_threshold_answers, f_measure, top_branch, middle_branch),
+             metrics=(above_threshold_answers, f_measure),
              k_array=np.array(range(2, 25)), total_iterations=20000):
     assert len(algorithms) == 2, 'algorithms must contain baseline and the algorithm to evaluate'
     # make epsilons a tuple if only one is given
