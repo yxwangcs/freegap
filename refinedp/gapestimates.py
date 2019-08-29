@@ -45,22 +45,6 @@ def laplace_mechanism(q, epsilon, indices):
 
 
 # implementation of Noisy Max with Measures / Sparse Vector with Measures
-# Noisy Max with Gap
-def gap_noisy_max(q, epsilon):
-    i, imax, max_val, gap = 0, 1, 0, 0
-    while i < len(q):
-        eta_i = np.random.laplace(scale=2.0 / epsilon)
-        noisy_q_i = q[i] + eta_i
-        if noisy_q_i > max_val or i == 1:
-            imax = i
-            gap = noisy_q_i - max_val
-            max_val = noisy_q_i
-        else:
-            if noisy_q_i > max_val - gap:
-                gap = max_val - noisy_q_i
-    return imax, gap
-
-
 # Noisy Top-K with Gap
 def gap_noisy_topk(q, epsilon, k):
     assert k <= len(q), 'k must be less or equal to the length of q'
