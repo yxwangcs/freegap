@@ -9,7 +9,7 @@ import matplotlib
 import shutil
 from matplotlib import pyplot as plt
 import coloredlogs
-from refinedp.adaptivesvt import adaptive_sparse_vector, sparse_vector, \
+from refinedp.adaptivesvt import adaptive_sparse_vector, \
     evaluate as evaluate_adaptivesvt, plot as plot_adaptive
 from refinedp.gapestimates import gap_svt_estimates, gap_svt_estimates_baseline, \
     gap_topk_estimates, gap_topk_estimates_baseline, \
@@ -57,16 +57,19 @@ def process_datasets(folder):
 def main():
     algorithms = {
         'All': (),
-        'AdaptiveSparseVector': ((sparse_vector, adaptive_sparse_vector),
-                                 evaluate_adaptivesvt, plot_adaptive, {}),
+        'AdaptiveSparseVector': (adaptive_sparse_vector, evaluate_adaptivesvt, plot_adaptive, {}),
         'GapSparseVector': ((gap_svt_estimates_baseline, gap_svt_estimates),
                             evaluate_gap_estimates, plot_estimates,
-                            {'theoretical': lambda x: 1 / (1 + ((np.power(1 + np.power(2 * x, 2.0 / 3), 3)) / (x * x))),
+                            {# counting queries
+                             'theoretical': lambda x: 1 / (1 + ((np.power(1 + np.power(x, 2.0 / 3), 3)) / (x * x))),
+                            #'theoretical': lambda x: 1 / (1 + ((np.power(1 + np.power(2 * x, 2.0 / 3), 3)) / (x * x))),
                              'algorithm_name': 'Sparse Vector with Measures',
                              'baseline_name': 'gap_svt_estimates_baseline'}),
         'GapTopK': ((gap_topk_estimates_baseline, gap_topk_estimates),
                     evaluate_gap_estimates, plot_estimates,
-                    {'theoretical': lambda x: (x - 1) / (2 * x),
+                    {# counting queries
+                     'theoretical': lambda x: (x - 1) / (2 * x),
+                    # 'theoretical': lambda x: (x - 1) / (5 * x)
                      'algorithm_name': 'Noisy Top-K with Measures',
                      'baseline_name': 'gap_topk_estimates_baseline'})
     }

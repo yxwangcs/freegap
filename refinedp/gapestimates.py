@@ -92,7 +92,8 @@ def gap_sparse_vector(q, epsilon, k, threshold, allocation=(0.5, 0.5)):
     i, count = 0, 0
     noisy_threshold = threshold + np.random.laplace(0, 1.0 / epsilon_1)
     while i < len(q) and count < k:
-        noisy_q_i = q[i] + np.random.laplace(0, 2.0 * k / epsilon_2)
+        # counting queries
+        noisy_q_i = q[i] + np.random.laplace(0, k / epsilon_2)
         if noisy_q_i >= noisy_threshold:
             indices.append(i)
             gaps.append(noisy_q_i - noisy_threshold)
@@ -104,7 +105,9 @@ def gap_sparse_vector(q, epsilon, k, threshold, allocation=(0.5, 0.5)):
 # Sparse Vector with Measures
 def gap_svt_estimates(q, epsilon, k, threshold):
     # budget allocation for gap svt
-    x, y = 1, np.power(2 * k, 2.0 / 3.0)
+    # counting queries
+    x, y = 1, np.power(k, 2.0 / 3.0)
+    #x, y = 1, np.power(2 * k, 2.0 / 3.0)
     gap_x, gap_y = x / (x + y), y / (x + y)
 
     # budget allocation between gap / laplace
@@ -115,7 +118,9 @@ def gap_svt_estimates(q, epsilon, k, threshold):
     assert len(indices) == len(gaps)
     initial_estimates = gaps + threshold
     direct_estimates = laplace_mechanism(q, lap_budget * epsilon, indices)
-    variance_gap = 8 * np.power((1 + np.power(2 * k, 2.0 / 3)), 3) / np.square(epsilon)
+    # counting queries
+    variance_gap = 8 * np.power((1 + np.power(k, 2.0 / 3)), 3) / np.square(epsilon)
+    #variance_gap = 8 * np.power((1 + np.power(2 * k, 2.0 / 3)), 3) / np.square(epsilon)
     variance_lap = 8 * np.square(k) / np.square(epsilon)
 
     # do weighted average
