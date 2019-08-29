@@ -164,7 +164,7 @@ def _evaluate_algorithm(iterations, algorithm, dataset, kwargs, metrics, truth_i
     return np.fromiter((sum(result) for result in results), dtype=np.float, count=len(results))
 
 
-def evaluate(algorithms, epsilons, input_data,
+def evaluate(algorithms, input_data, epsilons,
              metrics=(mean_square_error, ), k_array=np.array(range(2, 25)), total_iterations=20000):
     # flatten epsilon
     epsilons = (epsilons, ) if isinstance(epsilons, (int, float)) else epsilons

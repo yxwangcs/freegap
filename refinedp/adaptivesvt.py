@@ -106,12 +106,12 @@ def _evaluate_algorithm(iterations, algorithms, dataset, kwargs, metrics, truth_
            np.fromiter((sum(result) for result in algorithm_results), dtype=np.float, count=len(algorithm_results))
 
 
-def evaluate(algorithms, epsilons, input_data,
+def evaluate(algorithms, input_data, epsilons,
              metrics=(above_threshold_answers, precision, top_branch, middle_branch, top_branch_precision,
                       middle_branch_precision, left_epsilon),
-             k_array=np.array(range(2, 25)), total_iterations=40000):
+             k_array=np.array(range(2, 25)), total_iterations=20000):
     assert len(algorithms) == 2, 'algorithms must contain baseline and the algorithm to evaluate'
-    # flatten epsilon
+    # make epsilons a tuple if only one is given
     epsilons = (epsilons, ) if isinstance(epsilons, (int, float)) else epsilons
 
     # unpack the input data

@@ -121,7 +121,8 @@ def main():
                     data = json.load(fp)
             else:
                 logger.info('No json file exists, running experiments...')
-                data = evaluate(evaluate_algorithms, tuple(epsilon / 10.0 for epsilon in range(1, 16)), dataset)
+                data = evaluate(evaluate_algorithms, dataset,
+                                epsilons=tuple(epsilon / 10.0 for epsilon in range(1, 16)))
                 logger.info('Dumping data into json file...')
                 with open(json_file, 'w') as fp:
                     json.dump(data, fp)
