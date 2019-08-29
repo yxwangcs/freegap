@@ -164,6 +164,7 @@ def evaluate(algorithms, input_data, epsilons,
 
 
 def plot(k_array, dataset_name, data, output_prefix):
+    generated_files = []
     epsilon = '0.7'
     """ code to find the best quantile
     quantiles = tuple(data[epsilon]['top_branch']['adaptive_sparse_vector'].keys())
@@ -225,7 +226,7 @@ def plot(k_array, dataset_name, data, output_prefix):
     filename = '{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'above_threshold_answers',
                                          str(epsilon).replace('.', '-'))
     plt.savefig(filename)
-    compress_pdf(filename)
+    generated_files.append(filename)
     plt.clf()
 
     # plot the precision
@@ -249,7 +250,7 @@ def plot(k_array, dataset_name, data, output_prefix):
     filename = '{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'precision',
                                          str(epsilon).replace('.', '-'))
     plt.savefig(filename)
-    compress_pdf(filename)
+    generated_files.append(filename)
     plt.clf()
 
     # plot remaining epsilons
@@ -269,5 +270,5 @@ def plot(k_array, dataset_name, data, output_prefix):
     logger.info('Figures saved to {}'.format(output_prefix))
     filename = '{}/{}-{}.pdf'.format(output_prefix, dataset_name, 'left-epsilon')
     plt.savefig(filename)
-    compress_pdf(filename)
+    generated_files.append(filename)
     plt.clf()

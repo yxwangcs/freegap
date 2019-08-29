@@ -210,6 +210,7 @@ def evaluate(algorithms, input_data, epsilons,
 
 
 def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name, baseline_name):
+    generated_files = []
     theoretical_x = np.arange(k_array.min(), k_array.max())
     theoretical_y = theoretical(theoretical_x)
     improves_for_epsilons = []
@@ -239,7 +240,7 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
             filename = '{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',
                                                  str(epsilon).replace('.', '-'))
             plt.savefig(filename)
-            compress_pdf(filename)
+            generated_files.append(filename)
         plt.clf()
 
     epsilons = np.asarray(tuple(data.keys()), dtype=np.float)
@@ -259,5 +260,5 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
     logger.info('Fix-k Figures saved to {}'.format(output_prefix))
     filename = '{}/{}-{}-epsilons.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',)
     plt.savefig(filename)
-    compress_pdf(filename)
+    generated_files.append(filename)
     plt.clf()
