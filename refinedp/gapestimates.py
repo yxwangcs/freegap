@@ -94,7 +94,7 @@ def gap_topk_estimates(q, epsilon, k):
     # counting queries case
     final_estimates = (estimates.sum() + k * estimates + p_total - k * p) / (2 * k)
     # otherwise
-    final_estimates = (estimates.sum() + k * estimates + p_total - k * p) / (5 * k)
+    #final_estimates = (estimates.sum() + k * estimates + p_total - k * p) / (5 * k)
     return indices, final_estimates
 
 
