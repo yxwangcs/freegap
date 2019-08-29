@@ -150,7 +150,8 @@ def evaluate(algorithm, input_data, epsilons, metrics=(above_threshold_answers, 
 
             kwargs = {
                 'threshold': dataset[sorted_indices[int(QUANTILE * len(sorted_indices))]],
-                'epsilon': epsilon,
+                # counting queries
+                'epsilon': 2 * epsilon,
                 'k': k
             }
             truth_indices = sorted_indices[:int(QUANTILE * len(sorted_indices)) + 1]
