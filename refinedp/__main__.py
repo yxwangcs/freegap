@@ -95,16 +95,15 @@ def main():
     winning_algorithm = algorithm_names[1:] if winning_algorithm == 'All' else (winning_algorithm, )
     output_folder = os.path.abspath(results.output)
 
-    if results.clear:
-        logger.info('Clear flag set, removing the output folder...')
-        shutil.rmtree(output_folder)
+    for algorithm_name in winning_algorithm:
+        # create the algorithm output folder if not exists
+        algorithm_folder = os.path.join(output_folder, algorithm_name)
+        if results.clear:
+            logger.info('Clear flag set, removing the algorithm output folder...')
+            shutil.rmtree(output_folder, ignore_errors=True)
+        os.makedirs(algorithm_folder, exist_ok=True)
 
-    for dataset in process_datasets(results.datasets):
-        for algorithm_name in winning_algorithm:
-            # create the algorithm output folder if not exists
-            algorithm_folder = os.path.join(output_folder, algorithm_name)
-            os.makedirs(algorithm_folder, exist_ok=True)
-
+        for dataset in process_datasets(results.datasets):
             # plot statistics figure for dataset
             plt.hist(dataset[1], bins=200, range=(1, 1000))
             dataset_figure = os.path.join(algorithm_folder, '{}.pdf'.format(dataset[0]))
