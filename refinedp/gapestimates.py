@@ -262,3 +262,4 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
     plt.savefig(filename)
     generated_files.append(filename)
     plt.clf()
+    return generated_files
