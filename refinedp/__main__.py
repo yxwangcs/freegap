@@ -9,13 +9,10 @@ import matplotlib
 import shutil
 from matplotlib import pyplot as plt
 import coloredlogs
-from refinedp.adaptivesvt import adaptive_sparse_vector, \
-    evaluate as evaluate_adaptivesvt, plot as plot_adaptive
-from refinedp.gapestimates import gap_svt_estimates, gap_svt_estimates_baseline, \
-    gap_topk_estimates, gap_topk_estimates_baseline, \
-    evaluate as evaluate_gap_estimates, plot as plot_estimates
+from refinedp.adaptivesvt import adaptive_sparse_vector, plot as plot_adaptive
+from refinedp.gapestimates import gap_svt_estimates, gap_topk_estimates, plot as plot_estimates
 from refinedp.preprocess import process_t40100k, process_bms_pos, process_kosarak
-
+from refinedp.evaluate import evaluate
 
 matplotlib.use('PDF')
 
@@ -57,21 +54,17 @@ def process_datasets(folder):
 def main():
     algorithms = {
         'All': (),
-        'AdaptiveSparseVector': (adaptive_sparse_vector, evaluate_adaptivesvt, plot_adaptive, {}),
-        'GapSparseVector': ((gap_svt_estimates_baseline, gap_svt_estimates),
-                            evaluate_gap_estimates, plot_estimates,
+        'AdaptiveSparseVector': (adaptive_sparse_vector, plot_adaptive, {}),
+        'GapSparseVector': (gap_svt_estimates, plot_estimates,
                             {# counting queries
                              'theoretical': lambda x: 1 / (1 + ((np.power(1 + np.power(x, 2.0 / 3), 3)) / (x * x))),
                             #'theoretical': lambda x: 1 / (1 + ((np.power(1 + np.power(2 * x, 2.0 / 3), 3)) / (x * x))),
-                             'algorithm_name': 'Sparse Vector with Measures',
-                             'baseline_name': 'gap_svt_estimates_baseline'}),
-        'GapTopK': ((gap_topk_estimates_baseline, gap_topk_estimates),
-                    evaluate_gap_estimates, plot_estimates,
+                             'algorithm_name': 'Sparse Vector with Measures'}),
+        'GapTopK': (gap_topk_estimates, plot_estimates,
                     {# counting queries
                      'theoretical': lambda x: (x - 1) / (2 * x),
                     # 'theoretical': lambda x: (x - 1) / (5 * x)
-                     'algorithm_name': 'Noisy Top-K with Measures',
-                     'baseline_name': 'gap_topk_estimates_baseline'})
+                     'algorithm_name': 'Noisy Top-K with Measures'})
     }
 
     algorithm_names = tuple(algorithms.keys())
@@ -111,7 +104,7 @@ def main():
             plt.clf()
 
             # evaluate the algorithms and plot the figures
-            evaluate_algorithms, evaluate, plot, kwargs = algorithms[algorithm_name]
+            evaluate_algorithm, plot, kwargs = algorithms[algorithm_name]
             k_array = np.fromiter(range(2, 25), dtype=np.int)
 
             # check if result json is present (so we don't have to run again)
@@ -123,7 +116,7 @@ def main():
                     data = json.load(fp)
             else:
                 logger.info('No json file exists, running experiments...')
-                data = evaluate(evaluate_algorithms, dataset,
+                data = evaluate(evaluate_algorithm, dataset,
                                 epsilons=tuple(epsilon / 10.0 for epsilon in range(1, 16)))
                 logger.info('Dumping data into json file...')
                 with open(json_file, 'w') as fp:
