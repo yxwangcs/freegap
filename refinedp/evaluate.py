@@ -50,7 +50,7 @@ def evaluate(algorithm, input_data, epsilons, metrics, k_array=np.array(range(2,
             if 'threshold' in algorithm.__code__.co_varnames:
                 threshold = dataset[sorted_indices[int(0.05 * len(sorted_indices))]]
                 kwargs['threshold'] = threshold
-            truth_indices = sorted_indices[:k]
+            truth_indices = sorted_indices[:int(0.05 * len(sorted_indices))]
             kwargs['epsilon'] = epsilon
             kwargs['k'] = k
 
