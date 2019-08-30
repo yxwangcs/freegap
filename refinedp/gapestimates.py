@@ -1,9 +1,5 @@
 import logging
 import numpy as np
-import multiprocessing as mp
-from functools import partial
-from itertools import product
-import tqdm
 from numba import jit
 import matplotlib.pyplot as plt
 
@@ -103,64 +99,6 @@ def gap_svt_estimates(q, epsilon, k, threshold):
 # metric functions
 def mean_square_error(indices, estimates, truth_indices, truth_estimates):
     return np.sum(np.square(truth_estimates - estimates)) / float(len(estimates))
-
-
-def _evaluate_algorithm(iterations, algorithm, dataset, kwargs, metrics, truth_indices):
-    np.random.seed()
-
-    # run several times and record average and error
-    results = [[] for _ in range(len(metrics))]
-    for _ in range(iterations):
-        indices, estimates = algorithm(dataset, **kwargs)
-        for metric_index, metric_func in enumerate(metrics):
-            results[metric_index].append(metric_func(indices, estimates, truth_indices, dataset[indices]))
-    # returns a numpy array of sum of `iterations` runs for each metric
-    return np.fromiter((sum(result) for result in results), dtype=np.float, count=len(results))
-
-
-def evaluate(algorithms, input_data, epsilons,
-             metrics=(mean_square_error, ), k_array=np.array(range(2, 25)), total_iterations=20000):
-    # flatten epsilon
-    epsilons = (epsilons, ) if isinstance(epsilons, (int, float)) else epsilons
-
-    # unpack the input data
-    dataset_name, dataset = input_data
-    dataset = np.asarray(dataset)
-    sorted_indices = np.argsort(dataset)[::-1]
-    logger.info('Evaluating {} on {}'.format(algorithms[-1].__name__.replace('_', ' ').title(), dataset_name))
-
-    # create the result dict
-    metric_data = {
-        epsilon: {
-            metric.__name__: {algorithm.__name__: [] for algorithm in algorithms} for metric in metrics
-        } for epsilon in epsilons
-    }
-    with mp.Pool(mp.cpu_count()) as pool:
-        for epsilon, algorithm, k in tqdm.tqdm(product(epsilons, algorithms, k_array),
-                                               total=len(epsilons) * len(algorithms) * len(k_array)):
-            # for svts
-            kwargs = {}
-            if 'threshold' in algorithm.__code__.co_varnames:
-                threshold = dataset[sorted_indices[int(0.05 * len(sorted_indices))]]
-                kwargs['threshold'] = threshold
-            truth_indices = sorted_indices[:k]
-            kwargs['epsilon'] = epsilon
-            kwargs['k'] = k
-
-            # get the iteration list
-            iterations = [int(total_iterations / mp.cpu_count()) for _ in range(mp.cpu_count())]
-            iterations[mp.cpu_count() - 1] += total_iterations % mp.cpu_count()
-
-            partial_evaluate_algorithm = \
-                partial(_evaluate_algorithm, algorithm=algorithm, dataset=dataset, kwargs=kwargs, metrics=metrics,
-                        truth_indices=truth_indices)
-            algorithm_metrics = sum(pool.imap_unordered(partial_evaluate_algorithm, iterations)) / total_iterations
-
-            for metric_index, metric in enumerate(metrics):
-                metric_data[epsilon][metric.__name__][algorithm.__name__].append(algorithm_metrics[metric_index])
-
-    logger.debug(metric_data)
-    return metric_data
 
 
 def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name, baseline_name):

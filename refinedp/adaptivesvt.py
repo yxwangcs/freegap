@@ -1,9 +1,5 @@
 import logging
 import numpy as np
-import multiprocessing as mp
-from functools import partial
-from itertools import product
-import tqdm
 import os
 import matplotlib.pyplot as plt
 from numba import jit
@@ -100,80 +96,6 @@ def middle_branch_precision(indices, total, top_indices, middle_indices, truth_i
         return 1.0
     else:
         return len(np.intersect1d(middle_indices, truth_indices)) / float(len(middle_indices))
-
-
-def _evaluate_algorithm(iterations, algorithm, dataset, kwargs, metrics, truth_indices):
-    # run several times and record average and error
-    baseline_results = [[] for _ in range(len(metrics))]
-    algorithm_results = [[] for _ in range(len(metrics))]
-    for _ in range(iterations):
-        algorithm_result = algorithm(dataset, **kwargs)
-        baseline_result = algorithm_result[int(len(algorithm_result) / 2):len(algorithm_result)]
-        algorithm_result = algorithm_result[0:int(len(algorithm_result) / 2)]
-        for metric_index, metric_func in enumerate(metrics):
-            baseline_results[metric_index].append(metric_func(*baseline_result, truth_indices))
-            algorithm_results[metric_index].append(metric_func(*algorithm_result, truth_indices))
-
-    # returns a numpy array of sum of `iterations` runs for each metric
-    return np.fromiter((sum(result) for result in baseline_results), dtype=np.float, count=len(baseline_results)),\
-           np.fromiter((sum(result) for result in algorithm_results), dtype=np.float, count=len(algorithm_results))
-
-
-def evaluate(algorithm, input_data, epsilons, metrics=(above_threshold_answers, f_measure, top_branch, middle_branch, precision, top_branch_precision, middle_branch_precision),
-             k_array=np.array(range(2, 25)), total_iterations=20000):
-    # TODO: function names are hard-coded, fix later
-
-    # make epsilons a tuple if only one is given
-    epsilons = (epsilons, ) if isinstance(epsilons, (int, float)) else epsilons
-
-    # unpack the input data
-    dataset_name, dataset = input_data
-    dataset = np.asarray(dataset)
-    logger.info('Evaluating {} on {}'.format(algorithm.__name__.replace('_', ' ').title(), dataset_name))
-
-    QUANTILE = 0.05
-    # create the result dict
-    # epsilon -> metric -> algorithm -> [data for each k]
-    metric_data = {
-        str(epsilon): {
-            metric.__name__: {'sparse_vector': [], 'adaptive_sparse_vector': []}
-            for metric in metrics
-        } for epsilon in epsilons
-    }
-    with mp.Pool(mp.cpu_count()) as pool:
-        for epsilon, k in tqdm.tqdm(product(epsilons, k_array), total=len(epsilons) * len(k_array)):
-            np.random.shuffle(dataset)
-            sorted_indices = np.argsort(dataset)[::-1]
-            # get the iteration list
-            iterations = [int(total_iterations / mp.cpu_count()) for _ in range(mp.cpu_count())]
-            iterations[mp.cpu_count() - 1] += total_iterations % mp.cpu_count()
-
-            kwargs = {
-                'threshold': dataset[sorted_indices[int(QUANTILE * len(sorted_indices))]],
-                # counting queries
-                'epsilon': 2 * epsilon,
-                'k': k
-            }
-            truth_indices = sorted_indices[:int(QUANTILE * len(sorted_indices)) + 1]
-
-            partial_evaluate_algorithm = \
-                partial(_evaluate_algorithm, algorithm=algorithm, dataset=dataset, kwargs=kwargs, metrics=metrics,
-                        truth_indices=truth_indices)
-
-            # run and collect data
-            baseline_metrics, algorithm_metrics = np.zeros((len(metrics), )), np.zeros((len(metrics), ))
-            for local_baseline, local_algorithm in pool.imap_unordered(partial_evaluate_algorithm, iterations):
-                baseline_metrics += local_baseline
-                algorithm_metrics += local_algorithm
-            baseline_metrics, algorithm_metrics = baseline_metrics / total_iterations, algorithm_metrics / total_iterations
-
-            # merge the results
-            for metric_index, metric in enumerate(metrics):
-                metric_data[str(epsilon)][metric.__name__]['sparse_vector'].append(baseline_metrics[metric_index])
-                metric_data[str(epsilon)][metric.__name__]['adaptive_sparse_vector'].append(algorithm_metrics[metric_index])
-
-    logger.debug(metric_data)
-    return metric_data
 
 
 def plot(k_array, dataset_name, data, output_prefix):
