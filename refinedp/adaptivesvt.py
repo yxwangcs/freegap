@@ -115,9 +115,9 @@ def plot(k_array, dataset_name, data, output_prefix):
     logger.info('best quantile is {}'.format(quantile))
 
     # plot number of above threshold answers
-    baseline_top_branch = np.asarray(data[epsilon]['top_branch']['sparse_vector'])
-    algorithm_top_branch = np.asarray(data[epsilon]['top_branch']['adaptive_sparse_vector'])
-    algorithm_middle_branch = np.asarray(data[epsilon]['middle_branch']['adaptive_sparse_vector'])
+    baseline_top_branch = np.asarray(data[epsilon]['top_branch']['baseline'])
+    algorithm_top_branch = np.asarray(data[epsilon]['top_branch']['algorithm'])
+    algorithm_middle_branch = np.asarray(data[epsilon]['middle_branch']['algorithm'])
     width = 0.6
     plt.ylim(0, 50)
     sub_k_array = np.arange(2, 24, 2)
@@ -149,8 +149,8 @@ def plot(k_array, dataset_name, data, output_prefix):
     plt.clf()
 
     # plot the f-measure
-    adaptive_f_measure = np.asarray(data[epsilon]['f_measure']['adaptive_sparse_vector'])
-    sparse_vector_f_measure = np.asarray(data[epsilon]['f_measure']['sparse_vector'])
+    adaptive_f_measure = np.asarray(data[epsilon]['f_measure']['algorithm'])
+    sparse_vector_f_measure = np.asarray(data[epsilon]['f_measure']['baseline'])
     plt.plot(k_array, sparse_vector_f_measure,
              label=r'\huge {}'.format('Sparse Vector'),
              linewidth=3, markersize=10, marker='P', zorder=5)
@@ -173,8 +173,8 @@ def plot(k_array, dataset_name, data, output_prefix):
     plt.clf()
 
     # plot the precision
-    adaptive_f_measure = np.asarray(data[epsilon]['precision']['adaptive_sparse_vector'])
-    sparse_vector_f_measure = np.asarray(data[epsilon]['precision']['sparse_vector'])
+    adaptive_f_measure = np.asarray(data[epsilon]['precision']['algorithm'])
+    sparse_vector_f_measure = np.asarray(data[epsilon]['precision']['baseline'])
     plt.plot(k_array, sparse_vector_f_measure,
              label=r'\huge {}'.format('Sparse Vector'),
              linewidth=3, markersize=10, marker='P', zorder=5)

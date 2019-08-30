@@ -101,7 +101,7 @@ def mean_square_error(indices, estimates, truth_indices, truth_estimates):
     return np.sum(np.square(truth_estimates - estimates)) / float(len(estimates))
 
 
-def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name, baseline_name):
+def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name):
     generated_files = []
     theoretical_x = np.arange(k_array.min(), k_array.max())
     theoretical_y = theoretical(theoretical_x)
@@ -109,16 +109,14 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
     for epsilon, epsilon_dict in data.items():
         assert len(epsilon_dict) == 1 and 'mean_square_error' in epsilon_dict
         metric_dict = epsilon_dict['mean_square_error']
-        baseline = np.asarray(metric_dict[baseline_name])
-        for algorithm, algorithm_data in metric_dict.items():
-            if algorithm == baseline_name:
-                continue
-            improvements = 100 * (baseline - np.asarray(algorithm_data)) / baseline
-            improves_for_epsilons.append(improvements[8])
-            plt.plot(k_array, improvements, label=r'\huge {}'.format(algorithm_name), linewidth=3, markersize=10,
-                     marker='o')
-            plt.ylim(0, 50)
-            plt.ylabel(r'\huge \% Improvement in MSE')
+        baseline = np.asarray(metric_dict['baseline'])
+        algorithm_data = np.asarray(metric_dict['algorithm'])
+        improvements = 100 * (baseline - algorithm_data) / baseline
+        improves_for_epsilons.append(improvements[8])
+        plt.plot(k_array, improvements, label=r'\huge {}'.format(algorithm_name), linewidth=3, markersize=10,
+                 marker='o')
+        plt.ylim(0, 50)
+        plt.ylabel(r'\huge \% Improvement in MSE')
         plt.plot(theoretical_x, 100 * theoretical_y, linewidth=5,
                  linestyle='--', label=r'\huge Theoretical Expected Improvement')
         plt.xlabel(r'\huge $k$')
@@ -130,7 +128,7 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
         if float(epsilon) - 0.7 < abs(1e-5):
             logger.info('Fix-epsilon Figures saved to {}'.format(output_prefix))
             filename = '{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',
-                                                 str(epsilon).replace('.', '-'))
+                                                str(epsilon).replace('.', '-'))
             plt.savefig(filename)
             generated_files.append(filename)
         plt.clf()
