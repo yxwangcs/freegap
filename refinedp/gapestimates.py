@@ -11,41 +11,14 @@ import matplotlib.pyplot as plt
 logger = logging.getLogger(__name__)
 
 
-# classical algorithms as building blocks
-@jit(nopython=True)
-def sparse_vector(q, epsilon, k, threshold, allocation=(0.5, 0.5)):
-    threshold_allocation, query_allocation = allocation
-    assert abs(threshold_allocation + query_allocation - 1.0) < 1e-05
-    epsilon_1, epsilon_2 = threshold_allocation * epsilon, query_allocation * epsilon
-    indices = []
-    i, count = 0, 0
-    noisy_threshold = threshold + np.random.laplace(0, 1.0 / epsilon_1)
-    while i < len(q) and count < k:
-        if q[i] + np.random.laplace(0, 2.0 * k / epsilon_2) >= noisy_threshold:
-            indices.append(i)
-            count += 1
-        i += 1
-    return np.asarray(indices)
-
-
-def noisy_top_k(q, epsilon, k):
-    assert k <= len(q), 'k must be less or equal to the length of q'
-    # counting queries case
-    noisy_q = q + np.random.laplace(scale=k / epsilon, size=len(q))
-    # otherwise
-    # noisy_q = q + np.random.laplace(scale=2 * k / epsilon, size=len(q))
-    indices = np.argpartition(noisy_q, -k)[-k:]
-    indices = indices[np.argsort(-noisy_q[indices])]
-    return indices
-
-
 def laplace_mechanism(q, epsilon, indices):
     request_q = q[indices]
     return request_q + np.random.laplace(scale=float(len(request_q)) / epsilon, size=len(request_q))
 
 
-# implementation of Noisy Max with Measures / Sparse Vector with Measures
-# Noisy Top-K with Gap
+# we implement baseline algorithm into the algorithm itself, i.e., the algorithm returns the result together
+# with the un-refined result which would be returned by the baseline algorithm. Both for sake of time for experiment and
+# for the requirement that the noise added to the algorithm and baseline algorithm should be the same.
 def gap_noisy_topk(q, epsilon, k):
     assert k <= len(q), 'k must be less or equal to the length of q'
     # counting queries case
@@ -56,33 +29,28 @@ def gap_noisy_topk(q, epsilon, k):
     indices = indices[np.argsort(-noisy_q[indices])]
     gaps = np.fromiter((noisy_q[first] - noisy_q[second] for first, second in zip(indices[:-1], indices[1:])),
                        dtype=np.float)
+    # baseline algorithm would just return (indices)
     return indices, gaps
 
 
-# Baseline algorithm for Noisy Top-K with Measures
-def gap_topk_estimates_baseline(q, epsilon, k):
-    # allocate the privacy budget 1:1 to noisy k max and laplace mechanism
-    indices = noisy_top_k(q, 0.5 * epsilon, k)
-    estimates = laplace_mechanism(q, 0.5 * epsilon, indices)
-    return indices, estimates
-
-
-# Noisy Top-K with Measures
+# Noisy Top-K with Measures (together with baseline)
 def gap_topk_estimates(q, epsilon, k):
+    # allocate the privacy budget 1:1 to noisy k max and laplace mechanism
     indices, gaps = gap_noisy_topk(q, 0.5 * epsilon, k)
-    estimates = laplace_mechanism(q, 0.5 * epsilon, indices)
+    direct_estimates = laplace_mechanism(q, 0.5 * epsilon, indices)
     p_total = (np.fromiter((k - i for i in range(1, k)), dtype=np.int, count=k - 1) * gaps).sum()
     p = np.empty(k, dtype=np.float)
     np.cumsum(gaps, out=p[1:])
     p[0] = 0
     # counting queries case
-    final_estimates = (estimates.sum() + k * estimates + p_total - k * p) / (2 * k)
+    refined_estimates = (direct_estimates.sum() + k * direct_estimates + p_total - k * p) / (2 * k)
     # otherwise
-    #final_estimates = (estimates.sum() + k * estimates + p_total - k * p) / (5 * k)
-    return indices, final_estimates
+    # refined_estimates = (estimates.sum() + k * estimates + p_total - k * p) / (5 * k)
+    # baseline algorithm would just return (indices, direct_estimates)
+    return indices, refined_estimates, indices, direct_estimates
 
 
-# Sparse Vector with Gap
+# Sparse Vector (with Gap)
 @jit(nopython=True)
 def gap_sparse_vector(q, epsilon, k, threshold, allocation=(0.5, 0.5)):
     threshold_allocation, query_allocation = allocation
@@ -99,10 +67,11 @@ def gap_sparse_vector(q, epsilon, k, threshold, allocation=(0.5, 0.5)):
             gaps.append(noisy_q_i - noisy_threshold)
             count += 1
         i += 1
+    # baseline algorithm would just return (np.asarray(indices))
     return np.asarray(indices), np.asarray(gaps)
 
 
-# Sparse Vector with Measures
+# Sparse Vector with Measures (together with baseline algorithm)
 def gap_svt_estimates(q, epsilon, k, threshold):
     # budget allocation for gap svt
     # counting queries
@@ -124,15 +93,11 @@ def gap_svt_estimates(q, epsilon, k, threshold):
     variance_lap = 8 * np.square(k) / np.square(epsilon)
 
     # do weighted average
-    return indices, (initial_estimates / variance_gap + direct_estimates / variance_lap) / (1.0 / variance_gap + 1.0 / variance_lap)
+    refined_estimates = \
+        (initial_estimates / variance_gap + direct_estimates / variance_lap) / (1.0 / variance_gap + 1.0 / variance_lap)
 
-
-# baseline algorithm for Sparse Vector with Measures
-def gap_svt_estimates_baseline(q, epsilon, k, threshold):
-    x, y = 1, np.power(2 * k, 2.0 / 3.0)
-    gap_x, gap_y = x / (x + y), y / (x + y)
-    indices = sparse_vector(q, epsilon / 2.0, k, threshold, allocation=(gap_x, gap_y))
-    return indices, np.asarray(laplace_mechanism(q, epsilon / 2.0, indices))
+    # baseline algorithm would simply return (indices, direct_estimates)
+    return indices, direct_estimates, indices, direct_estimates
 
 
 # metric functions
