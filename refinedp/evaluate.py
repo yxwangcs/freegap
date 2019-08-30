@@ -67,7 +67,8 @@ def evaluate(algorithm, input_data, epsilons, metrics, k_array=np.array(range(2,
             for local_baseline, local_algorithm in pool.imap_unordered(partial_evaluate_algorithm, iterations):
                 baseline_metrics += local_baseline
                 algorithm_metrics += local_algorithm
-            baseline_metrics, algorithm_metrics = baseline_metrics / total_iterations, algorithm_metrics / total_iterations
+            baseline_metrics = baseline_metrics / total_iterations
+            algorithm_metrics = algorithm_metrics / total_iterations
 
             # merge the results
             for metric_index, metric in enumerate(metrics):
