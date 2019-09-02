@@ -7,22 +7,6 @@ import numba
 
 logger = logging.getLogger(__name__)
 
-"""deprecated
-# classical sparse vector to compare with
-def sparse_vector(q, epsilon, k, threshold, middle_prng=np.random):
-    indices = []
-    i, count = 0, 0
-    noisy_threshold = threshold + np.random.laplace(scale=2.0 / epsilon)
-    while i < len(q) and count < k:
-        if q[i] + middle_prng.laplace(scale=4.0 * k / epsilon) >= noisy_threshold:
-            indices.append(i)
-            count += 1
-        i += 1
-    return np.asarray(indices), i
-"""
-
-_INVALID_ARRAY = np.array([-1])
-
 
 # this is a combination of classical and adaptive svt
 @numba.njit
