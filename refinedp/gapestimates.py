@@ -1,15 +1,16 @@
 import logging
 import numpy as np
-from numba import jit
+import numba
 import matplotlib.pyplot as plt
 
 
 logger = logging.getLogger(__name__)
 
 
+@numba.njit
 def laplace_mechanism(q, epsilon, indices):
     request_q = q[indices]
-    return request_q + np.random.laplace(scale=float(len(request_q)) / epsilon, size=len(request_q))
+    return request_q + np.random.laplace(0, float(len(request_q)) / epsilon, len(request_q))
 
 
 # we implement baseline algorithm into the algorithm itself, i.e., the algorithm returns the result together
@@ -47,7 +48,7 @@ def gap_topk_estimates(q, epsilon, k):
 
 
 # Sparse Vector (with Gap)
-@jit(nopython=True)
+@numba.njit
 def gap_sparse_vector(q, epsilon, k, threshold, allocation=(0.5, 0.5)):
     threshold_allocation, query_allocation = allocation
     assert abs(threshold_allocation + query_allocation - 1.0) < 1e-05
@@ -68,6 +69,7 @@ def gap_sparse_vector(q, epsilon, k, threshold, allocation=(0.5, 0.5)):
 
 
 # Sparse Vector with Measures (together with baseline algorithm)
+@numba.njit
 def gap_svt_estimates(q, epsilon, k, threshold):
     # budget allocation for gap svt
     # counting queries
@@ -81,8 +83,8 @@ def gap_svt_estimates(q, epsilon, k, threshold):
 
     indices, gaps = gap_sparse_vector(q, gap_budget * epsilon, k, threshold, allocation=(gap_x, gap_y))
     assert len(indices) == len(gaps)
-    initial_estimates = gaps + threshold
-    direct_estimates = laplace_mechanism(q, lap_budget * epsilon, indices)
+    initial_estimates = np.asarray(gaps + threshold)
+    direct_estimates = np.asarray(laplace_mechanism(q, lap_budget * epsilon, indices))
     # counting queries
     variance_gap = 8 * np.power((1 + np.power(k, 2.0 / 3)), 3) / np.square(epsilon)
     #variance_gap = 8 * np.power((1 + np.power(2 * k, 2.0 / 3)), 3) / np.square(epsilon)
@@ -93,10 +95,11 @@ def gap_svt_estimates(q, epsilon, k, threshold):
         (initial_estimates / variance_gap + direct_estimates / variance_lap) / (1.0 / variance_gap + 1.0 / variance_lap)
 
     # baseline algorithm would simply return (indices, direct_estimates)
-    return indices, direct_estimates, indices, direct_estimates
+    return indices, refined_estimates, indices, direct_estimates
 
 
 # metric functions
+@numba.njit
 def mean_square_error(indices, estimates, truth_indices, truth_estimates):
     return np.sum(np.square(truth_estimates - estimates)) / float(len(estimates))
 

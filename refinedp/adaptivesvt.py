@@ -2,7 +2,7 @@ import logging
 import numpy as np
 import os
 import matplotlib.pyplot as plt
-from numba import jit
+import numba
 
 
 logger = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ _INVALID_ARRAY = np.array([-1])
 
 
 # this is a combination of classical and adaptive svt
-@jit(nopython=True)
+@numba.njit
 def adaptive_sparse_vector(q, epsilon, k, threshold):
     top_indices, middle_indices = [], []
     classical_indices, count, classical_i = [], 0, 0
@@ -58,11 +58,13 @@ def adaptive_sparse_vector(q, epsilon, k, threshold):
            classical_indices, classical_i, classical_indices, _INVALID_ARRAY
 
 
-def above_threshold_answers(indices, total, top_indices, middle_indices, truth_indices):
+@numba.njit
+def above_threshold_answers(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
     return len(indices)
 
 
-def f_measure(indices, total, top_indices, middle_indices, truth_indices):
+@numba.njit
+def f_measure(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
     precision_val = len(np.intersect1d(indices, truth_indices)) / float(len(indices))
     # generate truth_indices based on total returned indices
     recall_val = len(np.intersect1d(indices, truth_indices)) / float(len(truth_indices))
@@ -72,26 +74,31 @@ def f_measure(indices, total, top_indices, middle_indices, truth_indices):
         return 2 * precision_val * recall_val / (precision_val + recall_val)
 
 
-def top_branch(indices, total, top_indices, middle_indices, truth_indices):
+@numba.njit
+def top_branch(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
     return len(top_indices)
 
 
-def middle_branch(indices, total, top_indices, middle_indices, truth_indices):
+@numba.njit
+def middle_branch(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
     return len(middle_indices)
 
 
-def precision(indices, total, top_indices, middle_indices, truth_indices):
+@numba.njit
+def precision(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
     return len(np.intersect1d(indices, truth_indices)) / float(len(indices))
 
 
-def top_branch_precision(indices, total, top_indices, middle_indices, truth_indices):
+@numba.njit
+def top_branch_precision(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
     if len(top_indices) == 0:
         return 1.0
     else:
         return len(np.intersect1d(top_indices, truth_indices)) / float(len(top_indices))
 
 
-def middle_branch_precision(indices, total, top_indices, middle_indices, truth_indices):
+@numba.njit
+def middle_branch_precision(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
     if len(middle_indices) == 0:
         return 1.0
     else:
