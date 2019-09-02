@@ -54,8 +54,9 @@ def adaptive_sparse_vector(q, epsilon, k, threshold):
     indices = np.asarray(top_indices + middle_indices)
     indices.sort()
     classical_indices = np.asarray(classical_indices)
+    classical_middle = np.empty(0, np.float64)
     return indices, i, top_indices, middle_indices, \
-           classical_indices, classical_i, classical_indices, _INVALID_ARRAY
+           classical_indices, classical_i, classical_indices, classical_middle
 
 
 @numba.njit
