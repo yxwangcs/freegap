@@ -59,12 +59,10 @@ def adaptive_sparse_vector(q, epsilon, k, threshold):
            classical_indices, classical_i, classical_indices, classical_middle
 
 
-@numba.njit
 def above_threshold_answers(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
     return len(indices)
 
 
-@numba.njit
 def f_measure(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
     precision_val = len(np.intersect1d(indices, truth_indices)) / float(len(indices))
     # generate truth_indices based on total returned indices
@@ -75,22 +73,18 @@ def f_measure(indices, total, top_indices, middle_indices, truth_indices, truth_
         return 2 * precision_val * recall_val / (precision_val + recall_val)
 
 
-@numba.njit
 def top_branch(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
     return len(top_indices)
 
 
-@numba.njit
 def middle_branch(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
     return len(middle_indices)
 
 
-@numba.njit
 def precision(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
     return len(np.intersect1d(indices, truth_indices)) / float(len(indices))
 
 
-@numba.njit
 def top_branch_precision(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
     if len(top_indices) == 0:
         return 1.0
@@ -98,7 +92,6 @@ def top_branch_precision(indices, total, top_indices, middle_indices, truth_indi
         return len(np.intersect1d(top_indices, truth_indices)) / float(len(top_indices))
 
 
-@numba.njit
 def middle_branch_precision(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
     if len(middle_indices) == 0:
         return 1.0
