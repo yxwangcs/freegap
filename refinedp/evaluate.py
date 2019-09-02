@@ -40,7 +40,7 @@ def evaluate(algorithm, input_data, epsilons, metrics, k_array=np.array(range(2,
 
     # create the result dict
     metric_data = {
-        epsilon: {
+        str(epsilon): {
             metric.__name__: {'baseline': [], 'algorithm': []} for metric in metrics
         } for epsilon in epsilons
     }
