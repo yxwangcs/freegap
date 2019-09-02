@@ -28,7 +28,8 @@ def _evaluate_algorithm(iterations, algorithm, dataset, kwargs, metrics, truth_i
            np.fromiter((sum(result) for result in algorithm_results), dtype=np.float, count=len(algorithm_results))
 
 
-def evaluate(algorithm, input_data, epsilons, metrics, k_array=np.array(range(2, 25)), total_iterations=20000):
+def evaluate(algorithm, input_data, epsilons, metrics, k_array=np.array(range(2, 25)), total_iterations=20000,
+             counting_queries=False):
     # make epsilons a tuple
     epsilons = (epsilons, ) if isinstance(epsilons, (int, float)) else tuple(epsilons)
 
@@ -49,11 +50,11 @@ def evaluate(algorithm, input_data, epsilons, metrics, k_array=np.array(range(2,
             # for svts
             kwargs = {}
             if 'threshold' in algorithm.__code__.co_varnames:
-                threshold = dataset[sorted_indices[int(0.05 * len(sorted_indices))]]
-                kwargs['threshold'] = threshold
+                kwargs['threshold'] = dataset[sorted_indices[int(0.05 * len(sorted_indices))]]
             truth_indices = sorted_indices[:int(0.05 * len(sorted_indices))]
             kwargs['epsilon'] = epsilon
             kwargs['k'] = k
+            kwargs['counting_queries'] = counting_queries
 
             # get the iteration list
             iterations = [int(total_iterations / mp.cpu_count()) for _ in range(mp.cpu_count())]
