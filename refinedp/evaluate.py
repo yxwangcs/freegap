@@ -18,9 +18,10 @@ def _evaluate_algorithm(iterations, algorithm, dataset, kwargs, metrics, truth_i
         algorithm_result = algorithm(dataset, **kwargs)
         baseline_result = algorithm_result[int(len(algorithm_result) / 2):len(algorithm_result)]
         algorithm_result = algorithm_result[0:int(len(algorithm_result) / 2)]
+        indices = algorithm_result[0]
         for metric_index, metric_func in enumerate(metrics):
-            baseline_results[metric_index].append(metric_func(*baseline_result, truth_indices))
-            algorithm_results[metric_index].append(metric_func(*algorithm_result, truth_indices))
+            baseline_results[metric_index].append(metric_func(*baseline_result, truth_indices, dataset[indices]))
+            algorithm_results[metric_index].append(metric_func(*algorithm_result, truth_indices, dataset[indices]))
 
     # returns a numpy array of sum of `iterations` runs for each metric
     return np.fromiter((sum(result) for result in baseline_results), dtype=np.float, count=len(baseline_results)), \
