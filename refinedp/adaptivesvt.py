@@ -52,7 +52,7 @@ def adaptive_sparse_vector(q, epsilon, k, threshold, counting_queries=False):
            classical_indices, classical_i, classical_indices, classical_middle
 
 
-def f_measure(indices, total, top_indices, middle_indices, truth_indices):
+def f_measure(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
     if len(indices) == 0:
         return 0
     precision_val = len(np.intersect1d(indices, truth_indices)) / float(len(indices))
