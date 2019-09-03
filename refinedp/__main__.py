@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 def compress_pdfs(files):
+    logger.info('Compressing generated PDFs...')
     if shutil.which('gs'):
         for file in files:
             os.rename(file, '{}.temp'.format(file))
