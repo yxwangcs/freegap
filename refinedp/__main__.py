@@ -11,7 +11,7 @@ import re
 from matplotlib import pyplot as plt
 import coloredlogs
 from refinedp.adaptivesvt import adaptive_sparse_vector, \
-    top_branch, top_branch_precision, middle_branch, middle_branch_precision, precision, f_measure, \
+    top_branch, top_branch_precision, middle_branch, middle_branch_precision, precision, f_measure, recall, \
     above_threshold_answers, plot as plot_adaptive
 from refinedp.gapestimates import gap_svt_estimates, gap_topk_estimates, mean_square_error, plot as plot_estimates
 from refinedp.evaluate import evaluate
@@ -101,7 +101,7 @@ def main():
     parameters = {
         'AdaptiveSparseVector': (adaptive_sparse_vector, (top_branch, top_branch_precision, middle_branch,
                                                           middle_branch_precision, precision, f_measure,
-                                                          above_threshold_answers), plot_adaptive, {}),
+                                                          above_threshold_answers, recall), plot_adaptive, {}),
         'GapSparseVector': (gap_svt_estimates, (mean_square_error,), plot_estimates,  {
             'theoretical': svt_theoretical,
             'algorithm_name': 'Sparse Vector with Measures'

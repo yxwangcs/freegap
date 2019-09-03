@@ -43,18 +43,23 @@ def adaptive_sparse_vector(q, epsilon, k, threshold, counting_queries=False):
            classical_indices, classical_i, classical_indices, classical_middle
 
 
+def f_measure(indices, total, top_indices, middle_indices, truth_indices):
+    if len(indices) == 0:
+        return 0
+    precision_val = len(np.intersect1d(indices, truth_indices)) / float(len(indices))
+    if precision_val == 0:
+        return 0
+    # generate truth_indices based on total returned indices
+    recall_val = len(np.intersect1d(indices, truth_indices)) / float(len(truth_indices))
+    return 2 * precision_val * recall_val / (precision_val + recall_val)
+
+
 def above_threshold_answers(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
     return len(indices)
 
 
-def f_measure(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
-    precision_val = len(np.intersect1d(indices, truth_indices)) / float(len(indices))
-    # generate truth_indices based on total returned indices
-    recall_val = len(np.intersect1d(indices, truth_indices)) / float(len(truth_indices))
-    if precision_val == 0:
-        return 0
-    else:
-        return 2 * precision_val * recall_val / (precision_val + recall_val)
+def recall(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
+    return len(np.intersect1d(indices, truth_indices)) / float(len(truth_indices))
 
 
 def top_branch(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
@@ -66,19 +71,22 @@ def middle_branch(indices, total, top_indices, middle_indices, truth_indices, tr
 
 
 def precision(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
-    return len(np.intersect1d(indices, truth_indices)) / float(len(indices))
+    if len(indices) == 0:
+        return 0
+    else:
+        return len(np.intersect1d(indices, truth_indices)) / float(len(indices))
 
 
 def top_branch_precision(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
     if len(top_indices) == 0:
-        return 1.0
+        return 0
     else:
         return len(np.intersect1d(top_indices, truth_indices)) / float(len(top_indices))
 
 
 def middle_branch_precision(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
     if len(middle_indices) == 0:
-        return 1.0
+        return 0
     else:
         return len(np.intersect1d(middle_indices, truth_indices)) / float(len(middle_indices))
 
