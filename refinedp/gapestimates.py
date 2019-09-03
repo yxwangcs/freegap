@@ -40,7 +40,7 @@ def gap_topk_estimates(q, epsilon, k, counting_queries=False):
     if counting_queries:
         refined_estimates = (direct_estimates.sum() + k * direct_estimates + p_total - k * p) / (2 * k)
     else:
-        refined_estimates = (direct_estimates.sum() + k * direct_estimates + p_total - k * p) / (5 * k)
+        refined_estimates = (direct_estimates.sum() + 4 * k * direct_estimates + p_total - k * p) / (5 * k)
 
     # baseline algorithm would just return (indices, direct_estimates)
     return indices, refined_estimates, indices, direct_estimates
