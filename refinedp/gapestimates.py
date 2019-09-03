@@ -31,10 +31,8 @@ def gap_noisy_topk(q, epsilon, k, counting_queries=False):
 # Noisy Top-K with Measures (together with baseline)
 def gap_topk_estimates(q, epsilon, k, counting_queries=False):
     # allocate the privacy budget 1:1 to noisy k max and laplace mechanism
-    gap_budget = 0.5 * 2 * epsilon if counting_queries else 0.5 * epsilon
-    lap_budget = 0.5 * epsilon
-    indices, gaps = gap_noisy_topk(q, gap_budget, k)
-    direct_estimates = laplace_mechanism(q, lap_budget, indices)
+    indices, gaps = gap_noisy_topk(q, 0.5 * epsilon, k)
+    direct_estimates = laplace_mechanism(q, 0.5 * epsilon, indices)
     p_total = (np.fromiter((k - i for i in range(1, k)), dtype=np.int, count=k - 1) * gaps).sum()
     p = np.empty(k, dtype=np.float)
     np.cumsum(gaps, out=p[1:])
