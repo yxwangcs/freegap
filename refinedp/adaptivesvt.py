@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 # this is a combination of classical and adaptive svt
-@numba.njit
+@numba.njit(fastmath=True)
 def adaptive_sparse_vector(q, epsilon, k, threshold, counting_queries=False):
     top_indices, middle_indices = [], []
     classical_indices, count, classical_i = [], 0, 0

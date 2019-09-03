@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 logger = logging.getLogger(__name__)
 
 
-@numba.njit
+@numba.njit(fastmath=True)
 def laplace_mechanism(q, epsilon, indices):
     request_q = q[indices]
     return request_q + np.random.laplace(0, float(len(request_q)) / epsilon, len(request_q))
@@ -47,7 +47,7 @@ def gap_topk_estimates(q, epsilon, k, counting_queries=False):
 
 
 # Sparse Vector (with Gap)
-@numba.njit
+@numba.njit(fastmath=True)
 def gap_sparse_vector(q, epsilon, k, threshold, allocation=(0.5, 0.5), counting_queries=False):
     threshold_allocation, query_allocation = allocation
     assert abs(threshold_allocation + query_allocation - 1.0) < 1e-05
@@ -68,7 +68,7 @@ def gap_sparse_vector(q, epsilon, k, threshold, allocation=(0.5, 0.5), counting_
 
 
 # Sparse Vector with Measures (together with baseline algorithm)
-@numba.njit
+@numba.njit(fastmath=True)
 def gap_svt_estimates(q, epsilon, k, threshold, counting_queries=False):
     # budget allocation for gap svt
     x, y = (1, np.power(k, 2.0 / 3.0)) if counting_queries else (1, np.power(2 * k, 2.0 / 3.0))
@@ -95,7 +95,7 @@ def gap_svt_estimates(q, epsilon, k, threshold, counting_queries=False):
 
 
 # metric functions
-@numba.njit
+@numba.njit(fastmath=True)
 def mean_square_error(indices, estimates, truth_indices, truth_estimates):
     return np.square(truth_estimates - estimates).sum() / float(len(truth_estimates))
 
