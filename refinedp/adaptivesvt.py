@@ -1,39 +1,22 @@
 import logging
 import numpy as np
-import multiprocessing as mp
-from functools import partial
-from itertools import product
-import tqdm
 import os
 import matplotlib.pyplot as plt
-from numba import jit
+import numba
 
 
 logger = logging.getLogger(__name__)
 
-"""deprecated
-# classical sparse vector to compare with
-def sparse_vector(q, epsilon, k, threshold, middle_prng=np.random):
-    indices = []
-    i, count = 0, 0
-    noisy_threshold = threshold + np.random.laplace(scale=2.0 / epsilon)
-    while i < len(q) and count < k:
-        if q[i] + middle_prng.laplace(scale=4.0 * k / epsilon) >= noisy_threshold:
-            indices.append(i)
-            count += 1
-        i += 1
-    return np.asarray(indices), i
-"""
-
-_INVALID_ARRAY = np.array([-1])
-
 
 # this is a combination of classical and adaptive svt
-@jit(nopython=True)
-def adaptive_sparse_vector(q, epsilon, k, threshold):
+@numba.njit
+def adaptive_sparse_vector(q, epsilon, k, threshold, counting_queries=False):
     top_indices, middle_indices = [], []
     classical_indices, count, classical_i = [], 0, 0
-    epsilon_0, epsilon_1, epsilon_2 = epsilon / 2.0, epsilon / (8.0 * k), epsilon / (4.0 * k)
+    if counting_queries:
+        epsilon_0, epsilon_1, epsilon_2 = epsilon / 2.0, epsilon / (4.0 * k), epsilon / (2.0 * k)
+    else:
+        epsilon_0, epsilon_1, epsilon_2 = epsilon / 2.0, epsilon / (8.0 * k), epsilon / (4.0 * k)
     sigma = 2 * np.sqrt(2) / epsilon_1
     i, priv = 0, epsilon_0
     noisy_threshold = threshold + np.random.laplace(0, 1.0 / epsilon_0)
@@ -42,10 +25,16 @@ def adaptive_sparse_vector(q, epsilon, k, threshold):
         xi_i = np.random.laplace(0, 1.0 / epsilon_2)
         if q[i] + eta_i - noisy_threshold >= sigma:
             top_indices.append(i)
-            priv += 2 * epsilon_1
+            if counting_queries:
+                priv += epsilon_1
+            else:
+                priv += 2 * epsilon_1
         elif q[i] + xi_i - noisy_threshold >= 0:
             middle_indices.append(i)
-            priv += 2 * epsilon_2
+            if counting_queries:
+                priv += epsilon_2
+            else:
+                priv += 2 * epsilon_2
 
         # classical svt
         if count < k:
@@ -58,122 +47,57 @@ def adaptive_sparse_vector(q, epsilon, k, threshold):
     indices = np.asarray(top_indices + middle_indices)
     indices.sort()
     classical_indices = np.asarray(classical_indices)
+    classical_middle = np.empty(0, np.float64)
     return indices, i, top_indices, middle_indices, \
-           classical_indices, classical_i, classical_indices, _INVALID_ARRAY
-
-
-def above_threshold_answers(indices, total, top_indices, middle_indices, truth_indices):
-    return len(indices)
+           classical_indices, classical_i, classical_indices, classical_middle
 
 
 def f_measure(indices, total, top_indices, middle_indices, truth_indices):
+    if len(indices) == 0:
+        return 0
     precision_val = len(np.intersect1d(indices, truth_indices)) / float(len(indices))
-    # generate truth_indices based on total returned indices
-    recall_val = len(np.intersect1d(indices, truth_indices)) / float(len(truth_indices))
     if precision_val == 0:
         return 0
-    else:
-        return 2 * precision_val * recall_val / (precision_val + recall_val)
+    # generate truth_indices based on total returned indices
+    recall_val = len(np.intersect1d(indices, truth_indices)) / float(len(truth_indices))
+    return 2 * precision_val * recall_val / (precision_val + recall_val)
 
 
-def top_branch(indices, total, top_indices, middle_indices, truth_indices):
+def above_threshold_answers(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
+    return len(indices)
+
+
+def recall(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
+    return len(np.intersect1d(indices, truth_indices)) / float(len(truth_indices))
+
+
+def top_branch(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
     return len(top_indices)
 
 
-def middle_branch(indices, total, top_indices, middle_indices, truth_indices):
+def middle_branch(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
     return len(middle_indices)
 
 
-def precision(indices, total, top_indices, middle_indices, truth_indices):
-    return len(np.intersect1d(indices, truth_indices)) / float(len(indices))
+def precision(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
+    if len(indices) == 0:
+        return 0
+    else:
+        return len(np.intersect1d(indices, truth_indices)) / float(len(indices))
 
 
-def top_branch_precision(indices, total, top_indices, middle_indices, truth_indices):
+def top_branch_precision(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
     if len(top_indices) == 0:
-        return 1.0
+        return 0
     else:
         return len(np.intersect1d(top_indices, truth_indices)) / float(len(top_indices))
 
 
-def middle_branch_precision(indices, total, top_indices, middle_indices, truth_indices):
+def middle_branch_precision(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
     if len(middle_indices) == 0:
-        return 1.0
+        return 0
     else:
         return len(np.intersect1d(middle_indices, truth_indices)) / float(len(middle_indices))
-
-
-def _evaluate_algorithm(iterations, algorithm, dataset, kwargs, metrics, truth_indices):
-    # run several times and record average and error
-    baseline_results = [[] for _ in range(len(metrics))]
-    algorithm_results = [[] for _ in range(len(metrics))]
-    for _ in range(iterations):
-        algorithm_result = algorithm(dataset, **kwargs)
-        baseline_result = algorithm_result[int(len(algorithm_result) / 2):len(algorithm_result)]
-        algorithm_result = algorithm_result[0:int(len(algorithm_result) / 2)]
-        for metric_index, metric_func in enumerate(metrics):
-            baseline_results[metric_index].append(metric_func(*baseline_result, truth_indices))
-            algorithm_results[metric_index].append(metric_func(*algorithm_result, truth_indices))
-
-    # returns a numpy array of sum of `iterations` runs for each metric
-    return np.fromiter((sum(result) for result in baseline_results), dtype=np.float, count=len(baseline_results)),\
-           np.fromiter((sum(result) for result in algorithm_results), dtype=np.float, count=len(algorithm_results))
-
-
-def evaluate(algorithm, input_data, epsilons, metrics=(above_threshold_answers, f_measure, top_branch, middle_branch, precision, top_branch_precision, middle_branch_precision),
-             k_array=np.array(range(2, 25)), total_iterations=20000):
-    # TODO: function names are hard-coded, fix later
-
-    # make epsilons a tuple if only one is given
-    epsilons = (epsilons, ) if isinstance(epsilons, (int, float)) else epsilons
-
-    # unpack the input data
-    dataset_name, dataset = input_data
-    dataset = np.asarray(dataset)
-    logger.info('Evaluating {} on {}'.format(algorithm.__name__.replace('_', ' ').title(), dataset_name))
-
-    QUANTILE = 0.05
-    # create the result dict
-    # epsilon -> metric -> algorithm -> [data for each k]
-    metric_data = {
-        str(epsilon): {
-            metric.__name__: {'sparse_vector': [], 'adaptive_sparse_vector': []}
-            for metric in metrics
-        } for epsilon in epsilons
-    }
-    with mp.Pool(mp.cpu_count()) as pool:
-        for epsilon, k in tqdm.tqdm(product(epsilons, k_array), total=len(epsilons) * len(k_array)):
-            np.random.shuffle(dataset)
-            sorted_indices = np.argsort(dataset)[::-1]
-            # get the iteration list
-            iterations = [int(total_iterations / mp.cpu_count()) for _ in range(mp.cpu_count())]
-            iterations[mp.cpu_count() - 1] += total_iterations % mp.cpu_count()
-
-            kwargs = {
-                'threshold': dataset[sorted_indices[int(QUANTILE * len(sorted_indices))]],
-                # counting queries
-                'epsilon': 2 * epsilon,
-                'k': k
-            }
-            truth_indices = sorted_indices[:int(QUANTILE * len(sorted_indices)) + 1]
-
-            partial_evaluate_algorithm = \
-                partial(_evaluate_algorithm, algorithm=algorithm, dataset=dataset, kwargs=kwargs, metrics=metrics,
-                        truth_indices=truth_indices)
-
-            # run and collect data
-            baseline_metrics, algorithm_metrics = np.zeros((len(metrics), )), np.zeros((len(metrics), ))
-            for local_baseline, local_algorithm in pool.imap_unordered(partial_evaluate_algorithm, iterations):
-                baseline_metrics += local_baseline
-                algorithm_metrics += local_algorithm
-            baseline_metrics, algorithm_metrics = baseline_metrics / total_iterations, algorithm_metrics / total_iterations
-
-            # merge the results
-            for metric_index, metric in enumerate(metrics):
-                metric_data[str(epsilon)][metric.__name__]['sparse_vector'].append(baseline_metrics[metric_index])
-                metric_data[str(epsilon)][metric.__name__]['adaptive_sparse_vector'].append(algorithm_metrics[metric_index])
-
-    logger.debug(metric_data)
-    return metric_data
 
 
 def plot(k_array, dataset_name, data, output_prefix):
@@ -188,14 +112,15 @@ def plot(k_array, dataset_name, data, output_prefix):
         quantile_scores.append((top + middle).sum())
     quantile_scores = np.asarray(quantile_scores)
     quantile = quantiles[quantile_scores.argmax()]
-    """
+    
     quantile = '0.05'
     logger.info('best quantile is {}'.format(quantile))
+    """
 
     # plot number of above threshold answers
-    baseline_top_branch = np.asarray(data[epsilon]['top_branch']['sparse_vector'])
-    algorithm_top_branch = np.asarray(data[epsilon]['top_branch']['adaptive_sparse_vector'])
-    algorithm_middle_branch = np.asarray(data[epsilon]['middle_branch']['adaptive_sparse_vector'])
+    baseline_top_branch = np.asarray(data[epsilon]['top_branch']['baseline'])
+    algorithm_top_branch = np.asarray(data[epsilon]['top_branch']['algorithm'])
+    algorithm_middle_branch = np.asarray(data[epsilon]['middle_branch']['algorithm'])
     width = 0.6
     plt.ylim(0, 50)
     sub_k_array = np.arange(2, 24, 2)
@@ -227,8 +152,8 @@ def plot(k_array, dataset_name, data, output_prefix):
     plt.clf()
 
     # plot the f-measure
-    adaptive_f_measure = np.asarray(data[epsilon]['f_measure']['adaptive_sparse_vector'])
-    sparse_vector_f_measure = np.asarray(data[epsilon]['f_measure']['sparse_vector'])
+    adaptive_f_measure = np.asarray(data[epsilon]['f_measure']['algorithm'])
+    sparse_vector_f_measure = np.asarray(data[epsilon]['f_measure']['baseline'])
     plt.plot(k_array, sparse_vector_f_measure,
              label=r'\huge {}'.format('Sparse Vector'),
              linewidth=3, markersize=10, marker='P', zorder=5)
@@ -251,8 +176,8 @@ def plot(k_array, dataset_name, data, output_prefix):
     plt.clf()
 
     # plot the precision
-    adaptive_f_measure = np.asarray(data[epsilon]['precision']['adaptive_sparse_vector'])
-    sparse_vector_f_measure = np.asarray(data[epsilon]['precision']['sparse_vector'])
+    adaptive_f_measure = np.asarray(data[epsilon]['precision']['algorithm'])
+    sparse_vector_f_measure = np.asarray(data[epsilon]['precision']['baseline'])
     plt.plot(k_array, sparse_vector_f_measure,
              label=r'\huge {}'.format('Sparse Vector'),
              linewidth=3, markersize=10, marker='P', zorder=5)
