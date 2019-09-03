@@ -13,7 +13,10 @@ logger = logging.getLogger(__name__)
 def adaptive_sparse_vector(q, epsilon, k, threshold, counting_queries=False):
     top_indices, middle_indices = [], []
     classical_indices, count, classical_i = [], 0, 0
-    epsilon_0, epsilon_1, epsilon_2 = epsilon / 2.0, epsilon / (8.0 * k), epsilon / (4.0 * k)
+    if counting_queries:
+        epsilon_0, epsilon_1, epsilon_2 = epsilon / 2.0, epsilon / (4.0 * k), epsilon / (2.0 * k)
+    else:
+        epsilon_0, epsilon_1, epsilon_2 = epsilon / 2.0, epsilon / (8.0 * k), epsilon / (4.0 * k)
     sigma = 2 * np.sqrt(2) / epsilon_1
     i, priv = 0, epsilon_0
     noisy_threshold = threshold + np.random.laplace(0, 1.0 / epsilon_0)
@@ -22,10 +25,16 @@ def adaptive_sparse_vector(q, epsilon, k, threshold, counting_queries=False):
         xi_i = np.random.laplace(0, 1.0 / epsilon_2)
         if q[i] + eta_i - noisy_threshold >= sigma:
             top_indices.append(i)
-            priv += 2 * epsilon_1
+            if counting_queries:
+                priv += epsilon_1
+            else:
+                priv += 2 * epsilon_1
         elif q[i] + xi_i - noisy_threshold >= 0:
             middle_indices.append(i)
-            priv += 2 * epsilon_2
+            if counting_queries:
+                priv += epsilon_2
+            else:
+                priv += 2 * epsilon_2
 
         # classical svt
         if count < k:
