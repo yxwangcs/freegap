@@ -112,9 +112,10 @@ def plot(k_array, dataset_name, data, output_prefix):
         quantile_scores.append((top + middle).sum())
     quantile_scores = np.asarray(quantile_scores)
     quantile = quantiles[quantile_scores.argmax()]
-    """
+    
     quantile = '0.05'
     logger.info('best quantile is {}'.format(quantile))
+    """
 
     # plot number of above threshold answers
     baseline_top_branch = np.asarray(data[epsilon]['top_branch']['baseline'])
