@@ -134,12 +134,6 @@ def main():
         os.makedirs(algorithm_folder, exist_ok=True)
 
         for dataset in process_datasets(results.datasets):
-            # plot statistics figure for dataset
-            plt.hist(dataset[1], bins=200, range=(1, 1000))
-            dataset_figure = os.path.join(algorithm_folder, '{}.pdf'.format(dataset[0]))
-            plt.savefig(dataset_figure)
-            plt.clf()
-
             # evaluate the algorithms and plot the figures
             evaluate_algorithm, metrics, plot, kwargs = parameters[algorithm_name]
             k_array = np.fromiter(range(2, 25), dtype=np.int)
@@ -161,7 +155,6 @@ def main():
                     json.dump(data, fp)
             logger.info('Plotting')
             generated_files = plot(k_array, dataset[0], data, algorithm_folder, **kwargs)
-            generated_files.append(dataset_figure)
             compress_pdfs(generated_files)
 
 
