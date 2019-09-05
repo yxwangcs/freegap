@@ -176,20 +176,28 @@ def plot(k_array, dataset_name, data, output_prefix):
     plt.clf()
 
     # plot the precision
-    adaptive_f_measure = np.asarray(data[epsilon]['precision']['algorithm'])
-    sparse_vector_f_measure = np.asarray(data[epsilon]['precision']['baseline'])
-    plt.plot(k_array, sparse_vector_f_measure,
-             label=r'\huge {}'.format('Sparse Vector'),
-             linewidth=3, markersize=10, marker='P', zorder=5)
-    plt.plot(k_array, adaptive_f_measure,
-             label=r'\huge {}'.format('Adaptive SVT w/ Gap'),
-             linewidth=3, markersize=10, marker='P', zorder=5)
+    adaptive_precision = np.asarray(data[epsilon]['precision']['algorithm'])
+    sparse_vector_precision = np.asarray(data[epsilon]['precision']['baseline'])
+    adaptive_recall = np.asarray(data[epsilon]['recall']['algorithm'])
+    sparse_vector_recall = np.asarray(data[epsilon]['recall']['baseline'])
+    plt.plot(k_array, sparse_vector_precision,
+             label=r'\huge {}'.format('Sparse Vector - Precision'),
+             linewidth=3, markersize=12, marker='P', zorder=5)
+    plt.plot(k_array, adaptive_precision,
+             label=r'\huge {}'.format('Adaptive SVT w/ Gap - Precision'),
+             linewidth=3, markersize=12, marker='P', zorder=5)
+    plt.plot(k_array, sparse_vector_recall,
+             label=r'\huge {}'.format('Sparse Vector - Recall'),
+             linewidth=3, markersize=12, marker='P', zorder=5)
+    plt.plot(k_array, adaptive_recall,
+             label=r'\huge {}'.format('Adaptive SVT w/ Gap - Recall'),
+             linewidth=3, markersize=12, marker='P', zorder=5)
     plt.ylim(0, 1.0)
-    plt.ylabel(r'\huge {}'.format('Precision'))
+    plt.ylabel(r'\huge {}'.format('Precision and Recall'))
     plt.xlabel(r'\huge $k$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
-    legend = plt.legend(loc=3)
+    legend = plt.legend(loc=6)
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
     logger.info('Figures saved to {}'.format(output_prefix))
