@@ -50,13 +50,13 @@ def evaluate(algorithm, input_data, epsilons, metrics, k_array=np.array(range(2,
             # for svts
             kwargs = {}
             if 'threshold' in algorithm.__code__.co_varnames:
-                if 'adaptive' in algorithm.__name__:
-                    kwargs['threshold'] = dataset[sorted_indices[int(0.05 * len(sorted_indices))]]
-                    truth_indices = sorted_indices[:int(0.05 * len(sorted_indices))]
-                else:
+                #if 'adaptive' in algorithm.__name__:
+                    #kwargs['threshold'] = dataset[sorted_indices[int(0.05 * len(sorted_indices))]]
+                    #truth_indices = sorted_indices[:int(0.05 * len(sorted_indices))]
+                #else:
                     #kwargs['threshold'] = (dataset[sorted_indices[k]] + dataset[sorted_indices[k + 1]]) / 2.0
-                    kwargs['threshold'] = dataset[sorted_indices[50]]
-                    truth_indices = sorted_indices[:50]
+                kwargs['threshold'] = (dataset[sorted_indices[2 * k]] + dataset[sorted_indices[2 * k + 1]]) / 2
+                truth_indices = sorted_indices[:2 * k + 1]
             else:
                 truth_indices = sorted_indices[:k]
             kwargs['epsilon'] = epsilon
