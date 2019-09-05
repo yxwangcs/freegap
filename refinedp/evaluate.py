@@ -28,7 +28,7 @@ def _evaluate_algorithm(iterations, algorithm, dataset, kwargs, metrics, truth_i
            np.fromiter((sum(result) for result in algorithm_results), dtype=np.float, count=len(algorithm_results))
 
 
-def evaluate(algorithm, input_data, epsilons, metrics, k_array=np.array(range(2, 25)), total_iterations=20000,
+def evaluate(algorithm, input_data, epsilons, metrics, k_array=np.array(range(2, 25)), total_iterations=10000,
              counting_queries=False):
     # make epsilons a tuple
     epsilons = (epsilons, ) if isinstance(epsilons, (int, float)) else tuple(epsilons)
