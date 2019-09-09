@@ -173,8 +173,8 @@ def plot(k_array, dataset_name, data, output_prefix):
     # plot the precision
     adaptive_precision = np.asarray(data[epsilon]['precision']['algorithm'])
     sparse_vector_precision = np.asarray(data[epsilon]['precision']['baseline'])
-    adaptive_recall = np.asarray(data[epsilon]['recall']['algorithm'])
-    sparse_vector_recall = np.asarray(data[epsilon]['recall']['baseline'])
+    adaptive_recall = np.asarray(data[epsilon]['f_measure']['algorithm'])
+    sparse_vector_recall = np.asarray(data[epsilon]['f_measure']['baseline'])
     plt.plot(k_array, sparse_vector_precision,
              label=r'\huge {}'.format('Sparse Vector - Precision'),
              linewidth=3, markersize=12, marker='P', zorder=5)
@@ -182,13 +182,13 @@ def plot(k_array, dataset_name, data, output_prefix):
              label=r'\huge {}'.format('Adaptive SVT w/ Gap - Precision'),
              linewidth=3, markersize=12, marker='P', zorder=5)
     plt.plot(k_array, sparse_vector_recall,
-             label=r'\huge {}'.format('Sparse Vector - Recall'),
+             label=r'\huge {}'.format('Sparse Vector - F-Measure'),
              linewidth=3, markersize=12, marker='P', zorder=5)
     plt.plot(k_array, adaptive_recall,
-             label=r'\huge {}'.format('Adaptive SVT w/ Gap - Recall'),
+             label=r'\huge {}'.format('Adaptive SVT w/ Gap - F-Measure'),
              linewidth=3, markersize=12, marker='P', zorder=5)
     plt.ylim(0, 1.0)
-    plt.ylabel(r'\huge {}'.format('Precision and Recall'))
+    plt.ylabel(r'\huge {}'.format('Precision and F-Measure'))
     plt.xlabel(r'\huge $k$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
