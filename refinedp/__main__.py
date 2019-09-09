@@ -12,6 +12,8 @@ import coloredlogs
 from refinedp.adaptivesvt import adaptive_sparse_vector, \
     top_branch, top_branch_precision, middle_branch, middle_branch_precision, precision, f_measure, \
     above_threshold_answers, remaining_epsilon, plot as plot_adaptive
+from refinedp.adaptive_estimates import adaptive_estimates, \
+    mean_square_error as adaptive_mse, plot as plot_adaptive_estimates
 from refinedp.gapestimates import gap_svt_estimates, gap_topk_estimates, mean_square_error, plot as plot_estimates
 from refinedp.evaluate import evaluate
 
@@ -67,7 +69,7 @@ def process_datasets(folder):
 
 
 def main():
-    algorithm = ('All', 'AdaptiveSparseVector', 'GapSparseVector', 'GapTopK')
+    algorithm = ('All', 'AdaptiveSparseVector', 'AdaptiveEstimates', 'GapSparseVector', 'GapTopK')
 
     arg_parser = argparse.ArgumentParser(description=__doc__)
     arg_parser.add_argument('algorithm', help='The algorithm to evaluate, options are `{}`.'
@@ -108,7 +110,8 @@ def main():
         'GapTopK': (gap_topk_estimates, (mean_square_error,), plot_estimates, {
             'theoretical': topk_theoretical,
             'algorithm_name': 'Noisy Top-K with Measures'
-        })
+        }),
+        'AdaptiveEstimates': (adaptive_estimates, (adaptive_mse,), plot_adaptive_estimates, {})
     }
 
     # default value for datasets path
