@@ -62,10 +62,6 @@ def above_threshold_answers(indices, top_indices, middle_indices, remaining_budg
     return len(indices)
 
 
-def recall(indices, top_indices, middle_indices, remaining_budget, truth_indices, truth_estimates):
-    return len(np.intersect1d(indices, truth_indices)) / float(len(truth_indices))
-
-
 def top_branch(indices, top_indices, middle_indices, remaining_budget, truth_indices, truth_estimates):
     return len(top_indices)
 
