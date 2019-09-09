@@ -118,8 +118,7 @@ def plot(k_array, dataset_name, data, output_prefix):
         plt.plot(k_array, gap_improvements, label=r'\huge {}'.format('Sparse Vector with Estimates'), linewidth=3,
                  markersize=12,
                  marker='o')
-        plt.axhline(50)
-        plt.ylim(0, 100)
+        plt.ylim(0, 80)
         plt.ylabel(r'\huge \% Improvement in MSE')
         plt.xlabel(r'\huge $k$')
         plt.xticks(fontsize=24)
@@ -138,9 +137,8 @@ def plot(k_array, dataset_name, data, output_prefix):
     epsilons = np.asarray(tuple(data.keys()), dtype=np.float)
     plt.plot(epsilons, improves_for_epsilons, label=r'\huge {}'.format('Adaptive Estimates'), linewidth=3,
              markersize=10, marker='o')
-    plt.axhline(50)
     plt.ylabel(r'\huge \% Improvement in MSE')
-    plt.ylim(0, 100)
+    plt.ylim(0, 80)
     plt.xlabel(r'\huge $\epsilon$')
     plt.xticks(np.arange(epsilons.min(), epsilons.max() + 0.1, 0.2))
     plt.xticks(fontsize=24)
