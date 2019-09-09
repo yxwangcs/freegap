@@ -83,14 +83,15 @@ def adaptive_estimates(q, epsilon, k, threshold, counting_queries=False):
     refined_estimates = \
         (initial_estimates / variances + direct_estimates / variance_lap) / (1.0 / variances + 1.0 / variance_lap)
     classical_direct_estimates = np.asarray(laplace_mechanism(q, 0.5 * epsilon, classical_indices))
-    """
     classical_initial_estimates = np.asarray(classical_gaps + threshold)
     classical_variance_lap = np.full(len(classical_variances), 2 * np.square(k / (0.5 * epsilon)))
     classical_refined_estimates = \
         (classical_initial_estimates / classical_variances + classical_direct_estimates / classical_variance_lap) / \
         (1.0 / classical_variances + 1.0 / classical_variance_lap)
-    """
-    return indices, refined_estimates, classical_indices, classical_direct_estimates
+
+    return (indices, refined_estimates), \
+           (classical_indices, classical_refined_estimates), \
+           (classical_indices, classical_direct_estimates)
 
 
 # metric functions
@@ -102,14 +103,20 @@ def mean_square_error(indices, estimates, truth_indices, truth_estimates):
 def plot(k_array, dataset_name, data, output_prefix):
     generated_files = []
     improves_for_epsilons = []
+    ADAPTIVE_INDEX, GAP_INDEX, BASELINE_INDEX = 0, 1, -1
     for epsilon, epsilon_dict in data.items():
         assert len(epsilon_dict) == 1 and 'mean_square_error' in epsilon_dict
         metric_dict = epsilon_dict['mean_square_error']
-        baseline = np.asarray(metric_dict['baseline'])
-        algorithm_data = np.asarray(metric_dict['algorithm'])
-        improvements = 100 * (baseline - algorithm_data) / baseline
-        improves_for_epsilons.append(improvements[8])
-        plt.plot(k_array, improvements, label=r'\huge {}'.format('Adaptive Estimates'), linewidth=3, markersize=12,
+        baseline = np.asarray(metric_dict[BASELINE_INDEX])
+        algorithm_data = np.asarray(metric_dict[ADAPTIVE_INDEX])
+        gap_data = np.asarray(metric_dict[GAP_INDEX])
+        adaptive_improvements = 100 * (baseline - algorithm_data) / baseline
+        gap_improvements = 100 * (baseline - gap_data) / baseline
+        improves_for_epsilons.append(adaptive_improvements[8])
+        plt.plot(k_array, adaptive_improvements, label=r'\huge {}'.format('Adaptive SVT with Estimates'), linewidth=3, markersize=12,
+                 marker='o')
+        plt.plot(k_array, gap_improvements, label=r'\huge {}'.format('Sparse Vector with Estimates'), linewidth=3,
+                 markersize=12,
                  marker='o')
         plt.axhline(50)
         plt.ylim(0, 100)
