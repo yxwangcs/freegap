@@ -12,47 +12,42 @@ logger = logging.getLogger(__name__)
 @numba.njit(fastmath=True)
 def adaptive_sparse_vector(q, epsilon, k, threshold, counting_queries=False):
     top_indices, middle_indices = [], []
-    classical_indices, count, classical_i = [], 0, 0
-    if counting_queries:
-        epsilon_0, epsilon_1, epsilon_2 = epsilon / 2.0, epsilon / (4.0 * k), epsilon / (2.0 * k)
-    else:
-        epsilon_0, epsilon_1, epsilon_2 = epsilon / 2.0, epsilon / (8.0 * k), epsilon / (4.0 * k)
-    sigma = 2 * np.sqrt(2) / epsilon_1
-    i, priv = 0, epsilon_0
+    classical_indices, count = [], 0
+    epsilon_0, epsilon_1, epsilon_2 = epsilon / 2.0, epsilon / (4.0 * k), epsilon / (2.0 * k)
+    sigma = 4 * np.sqrt(2) / epsilon_1
+    i, cost, remaining_budget = 0, epsilon_0, 0
     noisy_threshold = threshold + np.random.laplace(0, 1.0 / epsilon_0)
-    while i < len(q) and priv <= epsilon - 2 * epsilon_2:
-        eta_i = np.random.laplace(0, 1.0 / epsilon_1)
-        xi_i = np.random.laplace(0, 1.0 / epsilon_2)
+    while i < len(q) and cost <= epsilon - 2 * epsilon_2:
+        if counting_queries:
+            eta_i, xi_i = np.random.laplace(0, 1.0 / epsilon_1), np.random.laplace(0, 1.0 / epsilon_2)
+        else:
+            eta_i, xi_i = np.random.laplace(0, 2.0 / epsilon_1), np.random.laplace(0, 2.0 / epsilon_2)
         if q[i] + eta_i - noisy_threshold >= sigma:
             top_indices.append(i)
-            if counting_queries:
-                priv += epsilon_1
-            else:
-                priv += 2 * epsilon_1
+            cost += epsilon_1
         elif q[i] + xi_i - noisy_threshold >= 0:
             middle_indices.append(i)
-            if counting_queries:
-                priv += epsilon_2
-            else:
-                priv += 2 * epsilon_2
+            cost += epsilon_2
+
+        if len(middle_indices) + len(top_indices) == k:
+            remaining_budget = epsilon - cost
 
         # classical svt
         if count < k:
             if q[i] + xi_i - noisy_threshold >= 0:
                 classical_indices.append(i)
                 count += 1
-            classical_i += 1
         i += 1
 
     indices = np.asarray(top_indices + middle_indices)
     indices.sort()
     classical_indices = np.asarray(classical_indices)
     classical_middle = np.empty(0, np.float64)
-    return indices, i, top_indices, middle_indices, \
-           classical_indices, classical_i, classical_indices, classical_middle
+    return indices, top_indices, middle_indices, remaining_budget, \
+           classical_indices, classical_indices, 0, classical_middle
 
 
-def f_measure(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
+def f_measure(indices, top_indices, middle_indices, remaining_budget, truth_indices, truth_estimates):
     if len(indices) == 0:
         return 0
     precision_val = len(np.intersect1d(indices, truth_indices)) / float(len(indices))
