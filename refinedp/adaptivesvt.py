@@ -58,41 +58,45 @@ def f_measure(indices, top_indices, middle_indices, remaining_budget, truth_indi
     return 2 * precision_val * recall_val / (precision_val + recall_val)
 
 
-def above_threshold_answers(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
+def above_threshold_answers(indices, top_indices, middle_indices, remaining_budget, truth_indices, truth_estimates):
     return len(indices)
 
 
-def recall(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
+def recall(indices, top_indices, middle_indices, remaining_budget, truth_indices, truth_estimates):
     return len(np.intersect1d(indices, truth_indices)) / float(len(truth_indices))
 
 
-def top_branch(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
+def top_branch(indices, top_indices, middle_indices, remaining_budget, truth_indices, truth_estimates):
     return len(top_indices)
 
 
-def middle_branch(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
+def middle_branch(indices, top_indices, middle_indices, remaining_budget, truth_indices, truth_estimates):
     return len(middle_indices)
 
 
-def precision(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
+def precision(indices, top_indices, middle_indices, remaining_budget, truth_indices, truth_estimates):
     if len(indices) == 0:
         return 0
     else:
         return len(np.intersect1d(indices, truth_indices)) / float(len(indices))
 
 
-def top_branch_precision(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
+def top_branch_precision(indices, top_indices, middle_indices, remaining_budget, truth_indices, truth_estimates):
     if len(top_indices) == 0:
         return 0
     else:
         return len(np.intersect1d(top_indices, truth_indices)) / float(len(top_indices))
 
 
-def middle_branch_precision(indices, total, top_indices, middle_indices, truth_indices, truth_estimates):
+def middle_branch_precision(indices, top_indices, middle_indices, remaining_budget, truth_indices, truth_estimates):
     if len(middle_indices) == 0:
         return 0
     else:
         return len(np.intersect1d(middle_indices, truth_indices)) / float(len(middle_indices))
+
+
+def remaining_epsilon(indices, top_indices, middle_indices, remaining_budget, truth_indices, truth_estimates):
+    return remaining_budget
 
 
 def plot(k_array, dataset_name, data, output_prefix):
@@ -203,13 +207,10 @@ def plot(k_array, dataset_name, data, output_prefix):
     plt.clf()
 
     # plot remaining epsilons
-    """
-    epsilons = np.asarray(tuple(data.keys()), dtype=np.float)
-    left_budget = np.asarray(remaining_epsilons) * 100
-    plt.plot(epsilons, left_budget,
-             label=r'\huge {}'.format('Adaptive Sparse Vector with Gap'),
+    remaining_epsilons = (np.asarray(data[epsilon]['remaining_epsilon']['algorithm']) / float(epsilon)) * 100
+    plt.plot(k_array, remaining_epsilons, label=r'\huge {}'.format('Adaptive Sparse Vector with Gap'),
              linewidth=3, markersize=10, marker='o')
-    plt.ylim(0, 25)
+    plt.ylim(0, 100)
     plt.ylabel(r'\huge \% Remaining Privacy Budget')
     plt.xlabel(r'\huge $\epsilon$')
     plt.xticks(fontsize=24)
@@ -218,9 +219,9 @@ def plot(k_array, dataset_name, data, output_prefix):
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
     logger.info('Figures saved to {}'.format(output_prefix))
-    filename = '{}/{}-{}.pdf'.format(output_prefix, dataset_name, 'left-epsilon')
+    filename = '{}/{}-{}.pdf'.format(output_prefix, dataset_name, 'remaining_budget')
     plt.savefig(filename)
     generated_files.append(filename)
     plt.clf()
-    """
+
     return generated_files
