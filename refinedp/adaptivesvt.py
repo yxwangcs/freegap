@@ -17,7 +17,7 @@ def adaptive_sparse_vector(q, epsilon, k, threshold, counting_queries=False):
     sigma = 4 * np.sqrt(2) / epsilon_1
     i, cost, remaining_budget = 0, epsilon_0, 0
     noisy_threshold = threshold + np.random.laplace(0, 1.0 / epsilon_0)
-    while i < len(q) and cost <= epsilon - 2 * epsilon_2:
+    while i < len(q) and cost <= epsilon - epsilon_2:
         if counting_queries:
             eta_i, xi_i = np.random.laplace(0, 1.0 / epsilon_1), np.random.laplace(0, 1.0 / epsilon_2)
         else:
