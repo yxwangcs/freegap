@@ -65,8 +65,7 @@ def adaptive_sparse_vector(q, epsilon, k, threshold, allocate_x=0.5, allocate_y=
 
 @numba.njit(fastmath=True)
 def adaptive_estimates(q, epsilon, k, threshold, counting_queries=False):
-    #x, y = (1, np.power(k, 2.0 / 3.0)) if counting_queries else (1, np.power(2 * k, 2.0 / 3.0))
-    x, y = (1, np.power(2 * k, 2.0 / 3.0))
+    x, y = (1, np.power(k, 2.0 / 3.0)) if counting_queries else (1, np.power(2 * k, 2.0 / 3.0))
     gap_x, gap_y = x / (x + y), y / (x + y)
     assert abs(gap_x + gap_y - 1.0) < 1e-5
 
