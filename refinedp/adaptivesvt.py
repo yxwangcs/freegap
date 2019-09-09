@@ -43,8 +43,8 @@ def adaptive_sparse_vector(q, epsilon, k, threshold, counting_queries=False):
     indices.sort()
     classical_indices = np.asarray(classical_indices)
     classical_middle = np.empty(0, np.float64)
-    return indices, top_indices, middle_indices, remaining_budget, \
-           classical_indices, classical_indices, classical_middle, 0
+    return (indices, top_indices, middle_indices, remaining_budget), \
+           (classical_indices, classical_indices, classical_middle, 0)
 
 
 def f_measure(indices, top_indices, middle_indices, remaining_budget, truth_indices, truth_estimates):
@@ -98,11 +98,11 @@ def remaining_epsilon(indices, top_indices, middle_indices, remaining_budget, tr
 def plot(k_array, dataset_name, data, output_prefix):
     generated_files = []
     epsilon = '0.7'
-
+    ALGORITHM_INDEX, BASELINE_INDEX = 0, -1
     # plot number of above threshold answers
-    baseline_top_branch = np.asarray(data[epsilon]['top_branch']['baseline'])
-    algorithm_top_branch = np.asarray(data[epsilon]['top_branch']['algorithm'])
-    algorithm_middle_branch = np.asarray(data[epsilon]['middle_branch']['algorithm'])
+    baseline_top_branch = np.asarray(data[epsilon]['top_branch'][BASELINE_INDEX])
+    algorithm_top_branch = np.asarray(data[epsilon]['top_branch'][ALGORITHM_INDEX])
+    algorithm_middle_branch = np.asarray(data[epsilon]['middle_branch'][ALGORITHM_INDEX])
     WIDTH = 0.7
     fig, ax1 = plt.subplots()
     ax1.set_ylim([0, 50])
@@ -124,7 +124,7 @@ def plot(k_array, dataset_name, data, output_prefix):
     # plot remaining budget
     ax2 = ax1.twinx()
     remaining_epsilons = \
-        (np.asarray(data[epsilon]['remaining_epsilon']['algorithm'])[sub_k_array - 1] / float(epsilon)) * 100
+        (np.asarray(data[epsilon]['remaining_epsilon'][ALGORITHM_INDEX])[sub_k_array - 1] / float(epsilon)) * 100
     ln1 = ax2.plot(sub_k_array, remaining_epsilons, label=r'\huge {}'.format('Remaining Budget'),
                    linewidth=3, markersize=12, marker='o', color='tab:green', zorder=0, markeredgewidth=1.5,
                    markeredgecolor='black')
@@ -145,8 +145,8 @@ def plot(k_array, dataset_name, data, output_prefix):
     generated_files.append(filename)
 
     # plot the f-measure
-    adaptive_f_measure = np.asarray(data[epsilon]['f_measure']['algorithm'])
-    sparse_vector_f_measure = np.asarray(data[epsilon]['f_measure']['baseline'])
+    adaptive_f_measure = np.asarray(data[epsilon]['f_measure'][ALGORITHM_INDEX])
+    sparse_vector_f_measure = np.asarray(data[epsilon]['f_measure'][BASELINE_INDEX])
     plt.plot(k_array, sparse_vector_f_measure, label=r'\huge {}'.format('Sparse Vector'), linewidth=3, markersize=12,
              marker='o', zorder=5)
     plt.plot(k_array, adaptive_f_measure, label=r'\huge {}'.format('Adaptive SVT w/ Gap'), linewidth=3, markersize=12,
@@ -167,10 +167,10 @@ def plot(k_array, dataset_name, data, output_prefix):
     generated_files.append(filename)
 
     # plot the precision and f measure
-    adaptive_precision = np.asarray(data[epsilon]['precision']['algorithm'])
-    sparse_vector_precision = np.asarray(data[epsilon]['precision']['baseline'])
-    adaptive_recall = np.asarray(data[epsilon]['f_measure']['algorithm'])
-    sparse_vector_recall = np.asarray(data[epsilon]['f_measure']['baseline'])
+    adaptive_precision = np.asarray(data[epsilon]['precision'][ALGORITHM_INDEX])
+    sparse_vector_precision = np.asarray(data[epsilon]['precision'][BASELINE_INDEX])
+    adaptive_recall = np.asarray(data[epsilon]['f_measure'][ALGORITHM_INDEX])
+    sparse_vector_recall = np.asarray(data[epsilon]['f_measure'][BASELINE_INDEX])
     plt.plot(k_array, sparse_vector_precision, label=r'\huge {}'.format('Sparse Vector - Precision'),
              linewidth=3, markersize=12, marker='P', zorder=5)
     plt.plot(k_array, adaptive_precision, label=r'\huge {}'.format('Adaptive SVT w/ Gap - Precision'),

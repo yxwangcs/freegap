@@ -43,7 +43,7 @@ def gap_topk_estimates(q, epsilon, k, counting_queries=False):
         refined_estimates = (direct_estimates.sum() + 4 * k * direct_estimates + p_total - k * p) / (5 * k)
 
     # baseline algorithm would just return (indices, direct_estimates)
-    return indices, refined_estimates, indices, direct_estimates
+    return (indices, refined_estimates), (indices, direct_estimates)
 
 
 # Sparse Vector (with Gap)
@@ -91,7 +91,7 @@ def gap_svt_estimates(q, epsilon, k, threshold, counting_queries=False):
         (initial_estimates / variance_gap + direct_estimates / variance_lap) / (1.0 / variance_gap + 1.0 / variance_lap)
 
     # baseline algorithm would simply return (indices, direct_estimates)
-    return indices, refined_estimates, indices, direct_estimates
+    return (indices, refined_estimates), (indices, direct_estimates)
 
 
 # metric functions
@@ -101,6 +101,7 @@ def mean_square_error(indices, estimates, truth_indices, truth_estimates):
 
 
 def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name):
+    ALGORITHM_INDEX, BASELINE_INDEX = 0, -1
     generated_files = []
     theoretical_x = np.arange(k_array.min(), k_array.max())
     theoretical_y = theoretical(theoretical_x)
@@ -108,8 +109,8 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
     for epsilon, epsilon_dict in data.items():
         assert len(epsilon_dict) == 1 and 'mean_square_error' in epsilon_dict
         metric_dict = epsilon_dict['mean_square_error']
-        baseline = np.asarray(metric_dict['baseline'])
-        algorithm_data = np.asarray(metric_dict['algorithm'])
+        baseline = np.asarray(metric_dict[BASELINE_INDEX])
+        algorithm_data = np.asarray(metric_dict[ALGORITHM_INDEX])
         improvements = 100 * (baseline - algorithm_data) / baseline
         improves_for_epsilons.append(improvements[8])
         plt.plot(k_array, improvements, label=r'\huge {}'.format(algorithm_name), linewidth=3, markersize=12,
