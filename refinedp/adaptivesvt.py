@@ -116,45 +116,54 @@ def plot(k_array, dataset_name, data, output_prefix):
     baseline_top_branch = np.asarray(data[epsilon]['top_branch']['baseline'])
     algorithm_top_branch = np.asarray(data[epsilon]['top_branch']['algorithm'])
     algorithm_middle_branch = np.asarray(data[epsilon]['middle_branch']['algorithm'])
-    width = 0.6
-    plt.ylim(0, 50)
+    WIDTH = 0.7
+    fig, ax1 = plt.subplots()
+    ax1.set_ylim([0, 50])
     sub_k_array = np.arange(2, 24, 2)
     colormap = plt.get_cmap('tab10')
-    plt.bar(sub_k_array - width, baseline_top_branch[sub_k_array - 1], width, align='edge',
-            label=r'\huge Sparse Vector', facecolor=colormap.colors[0] + (0.8,), edgecolor='black', hatch='/')
-    #plt.bar(sub_k_array - width, algorithm_total[sub_k_array - 1], width, align='edge',
-            #label='\\huge Adaptive SVT w/ Gap  (Total)', facecolor=colormap.colors[1] + (0.8,), hatch='O')
-    plt.bar(sub_k_array, algorithm_middle_branch[sub_k_array - 1], width, align='edge', facecolor=colormap.colors[1] + (0.8,),
-            edgecolor='black',
-            label=r'\huge Adaptive SVT w/ Gap (Middle)', hatch='.')
-    plt.bar(sub_k_array, algorithm_top_branch[sub_k_array - 1], width, bottom=algorithm_middle_branch[sub_k_array - 1], align='edge', facecolor=colormap.colors[3] + (0.8,),
-            edgecolor='black',
-            label=r'\huge Adaptive SVT w/ Gap (Top)', hatch='*')
-    plt.ylabel(r'\huge {}'.format(r'\# of Above-Threshold Answers'))
-    plt.xlabel(r'\huge $k$')
-    plt.xticks(fontsize=24)
-    plt.yticks(fontsize=24)
-    plt.xticks(sub_k_array)
-    legend = plt.legend(framealpha=0, loc=2)
+    # plot the bar charts
+    bar1 = ax1.bar(sub_k_array - WIDTH, baseline_top_branch[sub_k_array - 1], WIDTH, align='edge',
+                   label=r'\huge Sparse Vector', facecolor=colormap.colors[0] + (0.8,), edgecolor='black', hatch='/')
+    bar2 = ax1.bar(sub_k_array, algorithm_middle_branch[sub_k_array - 1], WIDTH, align='edge',
+                   facecolor=colormap.colors[1] + (0.8,), edgecolor='black',
+                   label=r'\huge Adaptive SVT w/ Gap (Middle)', hatch='.')
+    bar3 = ax1.bar(sub_k_array, algorithm_top_branch[sub_k_array - 1], WIDTH,
+                   bottom=algorithm_middle_branch[sub_k_array - 1], align='edge', facecolor=colormap.colors[3] + (0.8,),
+                   edgecolor='black', label=r'\huge Adaptive SVT w/ Gap (Top)', hatch='*')
+    ax1.set_xticks(sub_k_array)
+    ax1.set_ylabel(r'\huge {}'.format(r'\# of Above-Threshold Answers'))
+    ax1.tick_params(labelsize=24)
+
+    # plot remaining budget
+    ax2 = ax1.twinx()
+    remaining_epsilons = \
+        (np.asarray(data[epsilon]['remaining_epsilon']['algorithm'])[sub_k_array - 1] / float(epsilon)) * 100
+    ln1 = ax2.plot(sub_k_array, remaining_epsilons, label=r'\huge {}'.format('Remaining Budget'),
+                   linewidth=3, markersize=12, marker='o', color='tab:green', zorder=0, markeredgewidth=1.5,
+                   markeredgecolor='black')
+    ax2.set_ylabel(r'\huge \% Remaining Privacy Budget')
+    ax2.set_ylim([0, 50])
+    ax2.tick_params(labelsize=24)
+    # plot the legend
+    lns = [bar1, bar2, bar3] + ln1
+    labels = [l.get_label() for l in lns]
+    legend = ax2.legend(lns, labels, framealpha=0, loc=2)
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
     logger.info('Figures saved to {}'.format(output_prefix))
-    filename = os.path.join(output_prefix,
-                            '{}-{}-{}.pdf'.format(dataset_name, 'above_threshold_answers',
-                                                  str(epsilon).replace('.', '-')))
+    filename = os.path.join(output_prefix, '{}-{}-{}.pdf'.format(dataset_name, 'above_threshold_answers',
+                                                                 str(epsilon).replace('.', '-')))
     plt.savefig(filename)
-    generated_files.append(filename)
     plt.clf()
+    generated_files.append(filename)
 
     # plot the f-measure
     adaptive_f_measure = np.asarray(data[epsilon]['f_measure']['algorithm'])
     sparse_vector_f_measure = np.asarray(data[epsilon]['f_measure']['baseline'])
-    plt.plot(k_array, sparse_vector_f_measure,
-             label=r'\huge {}'.format('Sparse Vector'),
-             linewidth=3, markersize=10, marker='P', zorder=5)
-    plt.plot(k_array, adaptive_f_measure,
-             label=r'\huge {}'.format('Adaptive SVT w/ Gap'),
-             linewidth=3, markersize=10, marker='P', zorder=5)
+    plt.plot(k_array, sparse_vector_f_measure, label=r'\huge {}'.format('Sparse Vector'), linewidth=3, markersize=12,
+             marker='o', zorder=5)
+    plt.plot(k_array, adaptive_f_measure, label=r'\huge {}'.format('Adaptive SVT w/ Gap'), linewidth=3, markersize=12,
+             marker='P', zorder=5)
     plt.ylim(0, 1.0)
     plt.ylabel(r'\huge {}'.format('F-Measure'))
     plt.xlabel(r'\huge $k$')
@@ -164,28 +173,24 @@ def plot(k_array, dataset_name, data, output_prefix):
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
     logger.info('Figures saved to {}'.format(output_prefix))
-    filename = '{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'fmeasure',
-                                         str(epsilon).replace('.', '-'))
+    filename = os.path.join(output_prefix, '{}-{}-{}.pdf'.format(dataset_name, 'f_measure',
+                                                                 str(epsilon).replace('.', '-')))
     plt.savefig(filename)
-    generated_files.append(filename)
     plt.clf()
+    generated_files.append(filename)
 
-    # plot the precision
+    # plot the precision and f measure
     adaptive_precision = np.asarray(data[epsilon]['precision']['algorithm'])
     sparse_vector_precision = np.asarray(data[epsilon]['precision']['baseline'])
     adaptive_recall = np.asarray(data[epsilon]['f_measure']['algorithm'])
     sparse_vector_recall = np.asarray(data[epsilon]['f_measure']['baseline'])
-    plt.plot(k_array, sparse_vector_precision,
-             label=r'\huge {}'.format('Sparse Vector - Precision'),
+    plt.plot(k_array, sparse_vector_precision, label=r'\huge {}'.format('Sparse Vector - Precision'),
              linewidth=3, markersize=12, marker='P', zorder=5)
-    plt.plot(k_array, adaptive_precision,
-             label=r'\huge {}'.format('Adaptive SVT w/ Gap - Precision'),
+    plt.plot(k_array, adaptive_precision, label=r'\huge {}'.format('Adaptive SVT w/ Gap - Precision'),
              linewidth=3, markersize=12, marker='P', zorder=5)
-    plt.plot(k_array, sparse_vector_recall,
-             label=r'\huge {}'.format('Sparse Vector - F-Measure'),
+    plt.plot(k_array, sparse_vector_recall, label=r'\huge {}'.format('Sparse Vector - F-Measure'),
              linewidth=3, markersize=12, marker='P', zorder=5)
-    plt.plot(k_array, adaptive_recall,
-             label=r'\huge {}'.format('Adaptive SVT w/ Gap - F-Measure'),
+    plt.plot(k_array, adaptive_recall, label=r'\huge {}'.format('Adaptive SVT w/ Gap - F-Measure'),
              linewidth=3, markersize=12, marker='P', zorder=5)
     plt.ylim(0, 1.0)
     plt.ylabel(r'\huge {}'.format('Precision and F-Measure'))
@@ -196,28 +201,10 @@ def plot(k_array, dataset_name, data, output_prefix):
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
     logger.info('Figures saved to {}'.format(output_prefix))
-    filename = '{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'precision',
-                                        str(epsilon).replace('.', '-'))
+    filename = os.path.join(output_prefix, '{}-{}-{}.pdf'.format(dataset_name, 'precision',
+                                                                 str(epsilon).replace('.', '-')))
     plt.savefig(filename)
-    generated_files.append(filename)
     plt.clf()
-
-    # plot remaining epsilons
-    remaining_epsilons = (np.asarray(data[epsilon]['remaining_epsilon']['algorithm']) / float(epsilon)) * 100
-    plt.plot(k_array, remaining_epsilons, label=r'\huge {}'.format('Adaptive Sparse Vector with Gap'),
-             linewidth=3, markersize=10, marker='o')
-    plt.ylim(0, 100)
-    plt.ylabel(r'\huge \% Remaining Privacy Budget')
-    plt.xlabel(r'\huge $\epsilon$')
-    plt.xticks(fontsize=24)
-    plt.yticks(fontsize=24)
-    legend = plt.legend(loc=3)
-    legend.get_frame().set_linewidth(0.0)
-    plt.gcf().set_tight_layout(True)
-    logger.info('Figures saved to {}'.format(output_prefix))
-    filename = '{}/{}-{}.pdf'.format(output_prefix, dataset_name, 'remaining_budget')
-    plt.savefig(filename)
     generated_files.append(filename)
-    plt.clf()
 
     return generated_files
