@@ -50,3 +50,6 @@ datasets/*
 
 # default output folder figues
 output/
+
+# results file
+*.json
