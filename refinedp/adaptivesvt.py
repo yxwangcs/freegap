@@ -44,7 +44,7 @@ def adaptive_sparse_vector(q, epsilon, k, threshold, counting_queries=False):
     classical_indices = np.asarray(classical_indices)
     classical_middle = np.empty(0, np.float64)
     return indices, top_indices, middle_indices, remaining_budget, \
-           classical_indices, classical_indices, 0, classical_middle
+           classical_indices, classical_indices, classical_middle, 0
 
 
 def f_measure(indices, top_indices, middle_indices, remaining_budget, truth_indices, truth_estimates):
