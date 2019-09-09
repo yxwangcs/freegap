@@ -53,12 +53,12 @@ def adaptive_sparse_vector(q, epsilon, k, threshold, allocate_x=0.5, allocate_y=
             break
         i += 1
 
-    classical_indices = np.asarray(classical_indices)
-    classical_variances = np.asarray(classical_variances)
-    classical_gaps = np.asarray(classical_gaps)
-    gaps = np.asarray(gaps)
-    variances = np.asarray(variances)
-    indices = np.asarray(indices)
+    classical_indices = np.asarray(classical_indices, dtype=np.int64)
+    classical_variances = np.asarray(classical_variances, dtype=np.float64)
+    classical_gaps = np.asarray(classical_gaps, dtype=np.float64)
+    gaps = np.asarray(gaps, dtype=np.float64)
+    variances = np.asarray(variances, dtype=np.float64)
+    indices = np.asarray(indices, dtype=np.int64)
     return indices, variances, gaps, epsilon - cost, \
            classical_indices, classical_variances, classical_gaps, 0
 
@@ -84,12 +84,13 @@ def adaptive_estimates(q, epsilon, k, threshold, counting_queries=False):
     refined_estimates = \
         (initial_estimates / variances + direct_estimates / variance_lap) / (1.0 / variances + 1.0 / variance_lap)
     classical_direct_estimates = np.asarray(laplace_mechanism(q, 0.5 * epsilon, classical_indices))
+    """
     classical_initial_estimates = np.asarray(classical_gaps + threshold)
     classical_variance_lap = np.full(len(classical_variances), 2 * np.square(k / (0.5 * epsilon)))
     classical_refined_estimates = \
         (classical_initial_estimates / classical_variances + classical_direct_estimates / classical_variance_lap) / \
         (1.0 / classical_variances + 1.0 / classical_variance_lap)
-
+    """
     return indices, refined_estimates, classical_indices, classical_direct_estimates
 
 
