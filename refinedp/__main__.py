@@ -10,7 +10,7 @@ import shutil
 import re
 import coloredlogs
 from refinedp.adaptivesvt import adaptive_sparse_vector, \
-    top_branch, top_branch_precision, middle_branch, middle_branch_precision, precision, f_measure, recall, \
+    top_branch, top_branch_precision, middle_branch, middle_branch_precision, precision, f_measure, \
     above_threshold_answers, remaining_epsilon, plot as plot_adaptive
 from refinedp.gapestimates import gap_svt_estimates, gap_topk_estimates, mean_square_error, plot as plot_estimates
 from refinedp.evaluate import evaluate
