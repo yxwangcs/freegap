@@ -125,7 +125,7 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
         legend = plt.legend(loc=3)
         legend.get_frame().set_linewidth(0.0)
         plt.gcf().set_tight_layout(True)
-        if abs(float(epsilon) - 0.7) < 1e-5:
+        if abs(float(epsilon) - 0.3) < 1e-5:
             logger.info('Fix-epsilon Figures saved to {}'.format(output_prefix))
             filename = '{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',
                                                 str(epsilon).replace('.', '-'))
