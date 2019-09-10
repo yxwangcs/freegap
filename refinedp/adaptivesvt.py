@@ -163,7 +163,7 @@ def plot(k_array, dataset_name, data, output_prefix):
     plt.xlabel(r'\huge $k$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
-    legend = plt.legend(loc=6)
+    legend = plt.legend(loc=3)
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
     logger.info('Figures saved to {}'.format(output_prefix))
