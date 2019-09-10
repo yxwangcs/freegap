@@ -106,7 +106,7 @@ def plot(k_array, dataset_name, data, output_prefix):
     algorithm_middle_branch = np.asarray(data[epsilon]['middle_branch'][ALGORITHM_INDEX])
     WIDTH = 0.7
     fig, ax1 = plt.subplots()
-    ax1.set_ylim([0, 50])
+    ax1.set_ylim([0, 70])
     sub_k_array = np.arange(2, 24, 2)
     colormap = plt.get_cmap('tab10')
     # plot the bar charts
@@ -130,7 +130,7 @@ def plot(k_array, dataset_name, data, output_prefix):
                    linewidth=3, markersize=12, marker='o', color='tab:green', zorder=0, markeredgewidth=1.5,
                    markeredgecolor='black')
     ax2.set_ylabel(r'\huge \% Remaining Privacy Budget')
-    ax2.set_ylim([0, 50])
+    ax2.set_ylim([0, 70])
     ax2.tick_params(labelsize=24)
     # plot the legend
     lns = [bar1, bar2, bar3] + ln1
