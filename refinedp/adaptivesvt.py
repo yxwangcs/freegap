@@ -145,28 +145,6 @@ def plot(k_array, dataset_name, data, output_prefix):
     plt.clf()
     generated_files.append(filename)
 
-    # plot the f-measure
-    adaptive_f_measure = np.asarray(data[epsilon]['f_measure'][ALGORITHM_INDEX])
-    sparse_vector_f_measure = np.asarray(data[epsilon]['f_measure'][BASELINE_INDEX])
-    plt.plot(k_array, sparse_vector_f_measure, label=r'\huge {}'.format('Sparse Vector'), linewidth=3, markersize=12,
-             marker='o', zorder=5)
-    plt.plot(k_array, adaptive_f_measure, label=r'\huge {}'.format('Adaptive SVT w/ Gap'), linewidth=3, markersize=12,
-             marker='P', zorder=5)
-    plt.ylim(0, 1.0)
-    plt.ylabel(r'\huge {}'.format('F-Measure'))
-    plt.xlabel(r'\huge $k$')
-    plt.xticks(fontsize=24)
-    plt.yticks(fontsize=24)
-    legend = plt.legend(loc=3)
-    legend.get_frame().set_linewidth(0.0)
-    plt.gcf().set_tight_layout(True)
-    logger.info('Figures saved to {}'.format(output_prefix))
-    filename = os.path.join(output_prefix, '{}-{}-{}.pdf'.format(dataset_name, 'f_measure',
-                                                                 str(epsilon).replace('.', '-')))
-    plt.savefig(filename)
-    plt.clf()
-    generated_files.append(filename)
-
     # plot the precision and f measure
     adaptive_precision = np.asarray(data[epsilon]['precision'][ALGORITHM_INDEX])
     sparse_vector_precision = np.asarray(data[epsilon]['precision'][BASELINE_INDEX])
