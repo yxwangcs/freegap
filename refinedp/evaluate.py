@@ -69,7 +69,7 @@ def evaluate(algorithm, input_data, epsilons, metrics, k_array=np.array(range(2,
                     #kwargs['threshold'] = (dataset[sorted_indices[k]] + dataset[sorted_indices[k + 1]]) / 2.0
                     #kwargs['threshold'] = dataset[sorted_indices[50]]
                     #truth_indices = sorted_indices[:50]
-                threshold = (dataset[k] + dataset[sorted_indices[k + 1]]) / 2
+                threshold = (dataset[k] + dataset[k + 1]) / 2
                 kwargs['threshold'] = threshold
                 truth_indices = np.nonzero(dataset > threshold)
             else:
