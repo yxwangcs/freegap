@@ -113,9 +113,9 @@ def plot(k_array, dataset_name, data, output_prefix):
         adaptive_improvements = 100 * (baseline - algorithm_data) / baseline
         gap_improvements = 100 * (baseline - gap_data) / baseline
         improves_for_epsilons.append(adaptive_improvements[8])
-        plt.plot(k_array, adaptive_improvements, label=r'\huge {}'.format('Adaptive SVT with Estimates'), linewidth=3, markersize=12,
+        plt.plot(k_array, adaptive_improvements, label=r'\huge {}'.format('Adaptive SVT with Gap'), linewidth=3, markersize=12,
                  marker='o')
-        plt.plot(k_array, gap_improvements, label=r'\huge {}'.format('Sparse Vector with Estimates'), linewidth=3,
+        plt.plot(k_array, gap_improvements, label=r'\huge {}'.format('Sparse Vector with Gap'), linewidth=3,
                  markersize=12,
                  marker='o')
         plt.ylim(0, 80)
