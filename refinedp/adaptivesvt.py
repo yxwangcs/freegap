@@ -98,7 +98,7 @@ def remaining_epsilon(indices, top_indices, middle_indices, remaining_budget, tr
 
 def plot(k_array, dataset_name, data, output_prefix):
     generated_files = []
-    epsilon = '0.3'
+    epsilon = '0.7'
     ALGORITHM_INDEX, BASELINE_INDEX = 0, -1
     # plot number of above threshold answers
     baseline_top_branch = np.asarray(data[epsilon]['top_branch'][BASELINE_INDEX])
