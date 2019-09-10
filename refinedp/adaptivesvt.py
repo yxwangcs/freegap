@@ -121,21 +121,34 @@ def plot(k_array, dataset_name, data, output_prefix):
     ax1.set_xticks(sub_k_array)
     ax1.set_ylabel(r'\huge {}'.format(r'\# of Above-Threshold Answers'))
     ax1.tick_params(labelsize=24)
+    legend = ax1.legend()
+    legend.get_frame().set_linewidth(0.0)
+    plt.gcf().set_tight_layout(True)
+    logger.info('Figures saved to {}'.format(output_prefix))
+    filename = os.path.join(output_prefix, '{}-{}-{}.pdf'.format(dataset_name, 'above_threshold_answers',
+                                                                 str(epsilon).replace('.', '-')))
+    plt.savefig(filename)
+    plt.clf()
+    generated_files.append(filename)
 
     # plot remaining budget
-    ax2 = ax1.twinx()
-    remaining_epsilons = \
-        (np.asarray(data[epsilon]['remaining_epsilon'][ALGORITHM_INDEX])[sub_k_array - 1] / float(epsilon)) * 100
-    ln1 = ax2.plot(sub_k_array, remaining_epsilons, label=r'\huge {}'.format('Remaining Budget'),
-                   linewidth=3, markersize=12, marker='o', color='tab:green', zorder=0, markeredgewidth=1.5,
-                   markeredgecolor='black')
-    ax2.set_ylabel(r'\huge \% Remaining Privacy Budget')
-    ax2.set_ylim([0, 70])
-    ax2.tick_params(labelsize=24)
-    # plot the legend
-    lns = [bar1, bar2, bar3] + ln1
-    labels = [l.get_label() for l in lns]
-    legend = ax2.legend(lns, labels, framealpha=0, loc=2)
+    adaptive_recall = 100 * np.asarray(data[epsilon]['remaining_epsilon'][ALGORITHM_INDEX]) / float(epsilon)
+    plt.plot(k_array, adaptive_recall, label=r'\huge {}'.format('Remaining Privacy Budget'),
+             linewidth=3, markersize=12, marker='o', zorder=5)
+    plt.ylim(0, 70)
+    plt.ylabel(r'\huge {}'.format('\% Remaining Privacy Budget'))
+    plt.xlabel(r'\huge $k$')
+    plt.xticks(fontsize=24)
+    plt.yticks(fontsize=24)
+    legend = plt.legend(loc=3)
+    legend.get_frame().set_linewidth(0.0)
+    plt.gcf().set_tight_layout(True)
+    logger.info('Figures saved to {}'.format(output_prefix))
+    filename = os.path.join(output_prefix, '{}-{}-{}.pdf'.format(dataset_name, 'remaining_budget',
+                                                                 str(epsilon).replace('.', '-')))
+    plt.savefig(filename)
+    plt.clf()
+    generated_files.append(filename)
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
     logger.info('Figures saved to {}'.format(output_prefix))
