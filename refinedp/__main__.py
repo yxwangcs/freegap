@@ -150,7 +150,7 @@ def main():
             else:
                 logger.info('No json file exists, running experiments...')
                 data = evaluate(evaluate_algorithm, dataset, metrics=metrics,
-                                epsilons=tuple(epsilon / 10.0 for epsilon in range(1, 16)), k_array=k_array,
+                                epsilons=(0.7, ), k_array=k_array,
                                 counting_queries=results.counting)
                 logger.info('Dumping data into json file...')
                 with open(json_file, 'w') as fp:
