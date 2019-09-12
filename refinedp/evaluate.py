@@ -63,25 +63,14 @@ def evaluate(algorithm, input_data, epsilons, metrics, k_array=np.array(range(2,
             kwargs = {}
             if 'threshold' in algorithm.__code__.co_varnames:
                 # for adaptive svt
-                if 'adaptive' in algorithm.__name__:
-                    #kwargs['threshold'] = dataset[sorted_indices[int(0.05 * len(sorted_indices))]]
-                    #truth_indices = sorted_indices[:int(0.05 * len(sorted_indices))]
-                    if 'allocate_x' in algorithm.__code__.co_varnames:
-                        x, y = (1, np.power(k, 2.0 / 3.0)) if counting_queries else (1, np.power(2 * k, 2.0 / 3.0))
-                        gap_x, gap_y = x / (x + y), y / (x + y)
-                        assert abs(gap_x + gap_y - 1.0) < 1e-5
-                        kwargs['allocate_x'] = gap_x
-                        kwargs['allocate_y'] = gap_y
-                #else:
-                    #kwargs['threshold'] = (dataset[sorted_indices[k]] + dataset[sorted_indices[k + 1]]) / 2.0
-                    #kwargs['threshold'] = dataset[sorted_indices[50]]
-                    #truth_indices = sorted_indices[:50]
-                #threshold = (dataset[k] + dataset[k + 1]) / 2
-                #threshold_index = np.random.randint(5 * k, 10 * k)
-                #threshold_index = 2 * k
-                #kwargs['threshold'] = (dataset[sorted_indices[threshold_index]] + dataset[sorted_indices[threshold_index + 1]]) / 2.0
-                #kwargs['threshold'] = threshold
-                #truth_indices = sorted_indices[:threshold_index]
+                if 'adaptive' in algorithm.__name__ and 'allocate_x' in algorithm.__code__.co_varnames:
+                    # send in gap_x and gap_y, SVT with Gap doesn't need this because gapestimate wrapper function
+                    # already wraps this in
+                    x, y = (1, np.power(k, 2.0 / 3.0)) if counting_queries else (1, np.power(2 * k, 2.0 / 3.0))
+                    gap_x, gap_y = x / (x + y), y / (x + y)
+                    assert abs(gap_x + gap_y - 1.0) < 1e-5
+                    kwargs['allocate_x'] = gap_x
+                    kwargs['allocate_y'] = gap_y
                 truth_indices = None
             else:
                 truth_indices = sorted_indices[:k]
