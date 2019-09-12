@@ -100,28 +100,28 @@ def plot(k_array, dataset_name, data, output_prefix):
     generated_files = []
     epsilon = '0.7'
     ALGORITHM_INDEX, BASELINE_INDEX = 0, -1
+
     # plot number of above threshold answers
     baseline_top_branch = np.asarray(data[epsilon]['top_branch'][BASELINE_INDEX])
     algorithm_top_branch = np.asarray(data[epsilon]['top_branch'][ALGORITHM_INDEX])
     algorithm_middle_branch = np.asarray(data[epsilon]['middle_branch'][ALGORITHM_INDEX])
-    WIDTH = 0.7
-    fig, ax1 = plt.subplots()
-    ax1.set_ylim([0, 70])
+    WIDTH = 0.6
+    plt.ylim(0, 70)
     sub_k_array = np.arange(2, 24, 2)
     colormap = plt.get_cmap('tab10')
     # plot the bar charts
-    bar1 = ax1.bar(sub_k_array - WIDTH, baseline_top_branch[sub_k_array - 1], WIDTH, align='edge',
+    plt.bar(sub_k_array - WIDTH, baseline_top_branch[sub_k_array - 1], WIDTH, align='edge',
                    label=r'\huge Sparse Vector', facecolor=colormap.colors[0] + (0.8,), edgecolor='black', hatch='/')
-    bar2 = ax1.bar(sub_k_array, algorithm_middle_branch[sub_k_array - 1], WIDTH, align='edge',
+    plt.bar(sub_k_array, algorithm_middle_branch[sub_k_array - 1], WIDTH, align='edge',
                    facecolor=colormap.colors[1] + (0.8,), edgecolor='black',
                    label=r'\huge Adaptive SVT w/ Gap (Middle)', hatch='.')
-    bar3 = ax1.bar(sub_k_array, algorithm_top_branch[sub_k_array - 1], WIDTH,
+    plt.bar(sub_k_array, algorithm_top_branch[sub_k_array - 1], WIDTH,
                    bottom=algorithm_middle_branch[sub_k_array - 1], align='edge', facecolor=colormap.colors[3] + (0.8,),
                    edgecolor='black', label=r'\huge Adaptive SVT w/ Gap (Top)', hatch='*')
-    ax1.set_xticks(sub_k_array)
-    ax1.set_ylabel(r'\huge {}'.format(r'\# of Above-Threshold Answers'))
-    ax1.tick_params(labelsize=24)
-    legend = ax1.legend()
+    plt.xticks(sub_k_array)
+    plt.ylabel(r'\huge {}'.format(r'\# of Above-Threshold Answers'))
+    plt.tick_params(labelsize=24)
+    legend = plt.legend(loc=2)
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
     logger.info('Figures saved to {}'.format(output_prefix))
@@ -149,30 +149,22 @@ def plot(k_array, dataset_name, data, output_prefix):
     plt.savefig(filename)
     plt.clf()
     generated_files.append(filename)
-    legend.get_frame().set_linewidth(0.0)
-    plt.gcf().set_tight_layout(True)
-    logger.info('Figures saved to {}'.format(output_prefix))
-    filename = os.path.join(output_prefix, '{}-{}-{}.pdf'.format(dataset_name, 'above_threshold_answers',
-                                                                 str(epsilon).replace('.', '-')))
-    plt.savefig(filename)
-    plt.clf()
-    generated_files.append(filename)
 
     # plot the precision and f measure
     adaptive_precision = np.asarray(data[epsilon]['precision'][ALGORITHM_INDEX])
     sparse_vector_precision = np.asarray(data[epsilon]['precision'][BASELINE_INDEX])
     adaptive_recall = np.asarray(data[epsilon]['f_measure'][ALGORITHM_INDEX])
     sparse_vector_recall = np.asarray(data[epsilon]['f_measure'][BASELINE_INDEX])
-    plt.plot(k_array, sparse_vector_precision, label=r'\huge {}'.format('Sparse Vector - Precision'),
-             linewidth=3, markersize=12, marker='P', zorder=5)
-    plt.plot(k_array, adaptive_precision, label=r'\huge {}'.format('Adaptive SVT w/ Gap - Precision'),
+    plt.plot(k_array, sparse_vector_precision, label=r'\LARGE {}'.format('Sparse Vector - Precision'),
              linewidth=3, markersize=12, marker='s', zorder=5)
-    plt.plot(k_array, sparse_vector_recall, label=r'\huge {}'.format('Sparse Vector - F-Measure'),
-             linewidth=3, markersize=12, marker='X', zorder=5)
-    plt.plot(k_array, adaptive_recall, label=r'\huge {}'.format('Adaptive SVT w/ Gap - F-Measure'),
+    plt.plot(k_array, adaptive_precision, label=r'\LARGE {}'.format('Adaptive SVT w/ Gap - Precision'),
+             linewidth=3, markersize=10, marker='X', zorder=5, alpha=0.8)
+    plt.plot(k_array, sparse_vector_recall, label=r'\LARGE {}'.format('Sparse Vector - F-Measure'),
+             linewidth=3, markersize=12, marker='P', zorder=5)
+    plt.plot(k_array, adaptive_recall, label=r'\LARGE {}'.format('Adaptive SVT w/ Gap - F-Measure'),
              linewidth=3, markersize=12, marker='o', zorder=5)
     plt.ylim(0, 1.0)
-    plt.ylabel(r'\huge {}'.format('Precision and F-Measure'))
+    plt.ylabel(r'\huge Precision and F-Measure')
     plt.xlabel(r'\huge $k$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
