@@ -8,12 +8,19 @@ import tqdm
 logger = logging.getLogger(__name__)
 
 
-def _evaluate_algorithm(iterations, algorithm, dataset, kwargs, metrics, truth_indices):
+def _evaluate_algorithm(iterations, algorithm, dataset, kwargs, metrics, truth_indices, sorted_indices):
     np.random.seed()
 
     # run several times and record average and error
     all_results = []
     for _ in range(iterations):
+        if 'threshold' in algorithm.__code__.co_varnames:
+            threshold_index = np.random.randint(2 * kwargs['k'], 8 * kwargs['k'])
+            # threshold_index = 2 * k
+            kwargs['threshold'] = (dataset[sorted_indices[threshold_index]] + dataset[
+                sorted_indices[threshold_index + 1]]) / 2.0
+            # kwargs['threshold'] = threshold
+            truth_indices = sorted_indices[:threshold_index]
         results = algorithm(dataset, **kwargs)
         # initialize results list
         if len(all_results) != len(results):
@@ -70,9 +77,12 @@ def evaluate(algorithm, input_data, epsilons, metrics, k_array=np.array(range(2,
                     #kwargs['threshold'] = dataset[sorted_indices[50]]
                     #truth_indices = sorted_indices[:50]
                 #threshold = (dataset[k] + dataset[k + 1]) / 2
-                kwargs['threshold'] = (dataset[sorted_indices[2 * k]] + dataset[sorted_indices[2 * k + 1]]) / 2.0
+                #threshold_index = np.random.randint(5 * k, 10 * k)
+                #threshold_index = 2 * k
+                #kwargs['threshold'] = (dataset[sorted_indices[threshold_index]] + dataset[sorted_indices[threshold_index + 1]]) / 2.0
                 #kwargs['threshold'] = threshold
-                truth_indices = sorted_indices[:2 * k]
+                #truth_indices = sorted_indices[:threshold_index]
+                truth_indices = None
             else:
                 truth_indices = sorted_indices[:k]
             kwargs['epsilon'] = epsilon
@@ -85,7 +95,7 @@ def evaluate(algorithm, input_data, epsilons, metrics, k_array=np.array(range(2,
 
             partial_evaluate_algorithm = \
                 partial(_evaluate_algorithm, algorithm=algorithm, dataset=dataset, kwargs=kwargs, metrics=metrics,
-                        truth_indices=truth_indices)
+                        truth_indices=truth_indices, sorted_indices=sorted_indices)
 
             # run and collect data
             metric_results = []

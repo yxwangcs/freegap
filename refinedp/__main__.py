@@ -149,8 +149,12 @@ def main():
                     data = json.load(fp)
             else:
                 logger.info('No json file exists, running experiments...')
-                data = evaluate(evaluate_algorithm, dataset, metrics=metrics,
-                                epsilons=(0.7, ), k_array=k_array,
+                if 'Gap' in algorithm_name:
+                    # we need to run multiple epsilons to draw fix-k figures for gap estimates algorithms
+                    epsilons = tuple(n / 10 for n in range(1, 16))
+                else:
+                    epsilons = (0.7, )
+                data = evaluate(evaluate_algorithm, dataset, metrics=metrics, epsilons=epsilons, k_array=k_array,
                                 counting_queries=results.counting)
                 logger.info('Dumping data into json file...')
                 with open(json_file, 'w') as fp:
