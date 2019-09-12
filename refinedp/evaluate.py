@@ -15,7 +15,7 @@ def _evaluate_algorithm(iterations, algorithm, dataset, kwargs, metrics, truth_i
     all_results = []
     for _ in range(iterations):
         if 'threshold' in algorithm.__code__.co_varnames:
-            threshold_index = np.random.randint(2 * kwargs['k'], 10 * kwargs['k'])
+            threshold_index = np.random.randint(2 * kwargs['k'], 8 * kwargs['k'])
             # threshold_index = 2 * k
             kwargs['threshold'] = (dataset[sorted_indices[threshold_index]] + dataset[
                 sorted_indices[threshold_index + 1]]) / 2.0
