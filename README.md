@@ -1,5 +1,7 @@
 # Freegap
 
+Install dependencies via `pip install -e .` and then issue `python -m freegap -h` to see the following help message:
+
 ```
 usage: __main__.py [-h] [--datasets DATASETS] [--output OUTPUT] [--clear] [--counting] algorithm
 
