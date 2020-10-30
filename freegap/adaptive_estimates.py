@@ -4,7 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import numba
 
-from refinedp.gapestimates import laplace_mechanism
+from freegap.gapestimates import laplace_mechanism
 
 
 logger = logging.getLogger(__name__)
