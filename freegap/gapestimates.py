@@ -113,12 +113,13 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
         algorithm_data = np.asarray(metric_dict[ALGORITHM_INDEX])
         improvements = 100 * (baseline - algorithm_data) / baseline
         improves_for_epsilons.append(improvements[8])
-        plt.plot(k_array, improvements,
-                 label=f'\\huge {algorithm_name}', linewidth=3, markersize=12, marker='o')
+        plt.plot(k_array, improvements, label=f'\\huge {algorithm_name}', linewidth=3, markersize=12, marker='o')
         plt.ylim(0, 50)
         plt.ylabel(r'\huge \% Improvement in MSE')
-        plt.plot(theoretical_x, 100 * theoretical_y, linewidth=5,
-                 linestyle='--', label=r'\huge Theoretical Expected Improvement')
+        plt.plot(
+            theoretical_x, 100 * theoretical_y,
+            linewidth=5, linestyle='--',  label=r'\huge Theoretical Expected Improvement'
+        )
         plt.xlabel(r'\huge $k$')
         plt.xticks(fontsize=24)
         plt.yticks(fontsize=24)
