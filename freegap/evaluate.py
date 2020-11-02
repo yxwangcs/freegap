@@ -49,7 +49,7 @@ def evaluate(algorithm, input_data, epsilons, metrics, k_array=np.array(range(2,
     dataset_name, dataset = input_data
     dataset = np.asarray(dataset)
     sorted_indices = np.argsort(dataset)[::-1]
-    logger.info('Evaluating {} on {}'.format(algorithm.__name__.replace('_', ' ').title(), dataset_name))
+    logger.info(f"Evaluating {algorithm.__name__.replace('_', ' ').title()} on {dataset_name}")
 
     # create the result dict
     metric_data = {

@@ -113,11 +113,10 @@ def plot(k_array, dataset_name, data, output_prefix):
         adaptive_improvements = 100 * (baseline - algorithm_data) / baseline
         gap_improvements = 100 * (baseline - gap_data) / baseline
         improves_for_epsilons.append(adaptive_improvements[8])
-        plt.plot(k_array, adaptive_improvements, label=r'\huge {}'.format('Adaptive SVT with Gap'), linewidth=3, markersize=12,
-                 marker='o')
-        plt.plot(k_array, gap_improvements, label=r'\huge {}'.format('Sparse Vector with Gap'), linewidth=3,
-                 markersize=12,
-                 marker='o')
+        plt.plot(k_array, adaptive_improvements,
+                 label=r'\huge Adaptive SVT with Gap', linewidth=3, markersize=12, marker='o')
+        plt.plot(k_array, gap_improvements,
+                 label=r'\huge Sparse Vector with Gap', linewidth=3, markersize=12, marker='o')
         plt.ylim(0, 80)
         plt.ylabel(r'\huge \% Improvement in MSE')
         plt.xlabel(r'\huge $k$')
@@ -127,15 +126,14 @@ def plot(k_array, dataset_name, data, output_prefix):
         legend.get_frame().set_linewidth(0.0)
         plt.gcf().set_tight_layout(True)
         if abs(float(epsilon) - 0.7) < 1e-5:
-            logger.info('Fix-epsilon Figures saved to {}'.format(output_prefix))
-            filename = '{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',
-                                                str(epsilon).replace('.', '-'))
+            logger.info(f'Fix-epsilon Figures saved to {output_prefix}')
+            filename = f"{output_prefix}/{dataset_name}-Mean_Square_Error-{str(epsilon).replace('.', '-')}.pdf"
             plt.savefig(filename)
             generated_files.append(filename)
         plt.clf()
 
     epsilons = np.asarray(tuple(data.keys()), dtype=np.float)
-    plt.plot(epsilons, improves_for_epsilons, label=r'\huge {}'.format('Adaptive Estimates'), linewidth=3,
+    plt.plot(epsilons, improves_for_epsilons, label=r'\huge Adaptive Estimates', linewidth=3,
              markersize=10, marker='o')
     plt.ylabel(r'\huge \% Improvement in MSE')
     plt.ylim(0, 80)
@@ -146,8 +144,8 @@ def plot(k_array, dataset_name, data, output_prefix):
     legend = plt.legend(loc=3)
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
-    logger.info('Fix-k Figures saved to {}'.format(output_prefix))
-    filename = '{}/{}-{}-epsilons.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',)
+    logger.info(f'Fix-k Figures saved to {output_prefix}')
+    filename = f'{output_prefix}/{dataset_name}-Mean_Square_Error-epsilons.pdf'
     plt.savefig(filename)
     generated_files.append(filename)
     plt.clf()

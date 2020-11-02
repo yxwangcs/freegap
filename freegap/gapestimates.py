@@ -113,8 +113,8 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
         algorithm_data = np.asarray(metric_dict[ALGORITHM_INDEX])
         improvements = 100 * (baseline - algorithm_data) / baseline
         improves_for_epsilons.append(improvements[8])
-        plt.plot(k_array, improvements, label=r'\huge {}'.format(algorithm_name), linewidth=3, markersize=12,
-                 marker='o')
+        plt.plot(k_array, improvements,
+                 label=f'\\huge {algorithm_name}', linewidth=3, markersize=12, marker='o')
         plt.ylim(0, 50)
         plt.ylabel(r'\huge \% Improvement in MSE')
         plt.plot(theoretical_x, 100 * theoretical_y, linewidth=5,
@@ -126,15 +126,14 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
         legend.get_frame().set_linewidth(0.0)
         plt.gcf().set_tight_layout(True)
         if abs(float(epsilon) - 0.7) < 1e-5:
-            logger.info('Fix-epsilon Figures saved to {}'.format(output_prefix))
-            filename = '{}/{}-{}-{}.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',
-                                                str(epsilon).replace('.', '-'))
+            logger.info(f'Fix-epsilon Figures saved to {output_prefix}')
+            filename = f"{output_prefix}/{dataset_name}-Mean_Square_Error-{str(epsilon).replace('.', '-')}.pdf"
             plt.savefig(filename)
             generated_files.append(filename)
         plt.clf()
 
     epsilons = np.asarray(tuple(data.keys()), dtype=np.float)
-    plt.plot(epsilons, improves_for_epsilons, label=r'\huge {}'.format(algorithm_name), linewidth=3,
+    plt.plot(epsilons, improves_for_epsilons, label=f'\\huge {algorithm_name}', linewidth=3,
              markersize=10, marker='o')
     plt.plot(epsilons, [100 * theoretical(10) for _ in range(len(epsilons))], linewidth=5,
              linestyle='--', label=r'\huge Theoretical Expected Improvement')
@@ -147,8 +146,8 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
     legend = plt.legend(loc=3)
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
-    logger.info('Fix-k Figures saved to {}'.format(output_prefix))
-    filename = '{}/{}-{}-epsilons.pdf'.format(output_prefix, dataset_name, 'Mean_Square_Error',)
+    logger.info(f'Fix-k Figures saved to {output_prefix}')
+    filename = f'{output_prefix}/{dataset_name}-Mean_Square_Error-epsilons.pdf'
     plt.savefig(filename)
     generated_files.append(filename)
     plt.clf()

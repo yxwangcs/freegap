@@ -119,33 +119,31 @@ def plot(k_array, dataset_name, data, output_prefix):
                    bottom=algorithm_middle_branch[sub_k_array - 1], align='edge', facecolor=colormap.colors[3] + (0.8,),
                    edgecolor='black', label=r'\huge Adaptive SVT w/ Gap (Top)', hatch='*')
     plt.xticks(sub_k_array)
-    plt.ylabel(r'\huge {}'.format(r'\# of Above-Threshold Answers'))
+    plt.ylabel(r'\huge \# of Above-Threshold Answers')
     plt.tick_params(labelsize=24)
     legend = plt.legend(loc=2)
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
-    logger.info('Figures saved to {}'.format(output_prefix))
-    filename = os.path.join(output_prefix, '{}-{}-{}.pdf'.format(dataset_name, 'above_threshold_answers',
-                                                                 str(epsilon).replace('.', '-')))
+    logger.info(f'Figures saved to {output_prefix}')
+    filename = os.path.join(output_prefix, f"{dataset_name}-above_threshold_answers-{str(epsilon).replace('.', '-')}.pdf")
     plt.savefig(filename)
     plt.clf()
     generated_files.append(filename)
 
     # plot remaining budget
     adaptive_recall = 100 * np.asarray(data[epsilon]['remaining_epsilon'][ALGORITHM_INDEX]) / float(epsilon)
-    plt.plot(k_array, adaptive_recall, label=r'\huge {}'.format('Remaining Privacy Budget'),
+    plt.plot(k_array, adaptive_recall, label=r'\huge Remaining Privacy Budget',
              linewidth=3, markersize=12, marker='o', zorder=5)
     plt.ylim(0, 70)
-    plt.ylabel(r'\huge {}'.format('\% Remaining Privacy Budget'))
+    plt.ylabel(r'\huge \% Remaining Privacy Budget')
     plt.xlabel(r'\huge $k$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
     legend = plt.legend(loc=3)
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
-    logger.info('Figures saved to {}'.format(output_prefix))
-    filename = os.path.join(output_prefix, '{}-{}-{}.pdf'.format(dataset_name, 'remaining_budget',
-                                                                 str(epsilon).replace('.', '-')))
+    logger.info(f'Figures saved to {output_prefix}')
+    filename = os.path.join(output_prefix, f"{dataset_name}-remaining_budget-{str(epsilon).replace('.', '-')}.pdf")
     plt.savefig(filename)
     plt.clf()
     generated_files.append(filename)
@@ -155,13 +153,13 @@ def plot(k_array, dataset_name, data, output_prefix):
     sparse_vector_precision = np.asarray(data[epsilon]['precision'][BASELINE_INDEX])
     adaptive_recall = np.asarray(data[epsilon]['f_measure'][ALGORITHM_INDEX])
     sparse_vector_recall = np.asarray(data[epsilon]['f_measure'][BASELINE_INDEX])
-    plt.plot(k_array, sparse_vector_precision, label=r'\LARGE {}'.format('Sparse Vector - Precision'),
+    plt.plot(k_array, sparse_vector_precision, label=r'\LARGE Sparse Vector - Precision',
              linewidth=3, markersize=12, marker='s', zorder=5)
-    plt.plot(k_array, adaptive_precision, label=r'\LARGE {}'.format('Adaptive SVT w/ Gap - Precision'),
+    plt.plot(k_array, adaptive_precision, label=r'\LARGE Adaptive SVT w/ Gap - Precision',
              linewidth=3, markersize=10, marker='X', zorder=5, alpha=0.8)
-    plt.plot(k_array, sparse_vector_recall, label=r'\LARGE {}'.format('Sparse Vector - F-Measure'),
+    plt.plot(k_array, sparse_vector_recall, label=r'\LARGE Sparse Vector - F-Measure',
              linewidth=3, markersize=12, marker='P', zorder=5)
-    plt.plot(k_array, adaptive_recall, label=r'\LARGE {}'.format('Adaptive SVT w/ Gap - F-Measure'),
+    plt.plot(k_array, adaptive_recall, label=r'\LARGE Adaptive SVT w/ Gap - F-Measure',
              linewidth=3, markersize=12, marker='o', zorder=5)
     plt.ylim(0, 1.0)
     plt.ylabel(r'\huge Precision and F-Measure')
@@ -171,9 +169,8 @@ def plot(k_array, dataset_name, data, output_prefix):
     legend = plt.legend(loc=3)
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
-    logger.info('Figures saved to {}'.format(output_prefix))
-    filename = os.path.join(output_prefix, '{}-{}-{}.pdf'.format(dataset_name, 'precision',
-                                                                 str(epsilon).replace('.', '-')))
+    logger.info(f'Figures saved to {output_prefix}')
+    filename = os.path.join(output_prefix, f"{dataset_name}-precision-{str(epsilon).replace('.', '-')}.pdf")
     plt.savefig(filename)
     plt.clf()
     generated_files.append(filename)
