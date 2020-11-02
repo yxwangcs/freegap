@@ -27,6 +27,8 @@ optional arguments:
 
 Run `python -m freegap <algorithm>` to run evaluation conducted in our paper for `<algorithm>`, the results will be 
 generated in `output/<algorithm>` folder with name `<dataset>-<metric>-<epsilon_value>.pdf`.
+
+For more details on the code, checkout the comments and function doc-strings.
  
 :warning: : We will cache the results in `output/<algorithm>/<algorithm>-<dataset>.json`, if this file is detected, no 
 actual experiments will be conducted, instead, this cached results will be used directly to generate plots. Remember to
