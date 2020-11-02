@@ -1,6 +1,5 @@
 import logging
 import numpy as np
-import os
 import matplotlib.pyplot as plt
 import numba
 
@@ -13,8 +12,6 @@ logger = logging.getLogger(__name__)
 # this is a combination of classical and adaptive svt
 @numba.njit(fastmath=True)
 def adaptive_sparse_vector(q, epsilon, k, threshold, allocate_x=0.5, allocate_y=0.5, counting_queries=False):
-    #threshold_allocation, query_allocation = allocation
-    #assert abs(threshold_allocation + query_allocation - 1.0) < 1e-05
     indices, variances, gaps = [], [], []
     classical_indices, classical_variances, classical_gaps = [], [], []
     count, classical_count = 0, 0
