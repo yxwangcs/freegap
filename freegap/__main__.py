@@ -144,15 +144,16 @@ def main():
     # default value for datasets path
     results.datasets = os.path.join(os.path.curdir, 'datasets') if results.datasets is None else results.datasets
 
-    winning_algorithm = algorithm[
+    # we tolerate typos, so we select the chosen algorithm based on maximum similarities to the pre-defined options
+    chosen_algorithms = algorithm[
         np.fromiter((difflib.SequenceMatcher(None, results.algorithm, name).ratio() for name in algorithm),
                     dtype=np.float).argmax()
     ]
 
-    winning_algorithm = algorithm[1:] if winning_algorithm == 'All' else (winning_algorithm, )
+    chosen_algorithms = algorithm[1:] if chosen_algorithms == 'All' else (chosen_algorithms, )
     output_folder = os.path.abspath(results.output)
 
-    for algorithm_name in winning_algorithm:
+    for algorithm_name in chosen_algorithms:
         # create the algorithm output folder if not exists
         algorithm_folder = os.path.join(output_folder, f'{algorithm_name}-counting') if results.counting else \
             os.path.join(output_folder, algorithm_name)
