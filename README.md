@@ -32,5 +32,5 @@ generated in `output/<algorithm>` folder with name `<dataset>-<metric>-<epsilon_
 actual experiments will be conducted, instead, this cached results will be used directly to generate plots. Remember to
 delete or move the `output` folder or run with the `--clear` flag to run fresh experiments.
 
- : we use `numba` to JIT the functions for best performance, therefore the first run of the program might be 
+:warning: : we use `numba` to JIT the functions for best performance, therefore the first run of the program might be 
 slow due to numba's compilations.
