@@ -1,5 +1,11 @@
 # Freegap
 
+## Datasets
+
+Run `bash scripts/download_datasets.sh` in root directory and it will download the required datasets in `./datasets` directory.
+
+## Running the Experiments
+
 Install dependencies via `pip install -e .` and then issue `python -m freegap -h` to see the following help message:
 
 ```
@@ -16,3 +22,7 @@ optional arguments:
   --clear              Clear the output folder
   --counting           Set the counting queries
 ```
+
+
+:warning: : we use `numba` to JIT the functions for best performance, therefore the first run of the program might be 
+slow due to numba's compilations.
