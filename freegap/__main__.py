@@ -78,13 +78,18 @@ def main():
                             default=os.path.join(os.curdir, 'output'))
     arg_parser.add_argument('--clear', help='Clear the output folder', required=False, default=False,
                             action='store_true')
-    arg_parser.add_argument('--counting', help='Set the counting queries', required=False, default=False,
+    arg_parser.add_argument('--counting', help='Set the counting queries case', required=False, default=False,
                             action='store_true')
     results = arg_parser.parse_args()
 
+    # set the counting queries case as defined in our paper.
+    # Simply put, it means if the queries are monotonic (e.g., counting queries), less noise can be added
+    # to the query answers and we can achieve better accuracy.
+    # The plots in our paper are all evaluated on counting queries.
     if results.counting:
         logger.info('Counting queries flag set, evaluating on counting queries case')
 
+    # we will use different theoretical improvement to compare for counting queries, see paper for details
     if results.counting:
         def svt_theoretical(x):
             return 1 / (1 + ((np.power(1 + np.power(x, 2.0 / 3), 3)) / (x * x)))
@@ -98,19 +103,42 @@ def main():
         def topk_theoretical(x):
             return (x - 1) / (5 * x)
 
+    # pre-defined parameters for the evaluations
+    # evaluate_kwargs, plot_function, and optional plot_kwargs
     parameters = {
-        'AdaptiveSparseVector': (adaptive_sparse_vector, (top_branch, top_branch_precision, middle_branch,
-                                                          middle_branch_precision, precision, f_measure,
-                                                          above_threshold_answers, remaining_epsilon), plot_adaptive, {}),
-        'GapSparseVector': (gap_svt_estimates, (mean_square_error,), plot_estimates,  {
-            'theoretical': svt_theoretical,
-            'algorithm_name': 'Sparse Vector with Measures'
-        }),
-        'GapTopK': (gap_topk_estimates, (mean_square_error,), plot_estimates, {
-            'theoretical': topk_theoretical,
-            'algorithm_name': 'Noisy Top-K with Measures'
-        }),
-        'AdaptiveEstimates': (adaptive_estimates, (adaptive_mse,), plot_adaptive_estimates, {})
+        'AdaptiveSparseVector': {
+            'algorithm': adaptive_sparse_vector,
+            'metrics': (
+                top_branch, top_branch_precision, middle_branch, middle_branch_precision, precision, f_measure,
+                above_threshold_answers, remaining_epsilon
+            ),
+            'plot_function': plot_adaptive,
+            'plot_kwargs': {}
+        },
+        'GapSparseVector': {
+            'algorithm': gap_svt_estimates,
+            'metrics': (mean_square_error,),
+            'plot_function': plot_estimates,
+            'plot_kwargs': {
+                'theoretical': svt_theoretical,
+                'algorithm_name': 'Sparse Vector with Measures'  # for the title of the plot
+            }
+        },
+        'GapTopK': {
+            'algorithm': gap_topk_estimates,
+            'metrics': (mean_square_error,),
+            'plot_function': plot_estimates,
+            'plot_kwargs': {
+                'theoretical': topk_theoretical,
+                'algorithm_name': 'Noisy Top-K with Measures'
+            }
+        },
+        'AdaptiveEstimates': {
+            'algorithm': adaptive_estimates,
+            'metrics': (adaptive_mse,),
+            'plot_function': plot_adaptive_estimates,
+            'plot_kwargs': {}
+        }
     }
 
     # default value for datasets path
@@ -135,8 +163,10 @@ def main():
         os.makedirs(algorithm_folder, exist_ok=True)
 
         for dataset in process_datasets(results.datasets):
-            # evaluate the algorithms and plot the figures
-            evaluate_algorithm, metrics, plot, kwargs = parameters[algorithm_name]
+            # unpack the parameters
+            evaluate_algorithm, metrics = parameters[algorithm_name]['algorithm'], parameters[algorithm_name]['metrics']
+
+            # evaluate on different k values from 2 to 25
             k_array = np.fromiter(range(2, 25), dtype=np.int)
 
             # check if result json is present (so we don't have to run again)
@@ -153,13 +183,20 @@ def main():
                     epsilons = tuple(n / 10 for n in range(1, 16))
                 else:
                     epsilons = (0.7, )
-                data = evaluate(evaluate_algorithm, dataset, metrics=metrics, epsilons=epsilons, k_array=k_array,
-                                counting_queries=results.counting)
+                data = evaluate(
+                    algorithm=evaluate_algorithm, input_data=dataset, metrics=metrics, epsilons=epsilons,
+                    k_array=k_array, counting_queries=results.counting
+                )
                 logger.info('Dumping data into json file...')
                 with open(json_file, 'w') as fp:
                     json.dump(data, fp)
+
             logger.info('Plotting')
-            generated_files = plot(k_array, dataset[0], data, algorithm_folder, **kwargs)
+            plot_function = parameters[algorithm_name]['plot_function']
+            generated_files = plot_function(
+                k_array, dataset[0], data, algorithm_folder, **parameters[algorithm_name]['plot_kwargs']
+            )
+
             compress_pdfs(generated_files)
 
 
