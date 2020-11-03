@@ -69,6 +69,58 @@ def process_datasets(folder):
 
 
 def main():
+    """
+    Please read our paper first, especially the evaluation section, before dive into the technical details.
+
+    The code structure is designed as follows:
+    (algorithm function, metric function) ---> evaluate ---> results ---> plot function ---> PDFs
+
+    The algorithm takes in a series of query answers (q), the privacy budget (epsilon) and
+
+    1. Each algorithm module defines the algorithm function, the metric function and the plot function,
+    which we import in the main module for later evaluation.
+
+      (1) algorithm function: requires the signature `algorithm(q, epsilon, k, ...)`, can return arbitrary results for
+      consumption of the metric function.
+
+      For best performance, we merged the baseline algorithm (e.g., without the gap) with our new variant.
+      So that each algorithm will return ((variant_results), (baseline_results)).
+      For example, function gap_svt_estimates in gap_estimates.py module will return
+      `(indices, refined_estimates), (indices, direct_estimates)`
+      where the first element refers to the actual results our new variant returns, and the second element refers to
+      what the baseline algorithm would return.
+
+      (2) metric functions: returns different metric scores based on the results of the algorithm function. The first
+      part must match the return value of the algorithm function.
+      For example, the gap_svt_estimates returns the k indices and their estimates (indices, refined_estimates)
+      the metric function will be (indices, estimates, ...). The second part wil be injected with truth values for
+      metric calculations. Currently, truth_indices and truth_estimates will be added. So the final signature MUST be
+      metric(indices, estimtaes, truth_indices, truth_estimtaes)
+
+      (3) plot function: the plot function for the particular experiments. The `data` parameter
+
+    2. The evaluate function: takes in the algorithm function, the input dataset, the metric function. Then it sets up
+    everything the algorithm needs, properly splits the iterations to different cores to maximize performance. The
+    workflow is: in each core, run algorithm function multiple times, pass the results to the metric function, and
+    then returns the packed results (check evaluate._evaluate_algorithm function) containing the metric scores. The
+    evaluate function will them merge the metric results and return to the main module for plotting. The returned value
+    is a dictionary:
+    {
+        epsilon_value: {
+            metric_name: [metric_value for each k value]
+        }
+    }
+    
+    3. Plot function: After evaluate function has returned the results, it will be passed to the plot function to
+    generate
+
+
+    In the paper, we have the following experiments:
+
+    1. Adaptive SVT with Gap vs Sparse Vector Technique on a bunch of metrics: e.g., precision (AdaptiveSparseVector)
+    2. GapSparseVector with Measures vs SparseVector with Measures (GapSparseVector)
+    3. GapTopK with Measures vs Noisy TopK with Measures (GapTopK)
+    """
     algorithm = ('All', 'AdaptiveSparseVector', 'AdaptiveEstimates', 'GapSparseVector', 'GapTopK')
 
     arg_parser = argparse.ArgumentParser(description=__doc__)
