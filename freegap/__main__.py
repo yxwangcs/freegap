@@ -14,7 +14,8 @@ from freegap.adaptivesvt import adaptive_sparse_vector, \
     above_threshold_answers, remaining_epsilon, plot as plot_adaptive
 from freegap.adaptive_estimates import adaptive_estimates, \
     mean_square_error as adaptive_mse, plot as plot_adaptive_estimates
-from freegap.gapestimates import gap_svt_estimates, gap_topk_estimates, gap_topk_exp_estimates, mean_square_error, plot as plot_estimates
+from freegap.gapestimates import gap_svt_estimates, gap_topk_estimates, gap_topk_exp_estimates, gap_svt_exp_estimates, gap_svt_geo_estimates, \
+    mean_square_error, plot as plot_estimates
 from freegap.evaluate import evaluate
 
 matplotlib.use('PDF')
@@ -121,7 +122,7 @@ def main():
     2. GapSparseVector with Measures vs SparseVector with Measures (GapSparseVector)
     3. GapTopK with Measures vs Noisy TopK with Measures (GapTopK)
     """
-    algorithm = ('All', 'AdaptiveSparseVector', 'AdaptiveEstimates', 'GapSparseVector', 'GapTopK', 'GapTopKExp')
+    algorithm = ('All', 'AdaptiveSparseVector', 'AdaptiveEstimates', 'GapSparseVector', 'GapSparseVectorExp', 'GapSparseVectorGeo', 'GapTopK', 'GapTopKExp')
 
     arg_parser = argparse.ArgumentParser(description=__doc__)
     arg_parser.add_argument('algorithm', help=f'The algorithm to evaluate, options are {algorithm}.')
@@ -146,6 +147,9 @@ def main():
         def svt_theoretical(x):
             return 1 / (1 + ((np.power(1 + np.power(x, 2.0 / 3), 3)) / (x * x)))
 
+        def svt_exp_theoretical(x):
+            return 1 / (1 + ((np.power(1 + np.power(x, 2.0 / 3), 3)) / (2 * x * x)))    
+
         def topk_theoretical(x):
             return (x - 1) / (2 * x)
 
@@ -154,6 +158,9 @@ def main():
     else:
         def svt_theoretical(x):
             return 1 / (1 + ((np.power(1 + np.power(2 * x, 2.0 / 3), 3)) / (x * x)))
+
+        def svt_exp_theoretical(x):
+            return 1 / (1 + ((np.power(1 + np.power(2 * x, 2.0 / 3), 3)) / (2 * x * x)))
 
         def topk_theoretical(x):
             return (x - 1) / (5 * x)
@@ -179,6 +186,24 @@ def main():
             'plot_function': plot_estimates,
             'plot_kwargs': {
                 'theoretical': svt_theoretical,
+                'algorithm_name': 'Sparse Vector with Measures'  # for the title of the plot
+            }
+        },
+        'GapSparseVectorExp': {
+            'algorithm': gap_svt_exp_estimates,
+            'metrics': (mean_square_error,),
+            'plot_function': plot_estimates,
+            'plot_kwargs': {
+                'theoretical': svt_exp_theoretical,
+                'algorithm_name': 'Sparse Vector with Measures'  # for the title of the plot
+            }
+        },
+        'GapSparseVectorGeo': {
+            'algorithm': gap_svt_geo_estimates,
+            'metrics': (mean_square_error,),
+            'plot_function': plot_estimates,
+            'plot_kwargs': {
+                'theoretical': svt_exp_theoretical,
                 'algorithm_name': 'Sparse Vector with Measures'  # for the title of the plot
             }
         },
