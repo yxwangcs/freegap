@@ -14,7 +14,7 @@ from freegap.adaptivesvt import adaptive_sparse_vector, \
     above_threshold_answers, remaining_epsilon, plot as plot_adaptive
 from freegap.adaptive_estimates import adaptive_estimates, \
     mean_square_error as adaptive_mse, plot as plot_adaptive_estimates
-from freegap.gapestimates import gap_svt_estimates, gap_topk_estimates, mean_square_error, plot as plot_estimates
+from freegap.gapestimates import gap_svt_estimates, gap_topk_estimates, gap_topk_exp_estimates, mean_square_error, plot as plot_estimates
 from freegap.evaluate import evaluate
 
 matplotlib.use('PDF')
@@ -121,7 +121,7 @@ def main():
     2. GapSparseVector with Measures vs SparseVector with Measures (GapSparseVector)
     3. GapTopK with Measures vs Noisy TopK with Measures (GapTopK)
     """
-    algorithm = ('All', 'AdaptiveSparseVector', 'AdaptiveEstimates', 'GapSparseVector', 'GapTopK')
+    algorithm = ('All', 'AdaptiveSparseVector', 'AdaptiveEstimates', 'GapSparseVector', 'GapTopK', 'GapTopKExp')
 
     arg_parser = argparse.ArgumentParser(description=__doc__)
     arg_parser.add_argument('algorithm', help=f'The algorithm to evaluate, options are {algorithm}.')
@@ -148,12 +148,18 @@ def main():
 
         def topk_theoretical(x):
             return (x - 1) / (2 * x)
+
+        def topk_exp_theoretical(x):
+            return (2 * x - 2) / (3 * x)    
     else:
         def svt_theoretical(x):
             return 1 / (1 + ((np.power(1 + np.power(2 * x, 2.0 / 3), 3)) / (x * x)))
 
         def topk_theoretical(x):
             return (x - 1) / (5 * x)
+
+        def topk_exp_theoretical(x):
+            return (x - 1) / (3 * x)    
 
     # pre-defined parameters for the evaluations
     # evaluate_kwargs, plot_function, and optional plot_kwargs
@@ -182,6 +188,15 @@ def main():
             'plot_function': plot_estimates,
             'plot_kwargs': {
                 'theoretical': topk_theoretical,
+                'algorithm_name': 'Noisy Top-K with Measures'
+            }
+        },
+        'GapTopKExp': {
+            'algorithm': gap_topk_exp_estimates,
+            'metrics': (mean_square_error,),
+            'plot_function': plot_estimates,
+            'plot_kwargs': {
+                'theoretical': topk_exp_theoretical,
                 'algorithm_name': 'Noisy Top-K with Measures'
             }
         },

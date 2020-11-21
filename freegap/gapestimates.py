@@ -28,6 +28,18 @@ def gap_noisy_topk(q, epsilon, k, counting_queries=False):
     return indices, gaps
 
 
+def gap_noisy_topk_exp(q, epsilon, k, counting_queries=False):
+    assert k <= len(q), 'k must be less or equal to the length of q'
+    scale = k / epsilon if counting_queries else 2 * k / epsilon
+    noisy_q = q + np.random.exponential(scale=scale, size=len(q))
+    indices = np.argpartition(noisy_q, -k)[-k:]
+    indices = indices[np.argsort(-noisy_q[indices])]
+    gaps = np.fromiter((noisy_q[first] - noisy_q[second] for first, second in zip(indices[:-1], indices[1:])),
+                       dtype=np.float)
+    # baseline algorithm would just return (indices)
+    return indices, gaps
+
+
 # Noisy Top-K with Measures (together with baseline)
 def gap_topk_estimates(q, epsilon, k, counting_queries=False):
     # allocate the privacy budget 1:1 to noisy k max and laplace mechanism
@@ -45,6 +57,22 @@ def gap_topk_estimates(q, epsilon, k, counting_queries=False):
     # baseline algorithm would just return (indices, direct_estimates)
     return (indices, refined_estimates), (indices, direct_estimates)
 
+
+def gap_topk_exp_estimates(q, epsilon, k, counting_queries=False):
+    # allocate the privacy budget 1:1 to noisy k max and laplace mechanism
+    indices, gaps = gap_noisy_topk_exp(q, 0.5 * epsilon, k, counting_queries)
+    direct_estimates = laplace_mechanism(q, 0.5 * epsilon, indices)
+    p_total = (np.fromiter((k - i for i in range(1, k)), dtype=np.int, count=k - 1) * gaps).sum()
+    p = np.empty(k, dtype=np.float)
+    np.cumsum(gaps, out=p[1:])
+    p[0] = 0
+    if counting_queries:
+        refined_estimates = (direct_estimates.sum() + 0.5 * k * direct_estimates + p_total - k * p) / (1.5 * k)
+    else:
+        refined_estimates = (direct_estimates.sum() + 2 * k * direct_estimates + p_total - k * p) / (3 * k)
+
+    # baseline algorithm would just return (indices, direct_estimates)
+    return (indices, refined_estimates), (indices, direct_estimates)
 
 # Sparse Vector (with Gap)
 @numba.njit(fastmath=True)
@@ -114,7 +142,7 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
         improvements = 100 * (baseline - algorithm_data) / baseline
         improves_for_epsilons.append(improvements[8])
         plt.plot(k_array, improvements, label=f'\\huge {algorithm_name}', linewidth=3, markersize=12, marker='o')
-        plt.ylim(0, 50)
+        plt.ylim(0, 70)
         plt.ylabel(r'\huge \% Improvement in MSE')
         plt.plot(
             theoretical_x, 100 * theoretical_y,
@@ -139,7 +167,7 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
     plt.plot(epsilons, [100 * theoretical(10) for _ in range(len(epsilons))], linewidth=5,
              linestyle='--', label=r'\huge Theoretical Expected Improvement')
     plt.ylabel(r'\huge \% Improvement in MSE')
-    plt.ylim(0, 50)
+    plt.ylim(0, 70)
     plt.xlabel(r'\huge $\epsilon$')
     plt.xticks(np.arange(epsilons.min(), epsilons.max() + 0.1, 0.2))
     plt.xticks(fontsize=24)
