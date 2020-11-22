@@ -319,7 +319,7 @@ def main():
         generated_files = []
         for dataset_name, data in combined_data.items():
             # first plot all SVT graphs
-            svt_combined_folder = os.path.join(output_folder, 'SVT_Combined')
+            svt_combined_folder = os.path.join(output_folder, 'SVT_Combined' + '-counting' if results.counting else '')
             if results.clear:
                 logger.info('--clear flag set, removing the folder')
                 shutil.rmtree(svt_combined_folder, ignore_errors=True)
