@@ -245,6 +245,9 @@ def main():
     chosen_algorithms = algorithm[1:] if chosen_algorithms == 'All' else (chosen_algorithms, )
     output_folder = os.path.abspath(results.output)
 
+    # evaluate on different k values from 2 to 25
+    k_array = np.fromiter(range(2, 25), dtype=np.int)
+
     for algorithm_name in chosen_algorithms:
         # create the algorithm output folder if not exists
         algorithm_folder = os.path.join(output_folder, f'{algorithm_name}-counting') if results.counting else \
@@ -258,9 +261,6 @@ def main():
         for dataset in process_datasets(results.datasets):
             # unpack the parameters
             evaluate_algorithm, metrics = parameters[algorithm_name]['algorithm'], parameters[algorithm_name]['metrics']
-
-            # evaluate on different k values from 2 to 25
-            k_array = np.fromiter(range(2, 25), dtype=np.int)
 
             # check if result json is present (so we don't have to run again)
             # if --clear flag is specified, output folder will be empty, thus won't cause problem here
