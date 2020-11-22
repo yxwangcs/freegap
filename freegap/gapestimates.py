@@ -221,6 +221,7 @@ def mean_square_error(indices, estimates, truth_indices, truth_estimates):
 
 def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name):
     ALGORITHM_INDEX, BASELINE_INDEX = 0, -1
+    PLOT_EPSILON = 0.7
     generated_files = []
     theoretical_x = np.arange(k_array.min(), k_array.max())
     theoretical_y = theoretical(theoretical_x)
@@ -232,25 +233,26 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
         algorithm_data = np.asarray(metric_dict[ALGORITHM_INDEX])
         improvements = 100 * (baseline - algorithm_data) / baseline
         improves_for_epsilons.append(improvements[8])
-        plt.plot(k_array, improvements, label=f'\\huge {algorithm_name}', linewidth=3, markersize=12, marker='o')
-        plt.ylim(0, 70)
-        plt.ylabel(r'\huge \% Improvement in MSE')
-        plt.plot(
-            theoretical_x, 100 * theoretical_y,
-            linewidth=5, linestyle='--',  label=r'\huge Theoretical Expected Improvement'
-        )
-        plt.xlabel(r'\huge $k$')
-        plt.xticks(fontsize=24)
-        plt.yticks(fontsize=24)
-        legend = plt.legend(loc=3)
-        legend.get_frame().set_linewidth(0.0)
-        plt.gcf().set_tight_layout(True)
-        if abs(float(epsilon) - 0.7) < 1e-5:
+        if abs(float(epsilon) - PLOT_EPSILON) < 1e-5:
+            plt.plot(k_array, improvements, label=f'\\huge {algorithm_name}', linewidth=3, markersize=12, marker='o')
+            plt.ylim(0, 70)
+            plt.ylabel(r'\huge \% Improvement in MSE')
+            plt.plot(
+                theoretical_x, 100 * theoretical_y,
+                linewidth=5, linestyle='--',  label=r'\huge Theoretical Expected Improvement'
+            )
+            plt.xlabel(r'\huge $k$')
+            plt.xticks(fontsize=24)
+            plt.yticks(fontsize=24)
+            legend = plt.legend(loc=3)
+            legend.get_frame().set_linewidth(0.0)
+            plt.gcf().set_tight_layout(True)
+
             logger.info(f'Fix-epsilon Figures saved to {output_prefix}')
             filename = f"{output_prefix}/{dataset_name}-Mean_Square_Error-{str(epsilon).replace('.', '-')}.pdf"
             plt.savefig(filename)
             generated_files.append(filename)
-        plt.clf()
+    plt.clf()
 
     epsilons = np.asarray(tuple(data.keys()), dtype=np.float)
     plt.plot(epsilons, improves_for_epsilons, label=f'\\huge {algorithm_name}', linewidth=3,
