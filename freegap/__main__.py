@@ -15,7 +15,7 @@ from freegap.adaptivesvt import adaptive_sparse_vector, \
 from freegap.adaptive_estimates import adaptive_estimates, \
     mean_square_error as adaptive_mse, plot as plot_adaptive_estimates
 from freegap.gapestimates import gap_svt_estimates, gap_topk_estimates, gap_topk_exp_estimates, gap_svt_exp_estimates, gap_svt_geo_estimates, \
-    mean_square_error, plot as plot_estimates
+    mean_square_error, plot as plot_estimates, plot_combined as plot_estimates_combined
 from freegap.evaluate import evaluate
 
 matplotlib.use('PDF')
@@ -133,6 +133,8 @@ def main():
                             action='store_true')
     arg_parser.add_argument('--counting', help='Set the counting queries case', required=False, default=False,
                             action='store_true')
+    arg_parser.add_argument('--combined', help='Plot the combined data for SVTs and TopKs', required=False, default=False,
+                            action='store_true')
     results = arg_parser.parse_args()
 
     # set the counting queries case as defined in our paper.
@@ -245,6 +247,14 @@ def main():
     chosen_algorithms = algorithm[1:] if chosen_algorithms == 'All' else (chosen_algorithms, )
     output_folder = os.path.abspath(results.output)
 
+    combined_data = {}
+
+    if results.combined:
+        logger.info('combined flag set, will record the data and generated combined comparisons.')
+        for combined_algorithm in filter(lambda x: 'SpasreVector' in x or 'TopK' in x, algorithm):
+            if combined_algorithm not in chosen_algorithms:
+                raise ValueError(f'{combined_algorithm} must be chosen if --combined flag is set.')
+
     # evaluate on different k values from 2 to 25
     k_array = np.fromiter(range(2, 25), dtype=np.int)
 
@@ -290,6 +300,55 @@ def main():
                 k_array, dataset[0], data, algorithm_folder, **parameters[algorithm_name]['plot_kwargs']
             )
 
+            if results.combined and ('SparseVector' in algorithm_name or 'TopK' in algorithm_name):
+                logger.info(f'Saving data of {algorithm_name} for combined plotting.')
+                # save the data for the
+                if dataset[0] not in combined_data:
+                    combined_data[dataset[0]] = {}
+                print(f'Saved {dataset[0]} -> {algorithm_name}')
+                combined_data[dataset[0]][algorithm_name] = data
+
+
+    if results.combined:
+        generated_files = []
+        for dataset_name, data in combined_data.items():
+            # first plot all SVT graphs
+            svt_combined_folder = os.path.join(output_folder, 'SVT_Combined')
+            if results.clear:
+                logger.info('--clear flag set, removing the folder')
+                shutil.rmtree(svt_combined_folder, ignore_errors=True)
+            os.makedirs(svt_combined_folder, exist_ok=True)
+
+            svt_data = (data['GapSparseVector'], data['GapSparseVectorExp'], data['GapSparseVectorGeo'])
+            theoreticals = (svt_theoretical, svt_exp_theoretical, svt_exp_theoretical)
+            algorithm_names = (
+                'Sparse Vector w/ Measures',
+                'Sparse Vector w/ Measures (Exponential)',
+                'Sparse Vector w/ Measures (Geometric)'
+            )
+            generated_files.extend(
+                plot_estimates_combined(k_array, dataset_name, svt_data, svt_combined_folder, theoreticals,
+                                        algorithm_names)
+            )
+
+            # then the topks
+            # first plot all SVT graphs
+            topk_combined_folder = os.path.join(output_folder, 'TopK_Combined')
+            if results.clear:
+                logger.info('--clear flag set, removing the folder')
+                shutil.rmtree(topk_combined_folder, ignore_errors=True)
+            os.makedirs(topk_combined_folder, exist_ok=True)
+
+            topk_data = (data['GapTopK'], data['GapTopKExp'])
+            theoreticals = (topk_theoretical, topk_exp_theoretical)
+            algorithm_names = (
+                'Noisy Top-K w/ Measures',
+                'Noisy Top-K w/ Measures (Exponential)'
+            )
+            generated_files.extend(
+                plot_estimates_combined(k_array, dataset_name, topk_data, topk_combined_folder, theoreticals,
+                                        algorithm_names)
+            )
             compress_pdfs(generated_files)
 
 
