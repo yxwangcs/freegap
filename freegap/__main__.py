@@ -135,6 +135,9 @@ def main():
                             action='store_true')
     arg_parser.add_argument('--combined', help='Plot the combined data for SVTs and TopKs', required=False, default=False,
                             action='store_true')
+    arg_parser.add_argument('--compress', help='Compress the generated PDFs for smaller sizes, requires the '
+                                               'installation of GhostScript(gs)',
+                            required=False, default=False, action='store_true')
     results = arg_parser.parse_args()
 
     # set the counting queries case as defined in our paper.
@@ -308,6 +311,9 @@ def main():
                 print(f'Saved {dataset[0]} -> {algorithm_name}')
                 combined_data[dataset[0]][algorithm_name] = data
 
+            if results.compress:
+                logger.info('compress flag set, starting to compress the generated PDFs using ghostscript.')
+                compress_pdfs(generated_files)
 
     if results.combined:
         generated_files = []
@@ -349,7 +355,9 @@ def main():
                 plot_estimates_combined(k_array, dataset_name, topk_data, topk_combined_folder, theoreticals,
                                         algorithm_names)
             )
-            compress_pdfs(generated_files)
+
+            if results.compress:
+                compress_pdfs(generated_files)
 
 
 if __name__ == '__main__':
