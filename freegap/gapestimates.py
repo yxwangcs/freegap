@@ -124,9 +124,9 @@ def gap_sparse_vector_geo(q, epsilon, k, threshold, allocation=(0.5, 0.5), count
     i, count = 0, 0
     p_1 = 1 - np.exp(-epsilon_1)  
     noisy_threshold = threshold + np.random.geometric(p_1) - 1.0 / p_1
-    p_2 = 1 - np.exp(epsilon_2 / k) if counting_queries else 1 - np.exp(-epsilon_2 / (2 * k))
+    p_2 = 1 - np.exp(-epsilon_2 / k) if counting_queries else 1 - np.exp(-epsilon_2 / (2 * k))
     while i < len(q) and count < k:
-        noisy_q_i = q[i] + np.random.exponential(p_2) - 1 / p_2
+        noisy_q_i = q[i] + np.random.geometric(p_2) - 1 / p_2
         if noisy_q_i >= noisy_threshold:
             indices.append(i)
             gaps.append(noisy_q_i - noisy_threshold)
