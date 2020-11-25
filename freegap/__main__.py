@@ -328,7 +328,7 @@ def main():
             svt_data = (data['GapSparseVector'], data['GapSparseVectorExp'], data['GapSparseVectorGeo'])
             theoreticals = (svt_theoretical, svt_exp_theoretical, svt_exp_theoretical)
             algorithm_names = (
-                'Sparse Vector w/ Measures',
+                'Sparse Vector w/ Measures (Laplace)',
                 'Sparse Vector w/ Measures (Exponential)',
                 'Sparse Vector w/ Measures (Geometric)'
             )
@@ -348,7 +348,7 @@ def main():
             topk_data = (data['GapTopK'], data['GapTopKExp'])
             theoreticals = (topk_theoretical, topk_exp_theoretical)
             algorithm_names = (
-                'Noisy Top-K w/ Measures',
+                'Noisy Top-K w/ Measures (Laplace)',
                 'Noisy Top-K w/ Measures (Exponential)'
             )
             generated_files.extend(

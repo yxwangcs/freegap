@@ -282,12 +282,12 @@ def plot_combined(k_array, dataset_name, data, output_prefix, theoreticals, algo
     generated_files = []
 
     theoretical_x = np.arange(np.min(k_array), np.max(k_array))
-    #theoretical_ys = tuple(theoretical(theoretical_x) for theoretical in theoreticals)
-    theoretical_ys = tuple((1 - theoretical(theoretical_x)) for theoretical in theoreticals)
+    theoretical_ys = tuple(theoretical(theoretical_x) for theoretical in theoreticals)
+    # theoretical_ys = tuple((1 - theoretical(theoretical_x)) for theoretical in theoreticals)
     # global plot settings
     #plt.ylim(0, 4)
-    plt.ylim(0, 1)
-    plt.ylabel(r'\huge Ratio of MSE')
+    plt.ylim(0, 70)
+    plt.ylabel(r'\huge \% Reduction of MSE')
     plt.xlabel(r'\huge $k$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
@@ -299,8 +299,8 @@ def plot_combined(k_array, dataset_name, data, output_prefix, theoreticals, algo
             metric_dict = epsilon_dict['mean_square_error']
             baseline = np.asarray(metric_dict[BASELINE_INDEX])
             algorithm_data = np.asarray(metric_dict[ALGORITHM_INDEX])
-            #improvements = 100 * (baseline - algorithm_data) / baseline
-            improvements = algorithm_data / baseline
+            improvements = 100 * (baseline - algorithm_data) / baseline
+            # improvements = algorithm_data / baseline
             improves_for_epsilons[index].append(improvements[8])
 
             # we only plot epsilon = PLOT_EPSILON for k-array plots
@@ -315,7 +315,7 @@ def plot_combined(k_array, dataset_name, data, output_prefix, theoreticals, algo
                     suffix = algorithm_names[index].split()[-1]
                     suffix = '' if '(' not in suffix else suffix
                     plt.plot(
-                        theoretical_x, theoretical_ys[index],
+                        theoretical_x, 100 * theoretical_ys[index],
                         linewidth=5, linestyle='--',  label=f'\\large Theoretical Expected Ratio {suffix}', zorder=10
                     )
 
@@ -330,9 +330,9 @@ def plot_combined(k_array, dataset_name, data, output_prefix, theoreticals, algo
     plt.clf()
 
     epsilons = np.asarray(tuple(data[0].keys()), dtype=np.float)
-    plt.ylabel(r'\huge Ratio of MSE')
-    plt.ylim(0, 1)
-    #plt.ylim(0, 50)
+    plt.ylabel(r'\huge \% Reduction of MSE')
+    # plt.ylim(0, 1)
+    plt.ylim(0, 70)
     plt.xlabel(r'\huge $\epsilon$')
     plt.xticks(np.arange(np.min(epsilons), np.max(epsilons) + 0.1, 0.2))
     plt.xticks(fontsize=24)
@@ -345,7 +345,7 @@ def plot_combined(k_array, dataset_name, data, output_prefix, theoreticals, algo
         if 'Geo' not in algorithm_names[index]:
             suffix = algorithm_names[index].split()[-1]
             suffix = '' if '(' not in suffix else suffix
-            plt.plot(epsilons, [(1 - theoreticals[index](10)) for _ in range(len(epsilons))], linewidth=5,
+            plt.plot(epsilons, [(100 * theoreticals[index](10)) for _ in range(len(epsilons))], linewidth=5,
                      linestyle='--', label=f'\\large Theoretical Expected Ratio {suffix}', zorder=10)
 
     legend = plt.legend(loc='lower left')
