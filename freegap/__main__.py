@@ -309,7 +309,6 @@ def main():
                 # save the data for the
                 if dataset[0] not in combined_data:
                     combined_data[dataset[0]] = {}
-                print(f'Saved {dataset[0]} -> {algorithm_name}')
                 combined_data[dataset[0]][algorithm_name] = data
 
             if results.compress:
