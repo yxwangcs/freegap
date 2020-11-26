@@ -12,8 +12,6 @@ import coloredlogs
 from freegap.adaptivesvt import adaptive_sparse_vector, \
     top_branch, top_branch_precision, middle_branch, middle_branch_precision, precision, f_measure, \
     above_threshold_answers, remaining_epsilon, plot as plot_adaptive
-from freegap.adaptive_estimates import adaptive_estimates, \
-    mean_square_error as adaptive_mse, plot as plot_adaptive_estimates
 from freegap.gapestimates import gap_svt_estimates, gap_topk_estimates, gap_topk_exp_estimates, gap_svt_exp_estimates, gap_svt_geo_estimates, \
     mean_square_error, plot as plot_estimates, plot_combined as plot_estimates_combined
 from freegap.evaluate import evaluate
@@ -125,7 +123,6 @@ def main():
     algorithm = (
         'All',
         'AdaptiveSparseVector',
-        # 'AdaptiveEstimates',  this is not used in experiments
         'GapSparseVector',
         'GapSparseVectorExp',
         'GapSparseVectorGeo',
@@ -240,12 +237,6 @@ def main():
                 'theoretical': topk_exp_theoretical,
                 'algorithm_name': 'Noisy Top-K with Measures'
             }
-        },
-        'AdaptiveEstimates': {
-            'algorithm': adaptive_estimates,
-            'metrics': (adaptive_mse,),
-            'plot_function': plot_adaptive_estimates,
-            'plot_kwargs': {}
         }
     }
 
