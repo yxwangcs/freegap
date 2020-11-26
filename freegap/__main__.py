@@ -339,7 +339,7 @@ def main():
 
             # then the topks
             # first plot all SVT graphs
-            topk_combined_folder = os.path.join(output_folder, 'TopK_Combined')
+            topk_combined_folder = os.path.join(output_folder, 'TopK_Combined' + '-counting' if results.counting else '')
             if results.clear:
                 logger.info('--clear flag set, removing the folder')
                 shutil.rmtree(topk_combined_folder, ignore_errors=True)
