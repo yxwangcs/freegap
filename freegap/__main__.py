@@ -302,7 +302,7 @@ def main():
                     epsilons = (0.7, )
                 data = evaluate(
                     algorithm=evaluate_algorithm, input_data=dataset, metrics=metrics, epsilons=epsilons,
-                    k_array=k_array, counting_queries=results.counting, total_iterations=results.n_iterations
+                    k_array=k_array, counting_queries=results.counting, total_iterations=int(results.n_iterations)
                 )
                 logger.info('Dumping data into json file...')
                 with open(json_file, 'w') as fp:
