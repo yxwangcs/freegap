@@ -127,6 +127,7 @@ def plot(k_array, dataset_name, data, output_prefix):
         label=r'\huge Adaptive SVT w/ Gap (Top)'
     )
     plt.xticks(sub_k_array)
+    plt.yticks(np.arange(10, 61, 10))
     plt.ylabel(r'\huge \# of Above-Threshold Answers')
     plt.tick_params(labelsize=24)
     legend = plt.legend(loc=2)
