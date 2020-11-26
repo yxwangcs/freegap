@@ -233,7 +233,7 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
     generated_files = []
 
     # data for theoretical line
-    theoretical_x = np.arange(k_array.min(), k_array.max())
+    theoretical_x = np.arange(np.min(k_array), np.max(k_array))
     theoretical_y = theoretical(theoretical_x)
     improves_for_epsilons = []
     plt.xticks(np.arange(2, 25, 2))  # [2 -> 24]
