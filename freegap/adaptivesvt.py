@@ -128,7 +128,7 @@ def plot_above_threshold_answers(k_array, dataset_name, data, output_prefix):
         label=r'\huge Adaptive SVT w/ Gap (Top)'
     )
     plt.xticks(sub_k_array)
-    plt.yticks(np.arange(10, 61, 10))
+    plt.yticks(np.arange(0, 61, 10))
     plt.ylabel(r'\huge \# of Above-Threshold Answers')
     plt.tick_params(labelsize=24)
     legend = plt.legend(loc=2)
@@ -154,6 +154,7 @@ def plot_above_threshold_answers(k_array, dataset_name, data, output_prefix):
     plt.plot(k_array, adaptive_recall, label=r'\LARGE Adaptive SVT w/ Gap - F-Measure',
              linewidth=3, markersize=12, marker='o', zorder=5)
     plt.ylim(0, 1.0)
+    plt.xticks(np.arange(2, 25, 2))  # [2 -> 24]
     plt.ylabel(r'\huge Precision and F-Measure')
     plt.xlabel(r'\huge $k$')
     plt.xticks(fontsize=24)
@@ -181,6 +182,7 @@ def plot_privacy_budget(k_array, data, output_prefix):
         plt.plot(k_array, remaining_budget, label=f'\\huge {dataset_name}',
                  linewidth=3, markersize=8, marker=markers[index], zorder=5, alpha=0.9)
     plt.ylim(0, 45)
+    plt.xticks(np.arange(2, 25, 2))  # [2 -> 24]
     plt.ylabel(r'\huge \% Remaining Privacy Budget')
     plt.xlabel(r'\huge $k$')
     plt.xticks(fontsize=24)
