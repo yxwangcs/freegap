@@ -225,9 +225,14 @@ def mean_square_error(indices, estimates, truth_indices, truth_estimates):
 
 
 def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name):
-    ALGORITHM_INDEX, BASELINE_INDEX = 0, -1
-    PLOT_EPSILON = 0.7
+    # constants for plots
+    algorithm_index, baseline_index = 0, -1  # the data index in the data parameter
+    plot_epsilon = 0.7  # the epsilon value to plot for the % Reduction of MSE graph
+
+    # keep track of generated files and return them for post-processing
     generated_files = []
+
+    # data for theoretical line
     theoretical_x = np.arange(k_array.min(), k_array.max())
     theoretical_y = theoretical(theoretical_x)
     improves_for_epsilons = []
@@ -240,11 +245,11 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
     for epsilon, epsilon_dict in data.items():
         assert len(epsilon_dict) == 1 and 'mean_square_error' in epsilon_dict
         metric_dict = epsilon_dict['mean_square_error']
-        baseline = np.asarray(metric_dict[BASELINE_INDEX])
-        algorithm_data = np.asarray(metric_dict[ALGORITHM_INDEX])
+        baseline = np.asarray(metric_dict[baseline_index])
+        algorithm_data = np.asarray(metric_dict[algorithm_index])
         improvements = 100 * (baseline - algorithm_data) / baseline
         improves_for_epsilons.append(improvements[8])
-        if abs(float(epsilon) - PLOT_EPSILON) < 1e-5:
+        if abs(float(epsilon) - plot_epsilon) < 1e-5:
             plt.plot(k_array, improvements, label=f'\\huge {algorithm_name}', linewidth=3, markersize=12, marker='o')
             plt.plot(
                 theoretical_x, 100 * theoretical_y,
