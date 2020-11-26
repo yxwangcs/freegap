@@ -221,7 +221,7 @@ def gap_svt_geo_estimates(q, epsilon, k, threshold, counting_queries=False):
 # metric functions
 @numba.njit(fastmath=True)
 def mean_square_error(indices, estimates, truth_indices, truth_estimates):
-    return np.square(truth_estimates - estimates).sum() / float(len(truth_estimates))
+    return np.sum(np.square(truth_estimates - estimates)) / float(len(truth_estimates))
 
 
 def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name):
