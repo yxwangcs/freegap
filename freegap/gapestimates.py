@@ -231,6 +231,12 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
     theoretical_x = np.arange(k_array.min(), k_array.max())
     theoretical_y = theoretical(theoretical_x)
     improves_for_epsilons = []
+    plt.xticks(np.arange(2, 25, 2))  # [2 -> 24]
+    plt.ylim(0, 70)
+    plt.ylabel(r'\huge \% Reduction of MSE')
+    plt.xlabel(r'\huge $k$')
+    plt.xticks(fontsize=24)
+    plt.yticks(fontsize=24)
     for epsilon, epsilon_dict in data.items():
         assert len(epsilon_dict) == 1 and 'mean_square_error' in epsilon_dict
         metric_dict = epsilon_dict['mean_square_error']
@@ -240,34 +246,29 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
         improves_for_epsilons.append(improvements[8])
         if abs(float(epsilon) - PLOT_EPSILON) < 1e-5:
             plt.plot(k_array, improvements, label=f'\\huge {algorithm_name}', linewidth=3, markersize=12, marker='o')
-            plt.ylim(0, 70)
-            plt.ylabel(r'\huge \% Reduction of MSE')
             plt.plot(
                 theoretical_x, 100 * theoretical_y,
-                linewidth=5, linestyle='--',  label=r'\huge Theoretical Expected Improvement'
+                linewidth=5, linestyle='--',  label=r'\huge Theoretical Expected Improvement', alpha=0.8
             )
-            plt.xlabel(r'\huge $k$')
-            plt.xticks(fontsize=24)
-            plt.yticks(fontsize=24)
-            legend = plt.legend(loc=3)
-            legend.get_frame().set_linewidth(0.0)
-            plt.gcf().set_tight_layout(True)
-
             logger.info(f'Fix-epsilon Figures saved to {output_prefix}')
             filename = f"{output_prefix}/{dataset_name}-Mean_Square_Error-{str(epsilon).replace('.', '-')}.pdf"
             plt.savefig(filename)
             generated_files.append(filename)
+    legend = plt.legend(loc=3)
+    legend.get_frame().set_linewidth(0.0)
+    plt.gcf().set_tight_layout(True)
+
     plt.clf()
 
     epsilons = np.asarray(tuple(data.keys()), dtype=np.float)
     plt.plot(epsilons, improves_for_epsilons, label=f'\\huge {algorithm_name}', linewidth=3,
              markersize=10, marker='o')
     plt.plot(epsilons, [100 * theoretical(10) for _ in range(len(epsilons))], linewidth=5,
-             linestyle='--', label=r'\huge Theoretical Expected Improvement')
+             linestyle='--', label=r'\huge Theoretical Expected Improvement', alpha=0.8)
     plt.ylabel(r'\huge \% Reduction of MSE')
     plt.ylim(0, 70)
     plt.xlabel(r'\huge $\epsilon$')
-    plt.xticks(np.arange(epsilons.min(), epsilons.max() + 0.1, 0.2))
+    plt.xticks(np.arange(np.min(epsilons), np.max(epsilons) + 0.1, 0.2))
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
     legend = plt.legend(loc=3)
