@@ -164,7 +164,7 @@ def plot(k_array, dataset_name, data, output_prefix):
     plt.plot(k_array, sparse_vector_precision, label=r'\LARGE Sparse Vector - Precision',
              linewidth=3, markersize=12, marker='s', zorder=5)
     plt.plot(k_array, adaptive_precision, label=r'\LARGE Adaptive SVT w/ Gap - Precision',
-             linewidth=3, markersize=10, marker='X', zorder=5, alpha=0.8)
+             linewidth=3, markersize=10, marker='X', zorder=5, alpha=0.9)
     plt.plot(k_array, sparse_vector_recall, label=r'\LARGE Sparse Vector - F-Measure',
              linewidth=3, markersize=12, marker='P', zorder=5)
     plt.plot(k_array, adaptive_recall, label=r'\LARGE Adaptive SVT w/ Gap - F-Measure',

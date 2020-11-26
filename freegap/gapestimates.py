@@ -248,7 +248,7 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
             plt.plot(k_array, improvements, label=f'\\huge {algorithm_name}', linewidth=3, markersize=12, marker='o')
             plt.plot(
                 theoretical_x, 100 * theoretical_y,
-                linewidth=5, linestyle='--',  label=r'\huge Theoretical Expected Improvement', alpha=0.8
+                linewidth=5, linestyle='--',  label=r'\huge Theoretical Expected Improvement', alpha=0.9
             )
             logger.info(f'Fix-epsilon Figures saved to {output_prefix}')
             filename = f"{output_prefix}/{dataset_name}-Mean_Square_Error-{str(epsilon).replace('.', '-')}.pdf"
@@ -264,7 +264,7 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
     plt.plot(epsilons, improves_for_epsilons, label=f'\\huge {algorithm_name}', linewidth=3,
              markersize=10, marker='o')
     plt.plot(epsilons, [100 * theoretical(10) for _ in range(len(epsilons))], linewidth=5,
-             linestyle='--', label=r'\huge Theoretical Expected Improvement', alpha=0.8)
+             linestyle='--', label=r'\huge Theoretical Expected Improvement', alpha=0.9)
     plt.ylabel(r'\huge \% Reduction of MSE')
     plt.ylim(0, 70)
     plt.xlabel(r'\huge $\epsilon$')
