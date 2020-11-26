@@ -227,49 +227,56 @@ def mean_square_error(indices, estimates, truth_indices, truth_estimates):
 def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name):
     # constants for plots
     algorithm_index, baseline_index = 0, -1  # the data index in the data parameter
-    plot_epsilon = 0.7  # the epsilon value to plot for the % Reduction of MSE graph
+    plot_epsilon = 0.7  # the epsilon value to plot for the fixed-epsilon-variable-k % Reduction of MSE graph
+    plot_k = 10  # the k value to plot for the fixed-k-variable-epsilon graph
 
     # keep track of generated files and return them for post-processing
     generated_files = []
 
-    # data for theoretical line
-    theoretical_x = np.arange(np.min(k_array), np.max(k_array))
-    theoretical_y = theoretical(theoretical_x)
-    improves_for_epsilons = []
+    # plot setups
     plt.xticks(np.arange(2, 25, 2))  # [2 -> 24]
     plt.ylim(0, 70)
     plt.ylabel(r'\huge \% Reduction of MSE')
     plt.xlabel(r'\huge $k$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
+
+    # data for theoretical line
+    theoretical_x = np.arange(np.min(k_array), np.max(k_array))
+    theoretical_y = theoretical(theoretical_x)
+    plt.plot(
+        theoretical_x, 100 * theoretical_y,
+        linewidth=5, linestyle='--', label=r'\huge Theoretical Expected Improvement', alpha=0.9, zorder=5
+    )
+
+    # keep track of the reductions for different epsilons to be plotted later
+    improves_for_epsilons = []
+
+    # draw fixed-epsilon-variable-k plot
     for epsilon, epsilon_dict in data.items():
+        # make sure the required data is in the data dictionary
         assert len(epsilon_dict) == 1 and 'mean_square_error' in epsilon_dict
         metric_dict = epsilon_dict['mean_square_error']
         baseline = np.asarray(metric_dict[baseline_index])
         algorithm_data = np.asarray(metric_dict[algorithm_index])
         improvements = 100 * (baseline - algorithm_data) / baseline
-        improves_for_epsilons.append(improvements[8])
+        improves_for_epsilons.append(improvements[plot_k - 2])
         if abs(float(epsilon) - plot_epsilon) < 1e-5:
             plt.plot(k_array, improvements, label=f'\\huge {algorithm_name}', linewidth=3, markersize=12, marker='o')
-            plt.plot(
-                theoretical_x, 100 * theoretical_y,
-                linewidth=5, linestyle='--',  label=r'\huge Theoretical Expected Improvement', alpha=0.9
-            )
-            logger.info(f'Fix-epsilon Figures saved to {output_prefix}')
-            filename = f"{output_prefix}/{dataset_name}-Mean_Square_Error-{str(epsilon).replace('.', '-')}.pdf"
-            plt.savefig(filename)
-            generated_files.append(filename)
-    legend = plt.legend(loc=3)
+    logger.info(f'Fix-epsilon Figures saved to {output_prefix}')
+    filename = f"{output_prefix}/{dataset_name}-Mean_Square_Error-{str(plot_epsilon).replace('.', '-')}.pdf"
+    plt.savefig(filename)
+    generated_files.append(filename)
+    legend = plt.legend(loc='lower left')
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
 
+    # clear the plot and re-draw a fixed-k-variable-epsilon plot
     plt.clf()
 
     epsilons = np.asarray(tuple(data.keys()), dtype=np.float)
-    plt.plot(epsilons, improves_for_epsilons, label=f'\\huge {algorithm_name}', linewidth=3,
-             markersize=10, marker='o')
-    plt.plot(epsilons, [100 * theoretical(10) for _ in range(len(epsilons))], linewidth=5,
-             linestyle='--', label=r'\huge Theoretical Expected Improvement', alpha=0.9)
+
+    # plot setups
     plt.ylabel(r'\huge \% Reduction of MSE')
     plt.ylim(0, 70)
     plt.xlabel(r'\huge $\epsilon$')
@@ -279,6 +286,19 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
     legend = plt.legend(loc=3)
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
+
+    # plot the lines
+    plt.plot(
+        epsilons, improves_for_epsilons,
+        linewidth=3, markersize=10, marker='o',
+        label=f'\\huge {algorithm_name}'
+    )
+    plt.plot(
+        epsilons, [100 * theoretical(plot_k) for _ in range(len(epsilons))],
+        linewidth=5, linestyle='--', alpha=0.9,
+        label=r'\huge Theoretical Expected Improvement'
+    )
+
     logger.info(f'Fix-k Figures saved to {output_prefix}')
     filename = f'{output_prefix}/{dataset_name}-Mean_Square_Error-epsilons.pdf'
     plt.savefig(filename)
