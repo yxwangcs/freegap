@@ -122,7 +122,16 @@ def main():
     2. GapSparseVector with Measures vs SparseVector with Measures (GapSparseVector)
     3. GapTopK with Measures vs Noisy TopK with Measures (GapTopK)
     """
-    algorithm = ('All', 'AdaptiveSparseVector', 'AdaptiveEstimates', 'GapSparseVector', 'GapSparseVectorExp', 'GapSparseVectorGeo', 'GapTopK', 'GapTopKExp')
+    algorithm = (
+        'All',
+        'AdaptiveSparseVector',
+        # 'AdaptiveEstimates',  this is not used in experiments
+        'GapSparseVector',
+        'GapSparseVectorExp',
+        'GapSparseVectorGeo',
+        'GapTopK',
+        'GapTopKExp'
+    )
 
     arg_parser = argparse.ArgumentParser(description=__doc__)
     arg_parser.add_argument('algorithm', help=f'The algorithm to evaluate, options are {algorithm}.')
