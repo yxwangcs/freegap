@@ -110,14 +110,22 @@ def plot(k_array, dataset_name, data, output_prefix):
     sub_k_array = np.arange(2, 25, 2)  # [2 -> 24]
     colormap = plt.get_cmap('tab10')
     # plot the bar charts
-    plt.bar(sub_k_array - WIDTH, baseline_top_branch[sub_k_array - 2], WIDTH, align='edge',
-                   label=r'\huge Sparse Vector', facecolor=colormap.colors[0] + (0.8,), edgecolor='black', hatch='/')
-    plt.bar(sub_k_array, algorithm_middle_branch[sub_k_array - 2], WIDTH, align='edge',
-                   facecolor=colormap.colors[1] + (0.8,), edgecolor='black',
-                   label=r'\huge Adaptive SVT w/ Gap (Middle)', hatch='.')
-    plt.bar(sub_k_array, algorithm_top_branch[sub_k_array - 2], WIDTH,
-                   bottom=algorithm_middle_branch[sub_k_array - 2], align='edge', facecolor=colormap.colors[3] + (0.8,),
-                   edgecolor='black', label=r'\huge Adaptive SVT w/ Gap (Top)', hatch='*')
+    plt.bar(
+        sub_k_array - WIDTH, baseline_top_branch[sub_k_array - 2], WIDTH,
+        align='edge', facecolor=colormap.colors[0] + (0.8,), edgecolor='black', hatch='/',
+        label=r'\huge Sparse Vector'
+    )
+    plt.bar(
+        sub_k_array, algorithm_middle_branch[sub_k_array - 2], WIDTH,
+        align='edge', facecolor=colormap.colors[1] + (0.8,), edgecolor='black', hatch='.',
+        label=r'\huge Adaptive SVT w/ Gap (Middle)'
+    )
+    plt.bar(
+        sub_k_array, algorithm_top_branch[sub_k_array - 2], WIDTH,
+        align='edge', facecolor=colormap.colors[3] + (0.8,), edgecolor='black', hatch='*',
+        bottom=algorithm_middle_branch[sub_k_array - 2],
+        label=r'\huge Adaptive SVT w/ Gap (Top)'
+    )
     plt.xticks(sub_k_array)
     plt.ylabel(r'\huge \# of Above-Threshold Answers')
     plt.tick_params(labelsize=24)
