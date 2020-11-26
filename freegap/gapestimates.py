@@ -241,14 +241,6 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
 
-    # data for theoretical line
-    theoretical_x = np.arange(np.min(k_array), np.max(k_array))
-    theoretical_y = theoretical(theoretical_x)
-    plt.plot(
-        theoretical_x, 100 * theoretical_y,
-        linewidth=5, linestyle='--', label=r'\huge Theoretical Expected Improvement', alpha=0.9, zorder=5
-    )
-
     # keep track of the reductions for different epsilons to be plotted later
     improves_for_epsilons = []
 
@@ -264,6 +256,13 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
         if abs(float(epsilon) - plot_epsilon) < 1e-5:
             plt.plot(k_array, improvements, label=f'\\huge {algorithm_name}', linewidth=3, markersize=12, marker='o')
 
+    # plot data for theoretical line
+    theoretical_x = np.arange(np.min(k_array), np.max(k_array))
+    theoretical_y = theoretical(theoretical_x)
+    plt.plot(
+        theoretical_x, 100 * theoretical_y,
+        linewidth=5, linestyle='--', label=r'\huge Theoretical Expected Improvement', alpha=0.9, zorder=5
+    )
 
     legend = plt.legend(loc='lower left')
     legend.get_frame().set_linewidth(0.0)
