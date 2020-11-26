@@ -319,7 +319,7 @@ def main():
         generated_files = []
         for dataset_name, data in combined_data.items():
             # first plot all SVT graphs
-            svt_combined_folder = os.path.join(output_folder, 'SVT_Combined' + '-counting' if results.counting else '')
+            svt_combined_folder = os.path.join(output_folder, 'GapSparseVector-combined' + '-counting' if results.counting else '')
             if results.clear:
                 logger.info('--clear flag set, removing the folder')
                 shutil.rmtree(svt_combined_folder, ignore_errors=True)
@@ -339,7 +339,7 @@ def main():
 
             # then the topks
             # first plot all SVT graphs
-            topk_combined_folder = os.path.join(output_folder, 'TopK_Combined' + '-counting' if results.counting else '')
+            topk_combined_folder = os.path.join(output_folder, 'GapTopK-combined' + '-counting' if results.counting else '')
             if results.clear:
                 logger.info('--clear flag set, removing the folder')
                 shutil.rmtree(topk_combined_folder, ignore_errors=True)
