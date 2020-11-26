@@ -270,8 +270,7 @@ def main():
                 raise ValueError(f'{combined_algorithm} must be chosen if --combined flag is set.')
 
     # evaluate on different k values from 2 to 24
-    k_array = np.fromiter(range(2, 24), dtype=np.int)
-
+    k_array = np.fromiter(range(2, 25), dtype=np.int)
     for algorithm_name in chosen_algorithms:
         # create the algorithm output folder if not exists
         algorithm_folder = os.path.join(output_folder, f'{algorithm_name}-counting') if results.counting else \
