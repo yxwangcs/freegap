@@ -343,7 +343,7 @@ def plot_combined(k_array, dataset_name, data, output_prefix, theoreticals, algo
             if abs(float(epsilon) - PLOT_EPSILON) < 1e-5:
                 alpha = 0.8 if 'Exp' in algorithm_names[index] else 1
                 plt.plot(
-                    k_array, improvements, label=f'\\large {algorithm_names[index]}',
+                    k_array, improvements, label=f'\\Large {algorithm_names[index]}',
                     linewidth=3, markersize=12, marker=markers[index], alpha=alpha
                 )
 
@@ -352,11 +352,11 @@ def plot_combined(k_array, dataset_name, data, output_prefix, theoreticals, algo
                     suffix = '' if '(' not in suffix else suffix
                     plt.plot(
                         theoretical_x, 100 * theoretical_ys[index],
-                        linewidth=5, linestyle='--',  label=f'\\large Theoretical Expected Ratio {suffix}', zorder=10
+                        linewidth=5, linestyle='--',  label=f'\\Large Theoretical Expected Reduction {suffix}', zorder=10
                     )
 
     # add legends
-    legend = plt.legend(loc='lower left')
+    legend = plt.legend(loc='lower right')
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
     logger.info(f'Fix-epsilon Figures saved to {output_prefix}')
@@ -376,15 +376,15 @@ def plot_combined(k_array, dataset_name, data, output_prefix, theoreticals, algo
 
     for index, individual_data in enumerate(data):
         alpha = 0.8 if 'Geo' in algorithm_names[index] else 1
-        plt.plot(epsilons, improves_for_epsilons[index], label=f'\\large {algorithm_names[index]}', linewidth=3,
+        plt.plot(epsilons, improves_for_epsilons[index], label=f'\\Large {algorithm_names[index]}', linewidth=3,
                  markersize=10, marker=markers[index], alpha=alpha)
         if 'Geo' not in algorithm_names[index]:
             suffix = algorithm_names[index].split()[-1]
             suffix = '' if '(' not in suffix else suffix
             plt.plot(epsilons, [(100 * theoreticals[index](10)) for _ in range(len(epsilons))], linewidth=5,
-                     linestyle='--', label=f'\\huge Theoretical Expected Reduction {suffix}', zorder=10)
+                     linestyle='--', label=f'\\Large Theoretical Expected Reduction {suffix}', zorder=10)
 
-    legend = plt.legend(loc='lower left')
+    legend = plt.legend(loc='lower right')
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
     logger.info(f'Fix-k Figures saved to {output_prefix}')
