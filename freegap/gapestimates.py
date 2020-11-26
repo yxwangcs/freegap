@@ -325,7 +325,7 @@ def plot_combined(k_array, dataset_name, data, output_prefix, theoreticals, algo
     plt.xlabel(r'\huge $k$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
-    markers = ('o', 'X', 's')
+    markers = ('o', 's', 'X')
 
     improves_for_epsilons = [[] for _ in range(len(data))]
     for index, individual_data in enumerate(data):
