@@ -264,12 +264,14 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
         if abs(float(epsilon) - plot_epsilon) < 1e-5:
             plt.plot(k_array, improvements, label=f'\\huge {algorithm_name}', linewidth=3, markersize=12, marker='o')
     logger.info(f'Fix-epsilon Figures saved to {output_prefix}')
-    filename = f"{output_prefix}/{dataset_name}-Mean_Square_Error-{str(plot_epsilon).replace('.', '-')}.pdf"
-    plt.savefig(filename)
-    generated_files.append(filename)
+
     legend = plt.legend(loc='lower left')
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
+    
+    filename = f"{output_prefix}/{dataset_name}-Mean_Square_Error-{str(plot_epsilon).replace('.', '-')}.pdf"
+    plt.savefig(filename)
+    generated_files.append(filename)
 
     # clear the plot and re-draw a fixed-k-variable-epsilon plot
     plt.clf()
