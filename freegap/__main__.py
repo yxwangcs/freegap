@@ -126,6 +126,8 @@ def main():
 
     arg_parser = argparse.ArgumentParser(description=__doc__)
     arg_parser.add_argument('algorithm', help=f'The algorithm to evaluate, options are {algorithm}.')
+    arg_parser.add_argument('-n', '--n_iterations', help='The total iterations to run the experiments',
+                            required=False, default=1000)
     arg_parser.add_argument('--datasets', help='The datasets folder', required=False)
     arg_parser.add_argument('--output', help='The output folder', required=False,
                             default=os.path.join(os.curdir, 'output'))
@@ -291,7 +293,7 @@ def main():
                     epsilons = (0.7, )
                 data = evaluate(
                     algorithm=evaluate_algorithm, input_data=dataset, metrics=metrics, epsilons=epsilons,
-                    k_array=k_array, counting_queries=results.counting
+                    k_array=k_array, counting_queries=results.counting, total_iterations=results.n_iterations
                 )
                 logger.info('Dumping data into json file...')
                 with open(json_file, 'w') as fp:
