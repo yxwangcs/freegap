@@ -283,9 +283,6 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
     plt.xticks(np.arange(np.min(epsilons), np.max(epsilons) + 0.1, 0.2))
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
-    legend = plt.legend(loc=3)
-    legend.get_frame().set_linewidth(0.0)
-    plt.gcf().set_tight_layout(True)
 
     # plot the lines
     plt.plot(
@@ -298,6 +295,10 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
         linewidth=5, linestyle='--', alpha=0.9,
         label=r'\huge Theoretical Expected Improvement'
     )
+
+    legend = plt.legend(loc=3)
+    legend.get_frame().set_linewidth(0.0)
+    plt.gcf().set_tight_layout(True)
 
     logger.info(f'Fix-k Figures saved to {output_prefix}')
     filename = f'{output_prefix}/{dataset_name}-Mean_Square_Error-epsilons.pdf'
