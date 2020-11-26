@@ -384,7 +384,7 @@ def plot_combined(k_array, dataset_name, data, output_prefix, theoreticals, algo
             plt.plot(epsilons, [(100 * theoreticals[index](10)) for _ in range(len(epsilons))], linewidth=5,
                      linestyle='--', label=f'\\Large Theoretical Expected Reduction {suffix}', zorder=10)
 
-    legend = plt.legend(loc='lower right')
+    legend = plt.legend(loc='lower left')
     legend.get_frame().set_linewidth(0.0)
     plt.gcf().set_tight_layout(True)
     logger.info(f'Fix-k Figures saved to {output_prefix}')
