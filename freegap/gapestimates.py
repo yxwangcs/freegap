@@ -74,6 +74,7 @@ def gap_topk_exp_estimates(q, epsilon, k, counting_queries=False):
     # baseline algorithm would just return (indices, direct_estimates)
     return (indices, refined_estimates), (indices, direct_estimates)
 
+
 # Sparse Vector (with Gap)
 @numba.njit(fastmath=True)
 def gap_sparse_vector(q, epsilon, k, threshold, allocation=(0.5, 0.5), counting_queries=False):
@@ -94,6 +95,7 @@ def gap_sparse_vector(q, epsilon, k, threshold, allocation=(0.5, 0.5), counting_
     # baseline algorithm would just return (np.asarray(indices))
     return np.asarray(indices), np.asarray(gaps)
 
+
 # Sparse Vector (with Gap)
 @numba.njit(fastmath=True)
 def gap_sparse_vector_exp(q, epsilon, k, threshold, allocation=(0.5, 0.5), counting_queries=False):
@@ -113,6 +115,7 @@ def gap_sparse_vector_exp(q, epsilon, k, threshold, allocation=(0.5, 0.5), count
         i += 1
     # baseline algorithm would just return (np.asarray(indices))
     return np.asarray(indices), np.asarray(gaps)    
+
 
 # Sparse Vector (with Gap)
 @numba.njit(fastmath=True)
@@ -162,6 +165,7 @@ def gap_svt_estimates(q, epsilon, k, threshold, counting_queries=False):
     # baseline algorithm would simply return (indices, direct_estimates)
     return (indices, refined_estimates), (indices, direct_estimates)
 
+
 @numba.njit(fastmath=True)
 def gap_svt_exp_estimates(q, epsilon, k, threshold, counting_queries=False):
     # budget allocation for gap svt
@@ -186,6 +190,7 @@ def gap_svt_exp_estimates(q, epsilon, k, threshold, counting_queries=False):
 
     # baseline algorithm would simply return (indices, direct_estimates)
     return (indices, refined_estimates), (indices, direct_estimates)
+
 
 @numba.njit(fastmath=True)
 def gap_svt_geo_estimates(q, epsilon, k, threshold, counting_queries=False):
