@@ -323,6 +323,7 @@ def plot_combined(k_array, dataset_name, data, output_prefix, theoreticals, algo
     plt.ylim(0, 70)
     plt.ylabel(r'\huge \% Reduction of MSE')
     plt.xlabel(r'\huge $k$')
+    plt.xticks(np.arange(2, 25, 2))  # [2 -> 24]
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
     markers = ('o', 's', 'X')
