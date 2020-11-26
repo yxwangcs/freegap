@@ -291,6 +291,7 @@ def plot_combined(k_array, dataset_name, data, output_prefix, theoreticals, algo
     plt.xlabel(r'\huge $k$')
     plt.xticks(fontsize=24)
     plt.yticks(fontsize=24)
+    markers = ('o', 'X', 's')
 
     improves_for_epsilons = [[] for _ in range(len(data))]
     for index, individual_data in enumerate(data):
@@ -308,7 +309,7 @@ def plot_combined(k_array, dataset_name, data, output_prefix, theoreticals, algo
                 alpha = 0.8 if 'Geo' in algorithm_names[index] else 1
                 plt.plot(
                     k_array, improvements, label=f'\\large {algorithm_names[index]}',
-                    linewidth=3, markersize=12, marker='o', alpha=alpha
+                    linewidth=3, markersize=12, marker=markers[index], alpha=alpha
                 )
 
                 if 'Geo' not in algorithm_names[index]:
@@ -341,7 +342,7 @@ def plot_combined(k_array, dataset_name, data, output_prefix, theoreticals, algo
     for index, individual_data in enumerate(data):
         alpha = 0.8 if 'Geo' in algorithm_names[index] else 1
         plt.plot(epsilons, improves_for_epsilons[index], label=f'\\large {algorithm_names[index]}', linewidth=3,
-                 markersize=10, marker='o', alpha=alpha)
+                 markersize=10, marker=markers[index], alpha=alpha)
         if 'Geo' not in algorithm_names[index]:
             suffix = algorithm_names[index].split()[-1]
             suffix = '' if '(' not in suffix else suffix
