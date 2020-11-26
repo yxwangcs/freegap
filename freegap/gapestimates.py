@@ -261,7 +261,7 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
     theoretical_y = theoretical(theoretical_x)
     plt.plot(
         theoretical_x, 100 * theoretical_y,
-        linewidth=5, linestyle='--', label=r'\huge Theoretical Expected Improvement', alpha=0.9, zorder=5
+        linewidth=5, linestyle='--', label=r'\huge Theoretical Expected Reduction', alpha=0.9, zorder=5
     )
 
     legend = plt.legend(loc='lower left')
@@ -295,7 +295,7 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
     plt.plot(
         epsilons, [100 * theoretical(plot_k) for _ in range(len(epsilons))],
         linewidth=5, linestyle='--', alpha=0.9,
-        label=r'\huge Theoretical Expected Improvement'
+        label=r'\huge Theoretical Expected Reduction'
     )
 
     legend = plt.legend(loc=3)
