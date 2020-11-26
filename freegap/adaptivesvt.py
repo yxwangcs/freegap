@@ -96,7 +96,7 @@ def remaining_epsilon(indices, top_indices, middle_indices, remaining_budget, tr
     return remaining_budget
 
 
-def plot(k_array, dataset_name, data, output_prefix):
+def plot_above_threshold_answers(k_array, dataset_name, data, output_prefix):
     generated_files = []
     epsilon = '0.7'
     ALGORITHM_INDEX, BASELINE_INDEX = 0, -1
@@ -139,24 +139,6 @@ def plot(k_array, dataset_name, data, output_prefix):
     plt.clf()
     generated_files.append(filename)
 
-    # plot remaining budget
-    adaptive_recall = 100 * np.asarray(data[epsilon]['remaining_epsilon'][ALGORITHM_INDEX]) / float(epsilon)
-    plt.plot(k_array, adaptive_recall, label=r'\huge Remaining Privacy Budget',
-             linewidth=3, markersize=12, marker='o', zorder=5)
-    plt.ylim(0, 70)
-    plt.ylabel(r'\huge \% Remaining Privacy Budget')
-    plt.xlabel(r'\huge $k$')
-    plt.xticks(fontsize=24)
-    plt.yticks(fontsize=24)
-    legend = plt.legend(loc=3)
-    legend.get_frame().set_linewidth(0.0)
-    plt.gcf().set_tight_layout(True)
-    logger.info(f'Figures saved to {output_prefix}')
-    filename = os.path.join(output_prefix, f"{dataset_name}-remaining_budget-{str(epsilon).replace('.', '-')}.pdf")
-    plt.savefig(filename)
-    plt.clf()
-    generated_files.append(filename)
-
     # plot the precision and f measure
     adaptive_precision = np.asarray(data[epsilon]['precision'][ALGORITHM_INDEX])
     sparse_vector_precision = np.asarray(data[epsilon]['precision'][BASELINE_INDEX])
@@ -184,4 +166,30 @@ def plot(k_array, dataset_name, data, output_prefix):
     plt.clf()
     generated_files.append(filename)
 
+    return generated_files
+
+
+def plot_privacy_budget(k_array, data, output_prefix):
+    epsilon = '0.7'
+    ALGORITHM_INDEX, BASELINE_INDEX = 0, -1
+    generated_files = []
+    markers = ('o', 's', 'X')
+    # plot remaining budget
+    for index, (dataset_name, individual_data) in enumerate(data.items()):
+        remaining_budget = 100 * np.asarray(individual_data[epsilon]['remaining_epsilon'][ALGORITHM_INDEX]) / float(epsilon)
+        plt.plot(k_array, remaining_budget, label=f'\\huge {dataset_name}',
+                 linewidth=3, markersize=8, marker=markers[index], zorder=5, alpha=0.9)
+    plt.ylim(0, 45)
+    plt.ylabel(r'\huge \% Remaining Privacy Budget')
+    plt.xlabel(r'\huge $k$')
+    plt.xticks(fontsize=24)
+    plt.yticks(fontsize=24)
+    legend = plt.legend(loc=3)
+    legend.get_frame().set_linewidth(0.0)
+    plt.gcf().set_tight_layout(True)
+    logger.info(f'Figures saved to {output_prefix}')
+    filename = os.path.join(output_prefix, f"remaining_budget-{str(epsilon).replace('.', '-')}.pdf")
+    plt.savefig(filename)
+    plt.clf()
+    generated_files.append(filename)
     return generated_files

@@ -11,7 +11,9 @@ import re
 import coloredlogs
 from freegap.adaptivesvt import adaptive_sparse_vector, \
     top_branch, top_branch_precision, middle_branch, middle_branch_precision, precision, f_measure, \
-    above_threshold_answers, remaining_epsilon, plot as plot_adaptive
+    above_threshold_answers, remaining_epsilon, \
+    plot_above_threshold_answers as plot_above_threshold_answers, \
+    plot_privacy_budget
 from freegap.gapestimates import gap_svt_estimates, gap_topk_estimates, gap_topk_exp_estimates, gap_svt_exp_estimates, gap_svt_geo_estimates, \
     mean_square_error, plot as plot_estimates, plot_combined as plot_estimates_combined
 from freegap.evaluate import evaluate
@@ -190,7 +192,7 @@ def main():
                 top_branch, top_branch_precision, middle_branch, middle_branch_precision, precision, f_measure,
                 above_threshold_answers, remaining_epsilon
             ),
-            'plot_function': plot_adaptive,
+            'plot_function': plot_above_threshold_answers,
             'plot_kwargs': {}
         },
         'GapSparseVector': {
@@ -304,7 +306,7 @@ def main():
                 k_array, dataset[0], data, algorithm_folder, **parameters[algorithm_name]['plot_kwargs']
             )
 
-            if results.combined and ('SparseVector' in algorithm_name or 'TopK' in algorithm_name):
+            if results.combined:
                 logger.info(f'Saving data of {algorithm_name} for combined plotting.')
                 # save the data for the
                 if dataset[0] not in combined_data:
@@ -356,8 +358,18 @@ def main():
                                         algorithm_names)
             )
 
-            if results.compress:
-                compress_pdfs(generated_files)
+        # plot the remaining privacy budget for all datasets
+        algorithm_folder = os.path.join(output_folder, 'AdaptiveSparseVector' + '-counting' if results.counting else '')
+        data = {
+            dataset_name: individual_data['AdaptiveSparseVector']
+            for dataset_name, individual_data in combined_data.items()
+        }
+        generated_files.extend(
+            plot_privacy_budget(k_array, data, algorithm_folder)
+        )
+
+        if results.compress:
+            compress_pdfs(generated_files)
 
 
 if __name__ == '__main__':
