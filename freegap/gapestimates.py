@@ -236,7 +236,7 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
         if abs(float(epsilon) - PLOT_EPSILON) < 1e-5:
             plt.plot(k_array, improvements, label=f'\\huge {algorithm_name}', linewidth=3, markersize=12, marker='o')
             plt.ylim(0, 70)
-            plt.ylabel(r'\huge \% Improvement in MSE')
+            plt.ylabel(r'\huge \% Reduction of MSE')
             plt.plot(
                 theoretical_x, 100 * theoretical_y,
                 linewidth=5, linestyle='--',  label=r'\huge Theoretical Expected Improvement'
@@ -259,7 +259,7 @@ def plot(k_array, dataset_name, data, output_prefix, theoretical, algorithm_name
              markersize=10, marker='o')
     plt.plot(epsilons, [100 * theoretical(10) for _ in range(len(epsilons))], linewidth=5,
              linestyle='--', label=r'\huge Theoretical Expected Improvement')
-    plt.ylabel(r'\huge \% Improvement in MSE')
+    plt.ylabel(r'\huge \% Reduction of MSE')
     plt.ylim(0, 70)
     plt.xlabel(r'\huge $\epsilon$')
     plt.xticks(np.arange(epsilons.min(), epsilons.max() + 0.1, 0.2))
