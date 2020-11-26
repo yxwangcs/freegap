@@ -107,6 +107,7 @@ def plot_above_threshold_answers(k_array, dataset_name, data, output_prefix):
     algorithm_middle_branch = np.asarray(data[epsilon]['middle_branch'][ALGORITHM_INDEX])
     bar_width = 0.6
     plt.ylim(0, 70)
+    plt.xlabel(r'\huge $k$')
     sub_k_array = np.arange(2, 25, 2)  # [2 -> 24]
     colormap = plt.get_cmap('tab10')
     # plot the bar charts
