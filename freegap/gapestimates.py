@@ -340,7 +340,7 @@ def plot_combined(k_array, dataset_name, data, output_prefix, theoreticals, algo
 
             # we only plot epsilon = PLOT_EPSILON for k-array plots
             if abs(float(epsilon) - PLOT_EPSILON) < 1e-5:
-                alpha = 0.8 if 'Geo' in algorithm_names[index] else 1
+                alpha = 0.8 if 'Exp' in algorithm_names[index] else 1
                 plt.plot(
                     k_array, improvements, label=f'\\large {algorithm_names[index]}',
                     linewidth=3, markersize=12, marker=markers[index], alpha=alpha
