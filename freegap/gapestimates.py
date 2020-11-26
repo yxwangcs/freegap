@@ -382,7 +382,7 @@ def plot_combined(k_array, dataset_name, data, output_prefix, theoreticals, algo
             suffix = algorithm_names[index].split()[-1]
             suffix = '' if '(' not in suffix else suffix
             plt.plot(epsilons, [(100 * theoreticals[index](10)) for _ in range(len(epsilons))], linewidth=5,
-                     linestyle='--', label=f'\\large Theoretical Expected Ratio {suffix}', zorder=10)
+                     linestyle='--', label=f'\\huge Theoretical Expected Reduction {suffix}', zorder=10)
 
     legend = plt.legend(loc='lower left')
     legend.get_frame().set_linewidth(0.0)
